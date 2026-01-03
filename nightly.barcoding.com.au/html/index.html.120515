@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>Warehouse Minder 5.1 at test.minderseies.com</title>
+    </head>
+    <body bgcolor="#ddddff" text="#000000">
+        <a id="i0" href="http://www.barcoding.com.au">
+          <img src="/logos/bdcslogo_blue_57x50.jpg" alt="BDCS Logo" border="0" />
+        </a>
+        &nbsp; &nbsp;
+        <a id="i1" href="">
+          <img src="/logos/MDR_30x29.jpg" alt="MinderSeries Icon" border="0" />
+        </a> Warehouse Minder by Barcoding &amp; Data Collection Systems P/L
+        <h1>Instance: Develop Test</h1>
+        <p>Web Portals: </p>
+        <ul>
+            <li><a href="/minder/">Warehouse Minder</a></li>
+            <li><a href="/whm/">Warehouse Minder Handheld</a></li>
+            <li><a href="/mobile/">Warehouse Minder Mobile</a></li>
+            <li><a href="/reportico/">Warehouse Minder ReportsICO</a></li>
+            <li><a href="/cgi-bin/repwebexe.bin/login">Report Manager Login</a></li>
+            <li><a href="/config">Minder Config</a></li>
+            <li><a href="/whm/remote/expremote.php">Masters Export to Remote</a></li>
+            <li><a href="/whm/remote/impremote.php">Masters Import From Remote</a></li>
+            <li><a href="/whm/remote/modlocal.php">Remotes Change of Warehouse</a></li>
+            <li><a href="/angularjs">Angular</a></li>
+        </ul>
+        <br />
+        <br />
+        <br />
+        <p>Diagnostic Portals: </p>
+        <ul>
+            <li><a href="/status.php">Printer Status</a></li>
+            <li><a href="/cgi-bin/repwebexe.bin/version">Report Manager Version</a></li>
+        </ul>
+    </body>
+</html>
