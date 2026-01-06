@@ -1,0 +1,257 @@
+<div id="json" style="display: none;"><?php echo json_encode(array('messages' => $this->messages, 'errors' => $this->errors, 'warnings' => $this->warnings)); ?></div>
+<input type="hidden" name="hasPrintedSscc" value="<?php echo $this->hasPrintedSsccLabels ? 'true': 'false';?>">
+<span style="display: none" class="ediOrderStatistics"><?php echo json_encode($this->orderStatistics);?></span>
+
+<?php
+    $resultsForm = $this->getHelper('sysScreenSearchResult');
+    $resultsForm->setTabs($this->tabList);
+    $resultsForm->setFields($this->fieldList);
+?>
+ <form name="lines_list" id="lines_list" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="lines_tabs" class="ui-tabs-container" style="">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div class="ui-tabs-panel-header">
+             <div class="sys-screen-title" title="<?php echo $this->linesSysScreenName;?>">Lines List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->searchResultShowBy('show_by', $this->navigation['show_by'], $this->viewByMax); ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->selectedLinesCount;?></span></li>
+             </ul>
+         </div>
+         
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter order_lines" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->linesSelectionNamespace, 'switch_selection_mode' => $this->selectMode, 'selectable-rows' => $this->selectableRows));?>
+                            <?php 
+                                $rowParams = array('selection_namespace' => $this->linesSelectionNamespace, 'selectable-row' => $this->selectableRows);
+                                
+//                                if ($this->badLines) {
+//                                    $rowParams['data_set_row_class'] = 'bad-line';
+//                                }
+                            Zend_Registry::get('logger')->debug(array('file' => __FILE__, 'line' => __LINE__, $rowParams));
+                                echo $resultsForm->renderRows($tabId, $rowParams, $this->linesDataSet, $this->selectedLines);
+                                
+                            ?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Ready For Despatch Rows Total: <span class="total_ready_for_desp_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->readyToDespTotal;?></span></td>
+                            <td>Ready For Despatch Rows Selected: <span class="selected_ready_for_desp_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->readyToDespSelected;?></span></td>
+                        </tr>
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records. <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                            <?php if ($this->shouldCheckEachLine) { ?>
+                            <td>Unchecked items <span class="unchecked_items <?php echo $this->linesSelectionNamespace;?>"></span>.</td>
+                            <?php } else { ?>
+                                <td>&nbsp;</td>
+                            <?php } ?>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <?php if ($this->shouldCreateSSCC) {?>
+                                <li><input type="submit" id="print_sscc" class="mdr-tool-button" value="PRINT SSCC" onclick="return false;" /></li>
+                            <?php } else { ?>
+                                <li><input type="submit" id="connote_btn" class="mdr-tool-button" value="CONNOTE" onclick="return false;" /></li>
+                            <?php }?>
+                            <?php if ($this->shouldCheckEachLine) { ?>
+                            <li><input type="submit" id="check_all_prod_id" class="mdr-tool-button" value="CHECK ALL" onclick="return false;" /></li>
+                            <?php } ?>
+                            <li><input type="submit" name="report_format" id="report_csv_btn" class="mdr-tool-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="report_xls_btn" class="mdr-tool-button" value="REPORT: XLS" onclick="return false;" /></li>
+                            <li><input type="submit" class="mdr-tool-button" id="cancel_despatch" value="CANCEL DESPATCH" onclick="return false;" /></li>
+                            <li><input type="submit" class="mdr-tool-button" id="change_carrier" value="CHANGE CARRIER" onclick="return false;" /></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+    shouldCheckEachLine = <?php echo $this->shouldCheckEachLine ? 'true' : 'false';?>;
+    canBeChecked = <?php echo $this->canBeChecked ? 'true' : 'false';?>;
+    checkLineDetails = <?php echo json_encode($this->checkLineDetails); ?>;
+//    Minder.Despatches.AwaitingChecking.SsccPackDetails.setShouldGenerateSSCC(<?php //echo $this->shouldCreateSSCC ? 'true' : 'false'; ?>//);
+    isEdiOrder = <?php echo $this->shouldCreateSSCC ? 'true' : 'false'; ?>;
+    packSscc = <?php echo json_encode($this->packSscc); ?>;
+    serialNumbers = <?php echo json_encode($this->serialNumbers); ?>;
+//    validatePackSsccData(isEdiOrder, checkLineDetails, packSscc);
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        $('#barcode').focus();
+
+//        Minder.Despatches.AwaitingChecking.SsccPackDetails.setAcceptedUoms(getAcceptedSsccUoms(packSscc));
+//        Minder.Despatches.AwaitingChecking.SsccPackDetails.fillChecked(getAcceptedSsccDimensions(packSscc));
+//        Minder.Despatches.AwaitingChecking.SsccPackDetails.setVolumeAndWeightPolicy(
+//            <?php //echo $this->volumeRequired ? 'true' : 'false'; ?>//,
+//            <?php //echo $this->weightRequired ? 'true' : 'false'; ?>
+//        );
+
+<!--        --><?php //if ($this->hasPrintedSsccLabels) {?>
+//            $('#change_carrier').attr('disabled', 'disabled');
+//            var uncheckedSscc = getNextCheckAbleSscc();
+//            showPrompt(3, [{'placeholder': '%nextSscc%', 'value': uncheckedSscc.PS_OUT_SSCC}]);
+//        <?php //} else {?>
+//            showPrompt(2);
+//        <?php //}?>
+
+//        $('#check_all_prod_id').unbind('click.get-lines').bind('click.get-lines', function() {checkAllProdId();});
+
+//        if (getReadyForDespatchTotal() > 0) {
+//            $('.order-check-prompt').show();
+//        } else {
+//            $('.order-check-prompt').hide();
+//        }
+        
+//        if (getSearchOrderByProductDialogState().scannedProducts.length > 0) {
+////            forceProdIdCheck(getSearchOrderByProductDialogState().scannedProducts);
+////            resetSearchOrderByProductDialog();
+//        } else {
+////            updateCheckLineStatus();
+//        }
+    });
+
+    function getSelectedItemsCount() {
+        var totalRowsSelected  = parseInt($('.selected_count.<?php echo $this->linesSelectionNamespace?>').html());
+        return isNaN(totalRowsSelected) ? 0 : totalRowsSelected;
+    }
+
+    function isConnoteAvailable() {
+        var errors    = $('#CONNOTE_SCREEN_CONTAINER').data('errors');
+        var warnings  = $('#CONNOTE_SCREEN_CONTAINER').data('warnings');
+
+        if (errors && errors.length > 0) {
+            showErrors(errors);
+            $('#CONNOTE_SCREEN_CONTAINER').html();
+            return false;
+        }
+
+        if (warnings && warnings.length > 0) {
+            showErrors(warnings);
+            $('#CONNOTE_SCREEN_CONTAINER').html();
+            return false;
+        }
+
+        var readyForDespSelected = parseInt($('.selected_ready_for_desp_count.<?php echo $this->linesSelectionNamespace?>').html());
+        readyForDespSelected = (isNaN(readyForDespSelected)) ? 0 : readyForDespSelected;
+
+        if (readyForDespSelected < 1) {
+            showErrors(['No lines selected for despatch.']);
+            $('#CONNOTE_SCREEN_CONTAINER').html();
+            return false;
+        }
+
+        return true;
+    }
+
+    function getConnoteScreen(ssccPackTotals, ssccLastLabelData) {
+        if (typeof(destroyConnote) == 'function') {
+            destroyConnote();
+        }
+
+        if (!isConnoteAvailable()) {
+            <?php if (!$this->minder->isSysAdmin()) {?>
+                return;
+            <?php }?>
+        }
+
+        if (Minder.Despatches.AwaitingChecking.SsccPackDetails.shouldGenerateSSCC()) {
+            Minder.Despatches.AwaitingChecking.SsccPackDetails.start();
+
+            if (isAllLinesChecked()) {
+                Minder.Despatches.AwaitingChecking.SsccPackDetails.stop();
+            } else {
+                return;
+            }
+        }
+
+        ssccPackTotals = ssccPackTotals || Minder.Despatches.AwaitingChecking.SsccPackDetails.getTotals();
+
+        $('#CONNOTE_SCREEN_CONTAINER').load(
+            '<?php echo $this->url(array('action' => 'get-connote', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>',
+            {
+                'ssccPackTotals': ssccPackTotals,
+                'ssccLastLabelData': ssccLastLabelData,
+                'ssccAllLabels': Minder.Despatches.AwaitingChecking.SsccPackDetails.getAllRows(),
+                callback: {
+                    on_success: {
+                        action: 'index',
+                        controller: 'despatch-awaiting-checking',
+                        module: 'default'
+                    },
+                    on_resume: {
+                        action: 'index',
+                        controller: 'despatch-awaiting-checking',
+                        module: 'default'
+                    }
+
+                },
+                selection_info: {
+                    model_name: 'PICKORDER',
+                    namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                    action: 'select-row',
+                    controller: 'despatch-awaiting-checking',
+                    module: 'default'
+                },
+                order_selection_namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                order_selection_action: 'select-row',
+                order_selection_controller: 'despatch-awaiting-checking',
+                order_selection_field: 'PICK_ORDER',
+                lines_selection_namespace: '<?php echo $this->linesSelectionNamespace;?>',
+                lines_selection_action: 'select-row',
+                lines_selection_controller: 'despatch-awaiting-checking',
+                lines_selection_field: 'PICK_LABEL_NO'
+            },
+            function () {
+                $('#CONNOTE_SCREEN_CONTAINER').unbind('.awaiting_checking_connote').bind('cancel.awaiting_checking_connote', function(){
+                    $('#CONNOTE_SCREEN_CONTAINER').html('');
+                });
+            }
+        );
+    }
+    
+    function beforeConnoteAccept() {
+        var totalRows    = parseInt($('.total_count.<?php echo $this->linesSelectionNamespace?>').html());
+        var selectedRows = parseInt($('.selected_count.<?php echo $this->linesSelectionNamespace?>').html());
+        totalRows        = (isNaN(totalRows))? 0 : totalRows;
+        selectedRows     = (isNaN(selectedRows))? 0 : selectedRows;
+
+        if ( selectedRows < totalRows) {
+            if (confirm('Not all available rows selected for despatch! Proceed anyway?')) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    function getReadyForDespatchTotal() {
+        return parseInt($('.total_ready_for_desp_count.<?php echo $this->linesSelectionNamespace;?>').html()) || 0;
+    }
+    
+    /* ]]> */
+</script>

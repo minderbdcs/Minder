@@ -1,0 +1,25 @@
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->d_tabList)->setFields($this->d_fieldList)->setActions($this->d_actions);
+?>
+  
+    <!-- tabs container start -->
+    <div id="d_tabs" class="ui-tabs-container">
+        <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+            <div class="sys-screen-title" title="<?php echo $this->d_sysScreenName;?>">Despatch To:</div>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <?php echo $resultsForm->renderTabContent(
+                                        $tabId, 
+                                        array(
+                                            'tab_content_class'     => 'withborder tablesorter d_details',
+                                            'tab_content_style'     => array('margin-top: 0px;', 'margin-bottom: 0px;', 'clear: both;')
+                                        ), 
+                                        $this->despatchToRows 
+                );?>
+           </div>    
+        <?php }?>
+    </div>
+    <!-- tabs container end -->

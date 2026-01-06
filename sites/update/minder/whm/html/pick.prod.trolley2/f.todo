@@ -1,0 +1,111 @@
+trolley id  is currently an id in sys_equip
+
+get the number of  orders requested
+they enter the (default temporary) location to use for each order
+that is the temporary location that we pick to
+=================================================
+Currently we are using locn_group to hold locn_group (trolley for the allocation)
+have a new table to have the list of temporary locations to use (allocated to order)
+and a new transaction to add a location to this list (POAL)
+=================================================
+use the priorities and locn seq of magnamail conveyor
+the PKUA update the pick_locn_seq
+the pick_line_priority is set in PKBS
+so after the PKAL must do this for the order
+=================================================
+have a record somewhere which says whether to enter the product
+or scan the location and choose the product
+==================================================
+
+
+then for all the lines allocated
+take the required qty
+(pick products in order of location for product)
+instead of scanning issn's
+do not have product labels so scan the from location
+they must choose which product based on the home location for the product
+being the location scanned.
+
+ask to scan to the temporary location for the constituent orders the part that they require
+
+======================================================
+at end of picking  an  order
+//do a PKIL to a despatch location
+do a TRPK O to a conveyor device those lines that are picked 
+Glen wants to transfer the mobile location that the product is in into a despatch location
+so this is to happen in pick menu
+==============================================================
+in the awaiting despatch (like the assembly screen)
+
+then the despatch processing can commence
+DSOT
+DSOL
+DSSS
+DSUQ
+
+then the Invoicing
+create an invoice for an orders uninvoiced work
+DSOI
+======================================================
+in pick order hold the expected volume (like the expected weight field)
+=====================================================
+=========================================================================================================================
+27/07/10
+in gettolocn if click back goes to getfromlocn
+if no more to do 
+then go back to menu
+========================================================================================================================
+want to be able to add/remove locations from an order
+want to be able to transfer a location to conveyor
+product a product label in PKOL for splits - done
+
+want to check that if order line is for and ssn/issn that it works !!! (apcd)
+
+========================================================================================================================
+6/9/11
+for orders with a partial pick allowed.
+	the PKAL I only allocates those lines in the order that have some stock the other lines -> AS.
+
+	when not enough stock for the line
+	eg want 4 but have 1
+	do the PKOL for the pickable qty 		yes this does the PKOL currently
+		but then waits to scan next ISSN before the PKIL!
+	must do a PKIL to the block location
+	if no more stock then transfer to the conveyor zone
+
+	in the get next line screen if no stock for the line and the line is AL or al then move to AS and no device
+	if no stock and the line is PG or pg
+	if no stock ans the line is PL pl then transfer to zone location
+	if no further lines go back to the pick menu
+
+=====================================================================================================================
+
+=================================================================================================================
+29/05/14
+want to enforce a new block 
+	1)	when the order is of PACK_CUSTOMER.PC_POPULATE_OUT_SSCC_METHOD = 'PRODUCT ORDER DELIVER TO'
+		then for a new product , order, del to
+	2) 	when the order is of PACK_CUSTOMER.PC_POPULATE_OUT_SSCC_METHOD = 'ORDER DELIVER TO'
+		then for a new order, del to
+	3) 	when the order is not one with a PACK_SSCC  then treat this as 'ORDER DELIVER TO'
+		this is the current case since there is only 1 deliver to for a normal order
+
+can add the product and store_deliver_to and customer_edi_no to the pick_location table 
+	for PACK_CUSTOMER.PC_POPULATE_OUT_SSCC_METHOD = 'PRODUCT ORDER DELIVER TO'
+can add the customer_edi_no and store_deliver_to to the pick_location table 
+	for PACK_CUSTOMER.PC_POPULATE_OUT_SSCC_METHOD = 'ORDER DELIVER TO'
+
+must amend the processing of ....
+	UPDATE_PICK_ITEM_TIME
+	DSDX
+	PKUL
+	TRPK
+	PKCA
+POAL
+	PKIL
+to handle more pick_location records.
+so thats only the POAL.
+
+
+	for PACK_CUSTOMER.PC_POPULATE_OUT_SSCC_METHOD = 'PRODUCT ORDER DELIVER TO'
+	or  PACK_CUSTOMER.PC_POPULATE_OUT_SSCC_METHOD = 'ORDER ORDER DELIVER TO'

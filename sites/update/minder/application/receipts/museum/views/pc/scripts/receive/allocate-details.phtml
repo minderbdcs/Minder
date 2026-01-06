@@ -1,0 +1,469 @@
+<?php
+$this->headScript()
+        ->appendFile($this->baseUrl() . '/scripts/Minder/View/DataGridIn.js')
+        ->appendFile($this->baseUrl() . '/scripts/Minder/View/multy.js')
+        ->appendFile($this->baseUrl() . '/scripts/Minder/View/radio.js');
+
+/**
+ * @param Minder2_Model_SysEquip $a
+ * @param Minder2_Model_SysEquip $b
+ * @return int
+ */
+function printerSort($a, $b) {
+    if ($a->DEVICE_ID > $b->DEVICE_ID)
+        return 1;
+
+    if ($a->DEVICE_ID < $b->DEVICE_ID)
+        return -1;
+
+    return 0;
+}
+
+function getPrinterList() {
+    $result = array();
+
+    $printerList = Minder2_Environment::getPrinterList();
+    usort($printerList, 'printerSort');
+
+    /**
+     * @var Minder2_Model_SysEquip $printer
+     */
+    foreach ($printerList as $printer) {
+        $result[] = array('label' => $printer->DEVICE_ID . ' - ' . $printer->EQUIPMENT_DESCRIPTION_CODE, 'value' => $printer->DEVICE_ID);
+    }
+
+    return $result;
+}
+
+function getSelectedPrinter() {
+    return Minder2_Environment::getCurrentPrinter()->DEVICE_ID;
+}
+
+function getReceiveLocations($locationObjectList) {
+    $result = array();
+
+    if (empty($locationObjectList))
+        return $result;
+
+    /**
+     * @var Minder2_Model_Location $location
+     */
+    foreach ($locationObjectList as $location)
+        $result[] = $location->getFields();
+
+    return $result;
+}
+?>
+
+<div id="ALLOCATE-DETAILS-CONTAINER">
+    <span></span>
+</div>
+
+<script type="text/javascript">
+<?php $this->autoloadScript()->captureStart();?>
+    var AllocateDetailsSysScreen = $.inherit(
+        Minder_Model_SysScreen,
+        {
+            _totalReceivedUnits: null,
+            _grn: null,
+
+            getFieldValue: function(name) {
+                switch(name) {
+                    case 'TOTAL_PRINT_UNITS':
+                        return this._getTotalPrintUnits();
+                    case 'TOTAL_SELECTED_UNITS':
+                        return this._getTotalSelectedUnits();
+                    case 'REMINDER_UNITS':
+                        return this._getReminderUnits();
+                    case 'DELIVERY_COMPLETE':
+                        return this.deliveryIsComplete();
+                    case 'TOTAL_LABELS1':
+                        return this._getTotalLabels1();
+                    case 'TOTAL_LABELS2':
+                        return this._getTotalLabels2();
+                    case 'UNITS_PER_LABEL1':
+                    case 'UNITS_PER_LABEL2':
+                        return this._getUnitsPerLabel(name);
+                    case 'TOTAL_PICK_LABELS':
+                        return this._getTotalPickLabels();
+                    case 'TOTAL_LABELS':
+                        return this._getTotalLabels();
+                    default:
+                        return this.__base(name)
+                }
+            },
+
+            _getUnitsPerLabel: function(fieldName) {
+                var result = parseInt(this._fields[fieldName]);
+                return isNaN(result) ? 0 : result;
+            },
+
+            _calcTotalLabels1: function() {
+                var unitsPerLabel1 = this._getUnitsPerLabel('UNITS_PER_LABEL1');
+                var availableUnits = this._getTotalAvailableUnits();
+
+                return (availableUnits < 1 || !unitsPerLabel1) ? 0 : Math.floor(availableUnits / unitsPerLabel1);
+            },
+
+            _getTotalLabels1 : function() {
+                if (typeof this._fields['TOTAL_LABELS1'] == 'undefined' || this._fields['TOTAL_LABELS1'] == null)
+                    return this._calcTotalLabels1();
+
+                return this._fields['TOTAL_LABELS1'];
+            },
+
+            _getTotalAvailableUnits: function() {
+                return this._getTotalReceivedUnits() - this._getTotalSelectedUnits();
+            },
+
+            _calcTotalLabels2: function() {
+                var unitsPerLabel1 = this._getUnitsPerLabel('UNITS_PER_LABEL1');
+                var unitsPerLabel2 = this._getUnitsPerLabel('UNITS_PER_LABEL2');
+                var totalLabels1   = this._getTotalLabels1();
+                var reminderUnits  = this._getTotalAvailableUnits() - unitsPerLabel1 * totalLabels1;
+
+                return (!unitsPerLabel2 || reminderUnits < 0) ? 0 : Math.floor(reminderUnits / unitsPerLabel2);
+            },
+
+            _getTotalLabels2: function() {
+                if (typeof this._fields['TOTAL_LABELS2'] == 'undefined' || this._fields['TOTAL_LABELS2'] == null)
+                    return this._calcTotalLabels2();
+
+                return this._fields['TOTAL_LABELS2'];
+            },
+
+            deliveryIsComplete: function() {
+                if (typeof this._fields['DELIVERY_COMPLETE'] == 'undefined' || this._fields['DELIVERY_COMPLETE'] == null)
+                    this._fields['DELIVERY_COMPLETE'] = 'yes';
+
+                return this._fields['DELIVERY_COMPLETE'];
+            },
+
+            setTotalSelectedUnits: function(val) {
+                this.setFieldValue('TOTAL_SELECTED_UNITS', val, this);
+            },
+
+            setTotalPickLabels: function(val) {
+                val = parseInt(val);
+                val = isNaN(val) ? 0 : (val < 0 ? 0 : val);
+                this.setFieldValue('TOTAL_PICK_LABELS', val, this);
+            },
+
+            _getTotalPickLabels: function() {
+                if (typeof this._fields['TOTAL_PICK_LABELS'] == 'undefined' || this._fields['TOTAL_PICK_LABELS'] == null)
+                    return 0;
+
+                return this._fields['TOTAL_PICK_LABELS'];
+
+            },
+
+            _getTotalLabels: function() {
+                return this._getTotalLabels1() + this._getTotalLabels2() + this._getTotalPickLabels();
+            },
+
+            setPurchaseOrder: function(val) {
+                this.setFieldValue('PURCHASE_ORDER', val, this);
+            },
+
+            getPurchaseOrder: function() {
+                return this.getFieldValue('PURCHASE_ORDER');
+            },
+
+            setPoLine: function(val) {
+                this.setFieldValue('PO_LINE', val, this);
+            },
+
+            getPoLine: function() {
+                return this.getFieldValue('PO_LINE');
+            },
+
+            setGrn: function(val) {
+                this._grn = val;
+            },
+
+            getGrn: function() {
+                return this._grn;
+            },
+
+            setTotalReceivedUnits: function(val) {
+                this._totalReceivedUnits = val;
+                this.notifyFieldsChanged(this);
+            },
+
+            _getTotalReceivedUnits: function() {
+                if (this._totalReceivedUnits == null)
+                    return 0;
+
+                return this._totalReceivedUnits;
+            },
+
+            _getReminderUnits: function() {
+                var result = this._getTotalReceivedUnits() - this._getTotalSelectedUnits();
+                return isNaN(result) ? null : result;
+            },
+
+            _getTotalSelectedUnits: function() {
+                return this._fields['TOTAL_SELECTED_UNITS'] ? this._fields['TOTAL_SELECTED_UNITS'] : 0;
+            },
+
+            _calcTotalPrintUnits: function() {
+                return this._getTotalSelectedUnits() + this._getTotalLabels1() * this._getUnitsPerLabel('UNITS_PER_LABEL1') + this._getTotalLabels2() * this._getUnitsPerLabel('UNITS_PER_LABEL2');
+            },
+
+            _getTotalPrintUnits: function() {
+                return this._calcTotalPrintUnits();
+            },
+
+            canAllocate: function() {
+                return (this._getTotalPrintUnits() > 0) && !(this._getTotalPrintUnits() > this._getTotalReceivedUnits());
+            },
+
+            getAllocateDetails: function() {
+                return {
+                    'totalLabelQty1': this._getTotalLabels1(),
+                    'unitsPerLabel1': this._getUnitsPerLabel('UNITS_PER_LABEL1'),
+                    'totalLabelQty2': this._getTotalLabels2(),
+                    'unitsPerLabel2': this._getUnitsPerLabel('UNITS_PER_LABEL2'),
+                    'totalReceived': this._getTotalReceivedUnits(),
+                    'totalPickLabelUnits': this._getTotalSelectedUnits(),
+                    'grn': this.getGrn(),
+                    'purchaseOrder': this.getPurchaseOrder(),
+                    'poLine': this.getPoLine(),
+                    'printerId': this.getFieldValue('printerId'),
+                    'receiveLocation': this.getFieldValue('receiveLocation')
+                };
+            },
+
+            resetState: function() {
+                this._totalReceivedUnits = null;
+                this._grn = null;
+                this._setFieldValue('UNITS_PER_LABEL1', this.getFieldValue('defaultUnitsPerIssn'));
+                this._setFieldValue('UNITS_PER_LABEL2', this.getFieldValue('defaultUnitsPerIssn'));
+                this._setFieldValue('TOTAL_LABELS1', null);
+                this._setFieldValue('TOTAL_LABELS2', null);
+                this.notifyFieldsChanged(this);
+            }
+        },
+        {
+
+        }
+    );
+
+    var TotalPrintUnitsView = $.inherit(
+        Minder_View_DataField,
+        {
+            _getFieldColor: function() {
+                if (this.getModel().canAllocate())
+                    return 'limegreen';
+                return 'red';
+            },
+
+            onFieldsChanged: function(evt) {
+                this._$renderedContent.css('background-color', this._getFieldColor()).attr('readonly', true);
+                this._$renderedContent.parent().find('input[name="' + this.getName() + '"]').val(this.getValue());
+            },
+
+            render: function($placement) {
+                this.__base($placement);
+                this._$renderedContent.css('background-color', this._getFieldColor()).attr('readonly', true);
+            }
+        },
+        {
+
+        }
+    );
+
+    var reminderUnitsView = $.inherit(
+        Minder_View_DataField,
+        {
+            _getFieldColor: function() {
+                if (this.getValue() < 0)
+                    return 'yellow';
+                return 'limegreen';
+            },
+
+            onFieldsChanged: function(evt) {
+                this._$renderedContent.css('background-color', this._getFieldColor()).attr('readonly', true);
+                this._$renderedContent.parent().find('input[name="' + this.getName() + '"]').val(this.getValue());
+            },
+
+            render: function($placement) {
+                this.__base($placement);
+                this._$renderedContent.css('background-color', this._getFieldColor()).attr('readonly', true);
+            }
+        },
+        {
+
+        }
+    );
+
+    var LocationDropDownView = $.inherit(
+        Minder_View_Multy,
+        {
+            getOptions: function() {
+                var result = {};
+
+                $.each(this._optionsDataSet.getDataRows(), function(index, option) {
+                    result[option['WH_ID'] + option['LOCN_ID']] = option['LOCN_NAME'];
+                });
+                return result;
+            }
+        }
+    );
+
+    var allocateDetailModel = new AllocateDetailsSysScreen({
+        'printerId': '<?php echo getSelectedPrinter(); ?>',
+        'defaultUnitsPerIssn': '<?php echo $this->defaultUnitsPerIssn; ?>'
+    });
+    allocateDetailModel.resetState();
+    var allocateDetailContainer = new Minder_View_Container('allocateDetailContainer', allocateDetailModel, $('#vertical-layout'));
+    var allocateDetailsPanel1 = new Minder_View_Container('allocateDetailsPanel1', allocateDetailModel, $('#panel-layout'));
+
+    var receiveLocationList = new Minder_Model_DataSet(<?php echo json_encode(getReceiveLocations($this->recieveLocations)); ?>);
+    var receiveLocationDropBox = new LocationDropDownView('receiveLocation', allocateDetailModel, $('#multy'), {'_CAPTION' : 'Receive Loc:'});
+    receiveLocationDropBox.setOptionsDataset(receiveLocationList);
+
+    var printerList = new Minder_Model_DataSet(<?php echo json_encode(getPrinterList()); ?>);
+    var printerDropBox = new Minder_View_Multy('printerId', allocateDetailModel, $('#multy'), {'_CAPTION' : 'Printer ID:'});
+    printerDropBox.setOptionsDataset(printerList);
+
+    allocateDetailsPanel1.addSubView(receiveLocationDropBox);
+    allocateDetailsPanel1.addSubView(printerDropBox);
+
+    var allocateDetailsPanel2 = new Minder_View_Container('allocateDetailsPanel2', allocateDetailModel, $('#panel-layout'));
+    var remainderIssnUnitsLabel = new reminderUnitsView('REMINDER_UNITS', allocateDetailModel, $('#input-field'), {'_CAPTION': 'Remainder ISSN Units:'});
+    allocateDetailsPanel2.addSubView(remainderIssnUnitsLabel);
+
+    var allocateDetailsPanel4 = new Minder_View_Container('allocateDetailsPanel4', allocateDetailModel, $('#panel-layout'));
+    var totalLabel1Field = new Minder_View_In('TOTAL_LABELS1', allocateDetailModel, $('#input-field'), {'_CAPTION': 'Total Put-Away Labels:'});
+    allocateDetailsPanel4.addSubView(totalLabel1Field);
+
+    var unitsPerLabel1Field = new Minder_View_In('UNITS_PER_LABEL1', allocateDetailModel, $('#input-field'), {'_CAPTION': 'UNITS / ISSN Label:'});
+    allocateDetailsPanel4.addSubView(unitsPerLabel1Field);
+
+    var allocateDetailsPanel5 = new Minder_View_Container('allocateDetailsPanel5', allocateDetailModel, $('#panel-layout'));
+    var totalLabel2Field = new Minder_View_In('TOTAL_LABELS2', allocateDetailModel, $('#input-field'), {'_CAPTION': 'Total Put-Away Labels:'});
+    allocateDetailsPanel5.addSubView(totalLabel2Field);
+
+    var unitsPerLabel2Field = new Minder_View_In('UNITS_PER_LABEL2', allocateDetailModel, $('#input-field'), {'_CAPTION': 'UNITS / ISSN Label:'});
+    allocateDetailsPanel5.addSubView(unitsPerLabel2Field);
+
+    var allocateDetailsPanel3 = new Minder_View_Container('allocateDetailsPanel3', allocateDetailModel, $('#panel-layout'));
+    var totalPrintUnitsLabel = new TotalPrintUnitsView('TOTAL_PRINT_UNITS', allocateDetailModel, $('#input-field'), {'_CAPTION': 'Total Print Units:'});
+    allocateDetailsPanel3.addSubView(totalPrintUnitsLabel);
+
+    var deliveryCompleteRadioList = new Minder_Model_DataSet([{'label': 'Yes', 'value': 'yes'}, {'label': 'No', 'value': 'no'}]);
+    var deliveryCompleteRadio = new Minder_View_Radio('DELIVERY_COMPLETE', allocateDetailModel, $('#radio'), {'_CAPTION': 'Is Delivery Complete?'});
+    deliveryCompleteRadio.setOptionsDataset(deliveryCompleteRadioList);
+    allocateDetailsPanel3.addSubView(deliveryCompleteRadio);
+
+    var allocateDetailsPanel6 = new Minder_View_Container('allocateDetailsPanel6', allocateDetailModel, $('#panel-layout'));
+    var totalLabelsInput = new Minder_View_In('TOTAL_LABELS', allocateDetailModel, $('#input-field'), {'_CAPTION': 'Total Pick + Put-Away Labels:'});
+    allocateDetailsPanel6.addSubView(totalLabelsInput);
+
+    var allocateDetailsButtonPanel = new Minder_View_Container('allocateDetailsButtonPanel', allocateDetailModel, $('#button-panel'));
+
+    var saveAndPrintBtn = new Minder_View_Button('saveAndPrintBtn', allocateDetailModel, $('#button'), {'SSB_TITLE': 'SAVE & PRINT'});
+    saveAndPrintBtn.click(function(){
+        $(this).trigger('print-btn-click');
+    });
+    var backBtn = new Minder_View_Button('backBtn', allocateDetailModel, $('#button'), {'SSB_TITLE': 'BACK'});
+    backBtn.click(function(){
+        $(this).trigger('back-btn-click');
+    });
+    allocateDetailsButtonPanel.addSubView(saveAndPrintBtn);
+    allocateDetailsButtonPanel.addSubView(backBtn);
+
+    allocateDetailContainer.addSubView(allocateDetailsPanel1);
+    allocateDetailContainer.addSubView(allocateDetailsPanel2);
+    allocateDetailContainer.addSubView(allocateDetailsPanel4);
+    allocateDetailContainer.addSubView(allocateDetailsPanel5);
+    allocateDetailContainer.addSubView(allocateDetailsPanel3);
+    allocateDetailContainer.addSubView(allocateDetailsPanel6);
+    allocateDetailContainer.addSubView(allocateDetailsButtonPanel);
+
+    allocateDetailContainer.render($('#ALLOCATE-DETAILS-CONTAINER > span'));
+<?php $this->autoloadScript()->captureEnd();?>
+</script>
+
+<script id='vertical-layout' type="text/x-jquery-tmpl">
+    <table>
+    {{each($index, $subView) $item.data.getSortedSubViews()}}
+        <tbody class="minder-element {{= $subView.getName()}}">
+            <tr><td>{{= $subView.getName()}}:Placement</td></tr>
+        </tbody>
+    {{/each}}
+    </table>
+</script>
+
+<script type="text/x-jquery-tmpl" id="panel-layout">
+    <tbody>
+        <tr>
+            {{each($index, $subView) $item.data.getSortedSubViews()}}
+            <td>{{= $subView.getSetting("_CAPTION")}}</td><td><span class="minder-element {{= $subView.getName()}}">{{= $subView.getName()}}:Placement</span></td>
+            {{/each}}
+        </tr>
+    </tbody>
+</script>
+
+<script type="text/x-jquery-tmpl" id="multy">
+    <select>
+        {{each($value, $label) $item.data.getOptions()}}
+            {{if $item.data.getValue() == $value}}
+                <option value="{{= $value}}" selected="selected">{{= $label}}</option>
+            {{else}}
+                <option value="{{= $value}}">{{= $label}}</option>
+            {{/if}}
+        {{/each}}
+    </select>
+</script>
+
+<script type="text/x-jquery-tmpl" id="caption">
+    <span>{{= $item.data.getValue()}}</span>
+</script>
+
+<script type="text/x-jquery-tmpl" id='data-grid'>
+    <tbody>
+        {{each($index, $row) $item.data.getRows()}}
+        <tr class="ROW_ID_{{= $row.__rowId}}" data-row-id="{{= $row.__rowId}}">
+            {{each($fieldName, $fieldStruct) $item.data._fields}}
+            <td><span class="minder-grid-view-header FIELD_ID_{{= $fieldName}}">Header:{{= $fieldName}}</span></td>
+            <td class="ROW_ID_{{= $row.__rowId}} FIELD_ID_{{= $fieldName}}" data-row-id="{{= $row.__rowId}}">
+                <span class="minder-grid-view-field ROW_ID_{{= $row.__rowId}} FIELD_ID_{{= $fieldName}}" data-row-id="{{= $row.__rowId}}">Row:{{= $row.__rowId}}:Field:{{= $fieldName}}</span>
+            </td>
+            {{/each}}
+        </tr>
+        {{/each}}
+    </tbody>
+</script>
+
+<script type="text/x-jquery-tmpl" id="input-field">
+    <input type="text" name="{{= $item.data.getName()}}" value="{{= $item.data.getValue()}}"/>
+</script>
+
+<script type="text/x-jquery-tmpl" id="static-header">
+    <span title="{{= $item.data.getTitle()}}">{{= $item.data.getValue()}}</span>
+</script>
+
+<script type="text/x-jquery-tmpl" id='button-panel'>
+    <tbody><tr><td colspan="4">
+        <ul class="toolbar">
+            {{each($index, $subView) $item.data.getSubViews()}}
+                <li><span class="minder-element {{= $subView.getName()}}">{{= $subView.getName()}}:Placement</span></li>
+            {{/each}}
+        </ul>
+    </td></tr></tbody>
+</script>
+
+<script type="text/x-jquery-tmpl" id="radio">
+    <span>
+    {{each($value, $label) $item.data.getOptions()}}
+        <label>{{= $label}}: <input type="radio" value="{{= $value}}" name="{{= $item.data.getName()}}" /></label>&nbsp;
+    {{/each}}
+    </span>
+</script>
+
+<script type="text/x-jquery-tmpl" id="button">
+    <input type="submit" onclick="return false;" value="{{= $item.data.getTitle()}}" class="green-button" name="{{= $item.data.getName()}}" />
+</script>
+

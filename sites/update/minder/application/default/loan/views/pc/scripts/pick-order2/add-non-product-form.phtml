@@ -1,0 +1,25 @@
+<fieldset title="ADD_NON_PRODUCT">
+    <legend>Add Non-Product</legend>
+    <table>
+        <tr>
+            <td>
+                <input type="text" name="non_product_name" value="" id="non_product_name" onclick="return false;" style="width: <?php echo $width = $this->showNonProductPrice ? '250px' : '350px'; ?>" />
+                <label for="product_qty">Qty:</label>
+                <input type="text" name="non_product_qty" value="1" id="non_product_qty" style="width:50px;" />
+                <?php if($this->showNonProductPrice) { ?>
+                <label for="non_product_price">Default $:</label>
+                <input type="text" name="non_product_price" value="" id="non_product_price" style="width:50px;" />
+                <?php } ?>
+            </td>
+        </tr>
+        <tr>
+             <td>
+                <input type="submit" class="mdr-button" name="action" value="ADD NON-PRODUCT" id="non_product_add" />
+                <input type="radio" name="non_product_options" value="issn" id="non_product_issn" />
+                <label for="product_options">ISSN</label>
+                <input type="radio" name="non_product_options" value="description" checked="checked" id="non_product_description" />
+                <label for="product_options">Description</label>
+             </td>
+        </tr>
+    </table>
+</fieldset>

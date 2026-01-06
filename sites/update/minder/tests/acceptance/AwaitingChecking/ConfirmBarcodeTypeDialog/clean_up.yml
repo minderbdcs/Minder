@@ -1,0 +1,2 @@
+OPTIONS:
+    - { GROUP_CODE: PO_SUBTYPE, CODE: GO|SN, DESCRIPTION: "GO orders require serial numbers" }

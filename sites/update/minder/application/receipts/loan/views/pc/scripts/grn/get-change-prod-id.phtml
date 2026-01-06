@@ -1,0 +1,145 @@
+<!-- flash messages -->
+<?php
+$messenger = $this->messenger();
+echo $messenger->all();
+?>
+<!-- flash messages -->
+
+<h2 title="<?php echo $this->changeProdIdSysScreenName;?>">Change Product Code</h2>
+
+<!-- search form -->
+<?php
+if (count($this->searchFields) > 0) {
+    echo $this->sysScreenSearchForm(array('name' => 'change_search_form'), $this->searchFields, $this->searchActions);
+}
+?>
+<!-- search form -->
+
+<!-- grn search results -->
+<?php
+$resultsForm = $this->getHelper('SysScreenSearchResult');
+$resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+?>
+
+<div id="CHANGE_CONTAINER">
+    <div style="display: none;" class="JSON"><?php echo json_encode(array('errors' => $this->errors));?></div>
+    <form id="change_results_form" name="change_results_form" action="<?php echo $this->url(); ?>" method="post">
+        <!-- tabs container start -->
+    <div id="change_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div class="ui-tabs-panel-header">
+            <div class="sys-screen-title" title="<?php echo $this->changeProdIdSysScreenName;?>">PO Lines<span class="modification_flag <?php echo $this->changeProdIdSelectionNamespace;?>"></span></div>
+            <div class="paginator-container">
+                <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalDetails == $this->selectedDetailsCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->changeProdIdSelectionNamespace));?>
+                <label for="results_per_page">View By:</label>
+                <?php echo $this->formSelect('show_by',
+                $this->navigation['show_by'],
+                array(),
+                array(5  => 5,
+                    10 => 10,
+                    15 => 15,
+                    20 => 20,
+                    30 => 30,
+                    40 => 40,
+                    50 => 50,
+                    100 => 100)) ?>
+                <label for="page">Page:</label>
+                <?php echo $this->formSelectStrict('pageselector',
+                $this->navigation['pageselector'],
+                array(),
+                $this->pages); ?>
+            </div>
+
+            <ul class="black-top-border" style="clear: both;">
+                <li style="display: inline;">Selected: <span id="change_selected" class="selected_count <?php echo $this->changeProdIdSelectionNamespace;?>"><?php echo $this->selectedDetailsCount;?></span></li>
+            </ul>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+        <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+        <?php echo $resultsForm->renderTabContent(
+            $tabId,
+            array(
+                'select_all_checked'    => (count($this->details) == count($this->selectedDetails)),
+                'selection_namespace'   => $this->changeProdIdSelectionNamespace,
+                'switch_selection_mode' => $this->selectMode,
+                'tab_content_class'     => 'withborder tablesorter change_list'
+            ),
+            $this->details,
+            $this->selectedDetails
+        );?>
+        <!-- totals info start -->
+        <table class="withborder" width="100%">
+            <tr>
+                <td>Total <span class="total_count <?php echo $this->changeProdIdSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            </tr>
+        </table>
+        <!-- totals info end -->
+
+                </div>
+            <?php }?>
+
+        <?php if (is_array($this->buttons)) { ?>
+        <div style="clear: both; padding-left: 10px;">
+            <?php echo $resultsForm->renderButtons($this->buttons); ?>
+
+            <script type="text/javascript">
+                <?php echo $resultsForm->renderButtonActions($this->buttons); ?>
+            </script>
+        </div>
+        <?php } ?>
+</div>
+<!-- tabs container end -->
+</form>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        initProductLabelDialog();
+
+        var jsonResponse = $.parseJSON($('#CHANGE_CONTAINER .JSON').html());
+        if (jsonResponse.errors && jsonResponse.errors.length > 0)
+            showErrors(jsonResponse.errors);
+
+        $('#change_tabs > ul').tabs();
+        $('#change_tabs #pageselector, #change_tabs #show_by').change(function(){
+            getChangeLines();
+        });
+        $('.change_list').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+        $('.row_selector.<?php echo $this->changeProdIdSelectionNamespace;?>, .select_all_rows.<?php echo $this->changeProdIdSelectionNamespace;?>, .select_complete.<?php echo $this->changeProdIdSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->changeProdIdSelectionModule, 'controller' => $this->changeProdIdSelectionController, 'action' => $this->changeProdIdSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#change_tabs',
+                'selectionNamespace'  : '<?php echo $this->changeProdIdSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->changeProdIdSelectionAction;?>',
+                'selectionController' : '<?php echo $this->changeProdIdSelectionController;?>'
+            },
+            {
+                'onSuccess': function(response) {
+                    if(response.warnings && response.warnings.length > 0)
+                        showWarnings(response.warnings);
+
+                    if(response.messages && response.messages.length > 0)
+                        showMessage(response.messages);
+                }
+            }
+        );
+
+//        $('#grn_line_tabs #issn_details').unbind('click.grn-line-search-results-form').bind('click.grn-line-search-results-form', issnDetailsOnClick);
+//        $('#grn_line_tabs #ssn_details').unbind('click.grn-line-search-results-form').bind('click.grn-line-search-results-form', ssnDetailsOnClick);
+    });
+
+    $('#CHANGE_SEARCH_FORM').submit(function(evt){
+        evt.preventDefault();
+
+        $('#CHANGE_LINES_CONTAINER .ui-tabs-container').block($('<?php echo $this->SysScreenWaitPrompt('Loading. Please wait...');?>'));
+        $('#CHANGE_LINES_CONTAINER').load(
+            '<?php echo $this->url(array('module' => 'receipts', 'controller' => 'grn', 'action' => 'get-change-prod-id'), null, true);?>',
+            $(evt.target).formToArray(),
+            function(){}
+        );
+    });
+</script>

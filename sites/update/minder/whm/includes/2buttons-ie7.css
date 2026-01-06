@@ -1,0 +1,61 @@
+<style type="text/css">
+.buttons, input.buttons{
+height: 4.2em;
+width: 7em;
+white-space: normal;
+padding: 0;
+margin: 1%;
+border-width: medium;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+/* font-size: 0.8em; */
+font-size: 1.2em;
+font-weight: bold;
+/* line-height: 0.96em ; */
+line-height: 1.4em ;
+text-align: center;
+color: black;
+border-color: blue black grey blue;
+border-width: 2px;
+background-color: yellow;
+-webkit-border-radius:5px;
+-o-border-radius:5px;
+border-radius:5px;
+}
+.menubuttons, input.menubuttons{
+height: 1.3em;
+width: 2.2em;
+white-space: normal;
+padding: 0;
+margin: 1%;
+border-width: medium;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+/* font-size: 0.8em; */
+font-size: 1.8em;
+font-weight: bold;
+/* line-height: 0.96em ; */
+line-height: 1.88em ;
+text-align: center;
+color: black;
+border-color: blue black grey blue;
+border-width: 2px;
+background-color: yellow;
+-webkit-border-radius:5px;
+-o-border-radius:5px;
+border-radius:5px;
+}
+#back, #Back, input.back{
+color: black;
+border-color: blue black grey blue;
+background-color: bisque;
+}
+#accept, #Accept, input.accept, #send, #Send, input.send{
+color: black;
+border-color: blue black grey blue;
+background-color: PaleGreen;
+}
+#getout,#logout, input.logout,#logoutdevice,#logoutall,#logoutuser{
+color: black;
+border-color: blue black grey blue;
+background-color: red;
+}
+</style>

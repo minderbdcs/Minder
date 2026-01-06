@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+        <title><?php echo $this->pageTitle; ?></title>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/jquery-1.3.2.min.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/jquery.dimensions.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ddaccordion.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.base.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.datepicker.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.tablesorter.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.tabs.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.dialog.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.resizable.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ui/ui.draggable.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.tooltip.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.tmpl.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.form.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.blockUI.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.disable.text.select.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/dragcols.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/autocomplete.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/minder.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/warehouse.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.json-2.2.min.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.scrollTo-min.js" type="text/javascript"></script> 
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.contextmenu.r2.packed.js" type="text/javascript"></script> 
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderNumberFormat.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderRowSelector.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderEditResults.js" type="text/javascript"></script> 
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderBarcodeInput.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderSearchResult.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderFilteredDD.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderReport.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderInvoiceReport.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderLabel.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ajaxfileupload.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/ping.js" type="text/javascript"></script>
+        <script src="<?php echo $this->baseUrl; ?>scripts/jquery.minderQueryLog.js" type="text/javascript"></script>
+        <?php
+        echo $this->queryLog($this->url(array('controller' => 'query-log', 'module' =>'services')));
+        ?>
+        <script type="text/javascript">
+$(document).ready(function() {
+    $.ajaxSetup({
+        async: true,
+        success: onAjaxSuccess,
+        stop: onAjaxStop,
+        complete: onAjaxStop,
+        error: onAjaxError,
+        beforeSend: onAjaxBeforeSend
+    });
+    $('#limit_company').change(function () {
+        var limitCompany = $('#limit_company').get(0).value;
+        $.getJSON('<?php echo $this->url(array('action' => 'limit', 'controller' => 'user', 'module' => 'default')); ?>', { company: limitCompany });
+        if ('function' == typeof limitChanged) {
+            limitChanged();
+        }
+    });
+
+    $('#limit_warehouse').change(function () {
+        var limitWarehouse = $('#limit_warehouse').get(0).value;
+        $.getJSON('<?php echo $this->url(array('action' => 'limit', 'controller' => 'user', 'module' => 'default')); ?>', { warehouse: limitWarehouse });
+        if ('function' == typeof limitChanged) {
+            limitChanged();
+        }
+    });
+    
+    $('#limit_printer').change(function () {
+        var limitPrinter = $('#limit_printer').get(0).value;
+        $.getJSON('<?php echo $this->url(array('action' => 'limit', 'controller' => 'user', 'module' => 'default')); ?>', { printer: limitPrinter });
+        if ('function' == typeof limitChanged) {
+            limitChanged();
+        }
+
+    });
+    
+    $('#dialog3').dialog({buttons: {Close: closeDialog},
+         width: '90ex',
+         height: '10em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+});
+
+var barcode;
+function globalSearch(e){
+
+	barcode = $('#barcode')[0].value.replace(/ /g,"");
+	
+	if(e.keyCode==13 && barcode!="") {
+	
+		$('#data_id_menu').children().each(function(){
+			$('#data_id_menu')[0].removeChild(this);
+		});
+		
+	
+		$('#globalSearchMessage')[0].textContent = '';	
+		
+		if (barcode.search(']C0\\[')!=-1) {
+		
+			$('#barcode')[0].value='';
+		
+			$.getJSON("/minder/user/loginajax/?barcode="+barcode, function(json) {
+				if(json.url!=undefined) {
+					location.href = json.url;
+				}
+				
+				if(json.error!=undefined) {
+					$('#globalSearchMessage')[0].textContent = json.error;
+				}
+			});
+			
+			return;
+		}
+		
+		if (location.href.search('/minder/otc')!=-1) {
+		
+			var event = new Object();
+			event.keyCode = 13;
+			
+			var el = new Object();
+			
+			
+			el.value = 	barcode;
+			el.id = 'field1';
+			
+			if ($('#returns_tab').css('display')=='none')
+			{
+				fieldproc_issues(event, el);
+			}
+			else
+			{
+				fieldproc_returns(event, el);
+			}
+
+			$('#barcode')[0].value = '';
+			$('#barcode')[0].focus();
+			
+			return;
+		}
+					
+			
+		$.getJSON("/minder/globalsearch/indexajax/?barcode="+barcode, function(json) {
+			if(json.error!=undefined) {
+				$('#globalSearchMessage')[0].textContent = json.error;
+				return;
+			}
+			if(json.url!=undefined) {
+				location.href = json.url;
+				return;
+			}
+			
+			if(json.menu!=undefined) {
+				
+				$('#data_id_menu').css('display', 'block'); 
+			
+				menu = json.menu;
+				
+				
+				count = menu.items;
+				id = menu.id;
+				
+				$('#data_id_menu').append("<option></option>");
+				for (i=0;i<count;i=i+1) 
+				{	
+					$('#data_id_menu').append("<option onClick=\"globalSearch_menuSelect(this);\" value=\""+menu.name[i]+"\">"+menu.name[i]+"</option>");
+				}
+				
+			} 
+			
+		});
+	} 
+	return;
+};
+ 
+
+function globalSearch_menuSelect(e){
+	$('#globalSearchMessage')[0].textContent = '';
+	$.getJSON("/minder/globalsearch/indexajax/?barcode=" + barcode + "&type=" + e.value, function(json) {
+			if(json.error!=undefined) {
+				$('#globalSearchMessage')[0].textContent = json.error;
+			}
+			if(json.url!=undefined) {
+				location.href = json.url;
+			}
+	});
+};
+
+    function closeDialog()
+    {
+        $('#dialog3').dialog("close");
+        return false;
+    }
+    function newPrompt()
+    {
+        $("#dialog3").dialog("open");
+        return false;
+    }
+        </script>
+        <?php $this->minderSchema();?>
+        <?php echo $this->headLink();?>
+    </head>
+    <body>
+        <div id="header">
+            <ul id="top-nav">
+<?php
+    $viewTransaction = '';
+    if ($this->minder->userId != null) {
+        $addPrompt = '';
+        if(isset($this->transactionStatusList)) {
+            foreach($this->transactionStatusList as $action => $statusList) {
+                foreach($statusList as $key => $value) {
+                    if($key == 'RESULT' && $value === false) {
+                          $addPrompt = 'onclick="newPrompt();"';
+                           break 2;
+                    }
+                }     
+            }
+        }
+    
+?>
+                <li>Welcome <?php echo $this->escape($this->minder->userId); ?></li>
+                <li>Connected to <?php echo $this->minderVariant('WAREHOUSE*Minder'); ?></li>
+                <li>WH:&nbsp;<?php echo $this->minder->whId ?></li>
+                <li>DEV:&nbsp;<?php echo $this->minder->deviceId ?></li>
+                <li><a href="<?php echo $this->url(array('controller' => 'user', 'action' => 'logout'), '', true); ?>" <?php echo $addPrompt; ?> >Logout</a></li>
+<?php
+    } else {
+?>
+                <li>Not logged in <?php echo $this->minderVariant('WAREHOUSE*Minder'); ?></li>
+                <li><a href="<?php echo $this->url(array('controller' => 'user', 'action' => 'login'), '', true); ?>">Login</a></li>
+<?php
+    }
+?>
+                <?php if($this->minder->userId != null) { ?>               
+                    <li><a href="<?php echo $this->url(array('controller' => 'index', 'action' => 'about'), '', true); ?>">About</a></li>
+                <?php } ?>
+            </ul>
+            <img src="<?php echo $this->baseUrl; ?>icons/MDR_30x29.jpg" id="minder-logo" />
+            
+            <span style="float: right; margin-top: 3px;">
+				<?php $globalInput = new Zend_Form_Element_Text('barcode');
+                $globalInput->setLabel('Input: ')
+                    ->setOptions(array('onkeypress' => "globalSearch(event);"))
+                    ->addDecorator('BarcodeUppercase')
+                    ->addPrefixPath('Minder_Form_Decorator', 'Minder/Form/Decorator', 'decorator');
+                echo $globalInput;
+                echo $this->autoloadScript();
+                ?>
+				<select id="data_id_menu" style="margin-top: 3px; margin-left: 36px; display: none;">
+
+				</select>
+				<span id="globalSearchMessage" style="margin-top: 3px; margin-left: 36px; color: red;">&nbsp;</span>
+			</span>
+            
+            <img height="40" src="<?php echo $this->url(array('action' => 'logo', 'controller' => 'user', 'module' => 'default'), null, true); ?>" id="logo" />
+            <?php echo $this->modulesShortcuts($this->topMenu); ?>
+        </div>
+
+        <div style="float: left">
+            <a href="#" onclick="showHideLeft('<?php echo $this->url(array('controller' => 'user', 'action' => 'ajax-left-pannel-state'), '', true); ?>');">X</a>
+        </div>
+        <?php
+            switch ($this->leftPannelState) {
+                case 'hide':
+                    $pannelStyle = 'display: none;';
+                    $pageStyle = 'margin-left: 10px;';
+                    break;
+                default:
+                    $pannelStyle = 'display: block;';
+                    $pageStyle = 'margin-left: 190px;';
+            }
+        ?>
+        <div id="left" style="<?php echo $pannelStyle?>">
+<?php echo $this->pageShortcuts($this->shortcuts, $this->tooltip, "/scripts/themes/ddaccordion/plus.gif", "/scripts/themes/ddaccordion/minus.gif"); ?>
+            <?php if ($this->minder->userId !== null && $this->renderLimits): ?>
+            <h2>Limit</h2>
+            <form>
+                <ul>
+<?php
+    $printers = array();
+    //	Feature #837
+//  foreach ($this->minder->getPrinterList() as $key => $val) {
+    foreach ($this->minder->getPrinterListLimited() as $key => $val) {
+        $printers[$key] = $val;
+    }
+?>
+                    <li>Company<br /><?php echo $this->companyLimitSelect('limit_company');?></li>
+                    <li>Warehouse<br /><?php echo $this->warehouseLimitSelect('limit_warehouse');?></li>
+                    <li>Printer<br /><?php echo $this->formSelect('limit_printer', $this->minder->limitPrinter, array(), $printers); ?></li>
+                </ul>
+            </form>
+<?php endif; ?>
+        </div>
+
+        <div id="page" style="<?php echo $pageStyle?>">
+<?php
+    if (!empty($this->flash)) {
+?>
+            <div id="flash"><?php if (is_array($this->flash)) {foreach ($this->flash as $value) {echo $this->escape($value)."<br />";} } else { echo $this->escape($this->flash);} ?></div>
+<?php
+    }
+    if (isset($this->flashMessenger)) {
+        if ($this->flashMessenger->hasMessages()) {
+?>
+            <div id="flash"><?php foreach ($this->flashMessenger->getMessages() as  $msg) {echo $msg.'<br>';}?></div>
+<?php
+        }
+    }
+?>
+<?php
+     $message = $params = '';
+     if(isset($statusList)) {
+         $code = $statusList['CODE'];
+         switch($code) {
+             case 'TRIL':
+                        $message = 'TRIL';
+                        $params  = '<b>Location InTo: </b>' . $statusList['WH_ID'] . $statusList['LOCN_ID']. ' <b>SSN: </b>' . $statusList['SSN_ID'];
+                        break;
+                        
+             case 'TRLI':
+                        $message = 'TRLI';
+                        $params  = '<b>FROM LOCATION: </b>' . $statusList['WH_ID'] . $statusList['LOCN_ID'] . '<b> INTO LOCATION: </b>' . $statusList['WH_ID2'] . $statusList['LOCN_ID2'] ;
+                        break;
+            
+         }
+     }      
+?>
+<div id="dialog3" class="flora" title="Warining" style="display: none;">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th style="text-align:center">
+                    Transaction <b><?php echo $message; ?></b> failed, please repeat transaction before exit to avoid data corruption.<br /> 
+                    Parameters to input: <?php echo $params; ?>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+

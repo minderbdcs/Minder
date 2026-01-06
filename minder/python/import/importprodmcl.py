@@ -1,0 +1,186 @@
+#!/usr/bin/env python2
+"""
+<title>
+importprodmcl.py, Version 28.08.06
+</title>
+<long>
+Inserts records into transactions table
+<br>
+Paramters: <tt> filename </tt>
+<br>
+This scans the file <tt>filename</tt> for data 
+and puts the text into the database
+<br>
+</long>
+"""
+import sys
+import string
+import fileinput
+import getpass, sys, time , os
+
+import datetime
+#import kinterbasdb
+#import mx
+import kinterbasdb;kinterbasdb.init(type_conv=200)
+
+#print "importfile filename logfilename "
+if len(sys.argv)>0:
+	print "import file ", sys.argv[1]
+else:
+	print "import file stdin"
+
+if len(sys.argv)>1:
+        print "log file ", sys.argv[2]
+        logfile = sys.argv[2]
+else:
+        print "log file stdout"
+        logfile = sys.__stdout__
+#
+#redirect stdout and stderr
+out = open(logfile,'a')
+sys.stdout = out
+sys.stderr = out
+
+
+if os.name == 'nt':
+        #dsn="d:/asset.rf/database/wh.v39.gdb",
+	con = kinterbasdb.connect(
+                dsn="127.0.0.1:d:/asset.rf/database/wh.v39.gdb",
+		user="sysdba",
+		password="masterkey")
+else:
+        #dsn="192.168.61.131:d:/asset.rf/database/wh.v39.gdb",
+	con = kinterbasdb.connect(
+		dsn="/data/asset.rf/wh.v39.gdb",
+		user="sysdba",
+		password="masterkey")
+
+print "connected to db"
+cur = con.cursor()
+#read std or 1st input parm
+for line in fileinput.input():
+	#tran_type = line[:4]
+	#tran_class = line[4:5] #1
+	#tran_date = line[5:13] #8
+	#tran_time = line[13:19] #6
+	#tran_item = line[19:49] #30
+	#tran_item = tran_item.strip()
+	#tran_locn = line[49:59] #10
+	#tran_locn = tran_locn.strip()
+	#tran_sublocn = line[59:69] #10
+	#tran_sublocn = tran_sublocn.strip()
+	#tran_ref = line[69:109] #40
+	#tran_ref = tran_ref.strip()
+	#tran_qty = line[109:119] #10
+	#tran_user = line[119:127] #8
+	#tran_user = tran_user.strip()
+	#tran_device = line[127:129] #2
+	#tran_source = line[129:138] #9
+	tran_date = line[:8] #8
+	tran_time = line[8:14] #6
+	tran_item = line[14:44] #30
+	tran_item = tran_item.strip()
+	tran_locn = line[44:54] #10
+	tran_locn = tran_locn.strip()
+	tran_type = line[54:58] #4
+	tran_class = line[58:59] #1
+	tran_sublocn = line[59:69] #10
+	tran_sublocn = tran_sublocn.strip()
+	tran_ref = line[69:109] #40
+	tran_ref = tran_ref.strip()
+	tran_qty = line[109:119] #10
+	tran_user = line[119:127] #8
+	tran_user = tran_user.strip()
+	tran_device = line[127:129] #2
+	tran_source = line[129:138] #9
+	print "trans type",tran_type,"class",tran_class,"date",tran_date
+	print "time",tran_time,"item",tran_item,"locn",tran_locn
+	print "sublocn",tran_sublocn,"ref",tran_ref,"qty",tran_qty
+	print "user",tran_user,"dev",tran_device,"source",tran_source
+	# Insert into Transactions
+	#mytime = mx.DateTime.now()
+	#mytime = mx.DateTime.Timestamp(int(tran_date[:4]),
+	#	int(tran_date[4:6]),
+	#	int(tran_date[6:8]),
+	#	int(tran_time[:2]),
+	#	int(tran_time[2:4]),
+	#	int(tran_time[4:6]))
+	mytime = datetime.datetime(int(tran_date[:4]),
+		int(tran_date[4:6]),
+		int(tran_date[6:8]),
+		int(tran_time[:2]),
+		int(tran_time[2:4]),
+		int(tran_time[4:6]))
+	cur.callproc("add_tran",(
+		tran_locn[:2],
+		tran_locn[2:], 
+		tran_item, 
+		tran_type,
+		tran_class,
+		mytime,
+		tran_ref,
+		int(tran_qty),
+		'F',
+		'',
+		'MASTER    ',
+		0,
+		tran_sublocn,
+		tran_source,
+		tran_user,
+		tran_device))
+	print "called proc to add record"
+        con.commit()
+	cur.execute("""select record_id from transactions 
+		where wh_id = ? and 
+		locn_id = ? and 
+		object = ? and 
+		trn_date = ? and 
+		trn_type = ? and 
+		trn_code = ? and 
+		device_id = ? and 
+		complete = 'F' """, (
+		tran_locn[:2],
+		tran_locn[2:], 
+		tran_item, 
+		mytime,
+		tran_type,
+		tran_class,
+		tran_device))   
+	tran_record = cur.fetchonemap()
+	if tran_record is None:
+		myrecord = None
+	else:
+		myrecord = tran_record['record_id']
+	#		
+	### process it
+	if myrecord is None:
+		print "No Transaction Found - Processed OK"
+		print "trans type",tran_type,"class",tran_class,"date",tran_date
+		print "time",tran_time,"item",tran_item,"locn",tran_locn
+		print "sublocn",tran_sublocn,"ref",tran_ref,"qty",tran_qty
+		print "user",tran_user,"dev",tran_device,"source",tran_source
+	else:
+		print "record_id is",myrecord
+              
+		cur.execute("""select error_text, complete from transactions 
+			where record_id = %d """ % myrecord)   
+		tran_record = cur.fetchonemap()
+		if tran_record['complete'] == 'F':
+	     		print "Failed to process ",tran_record['error_text']
+			print "record_id is ",str(myrecord)
+			#print "trans type",tran_type,"class",tran_class,"date",tran_date
+			#print "time",tran_time,"item",tran_item,"locn",tran_locn
+			#print "sublocn",tran_sublocn,"ref",tran_ref,"qty",tran_qty
+			#print "user",tran_user,"dev",tran_device,"source",tran_source
+
+        con.commit()
+
+con.close()
+
+print "end - closed database"
+#revert stdin stdout and stderr
+sys.stdout = sys.__stdout__
+sys.stderr = sys.__stderr__
+
+out.close()
+###

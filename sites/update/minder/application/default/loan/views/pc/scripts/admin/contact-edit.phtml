@@ -1,0 +1,127 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="" method="post">
+    <h2>EDIT : <?php echo $this->escape($this->personObj->items['PERSON_ID']); ?></h2>
+
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'ADD ADDRESS'); ?></li>
+    </ul>
+    <table class="summary" style="width:99%">
+        <tr>
+            <th>PERSON ID:</th>
+            <td><?php echo $this->formText('person_id', $this->personObj->items['PERSON_ID'], array()); ?></td>
+            <th>Contact First Name:</th>
+            <td><?php echo $this->formText('contact_first_name', $this->personObj->items['CONTACT_FIRST_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Company ID:</th>
+            <td><?php echo $this->formSelectStrict('company_id', $this->personObj->items['COMPANY_ID'], array(), $this->companyIdList);?></td>
+            <th>Contact Last Name:</th>
+            <td><?php echo $this->formText('contact_last_name', $this->personObj->items['CONTACT_LAST_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Contact Type:</th>
+            <td><?php echo $this->formSelectStrict('person_type', $this->personObj->items['PERSON_TYPE'], array(), $this->contactTypeList);?></td>
+            <th>Contact Address 1:</th>
+            <td><?php echo $this->formText('contact_address1', $this->personObj->items['CONTACT_ADDRESS1'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Title:</th>
+            <td><?php echo $this->formText('title', $this->personObj->items['TITLE'], array()); ?></td>
+            <th>Contact Address 2:</th>
+            <td><?php echo $this->formText('contact_address2', $this->personObj->items['CONTACT_ADDRESS2'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>First Name:</th>
+            <td><?php echo $this->formText('first_name', $this->personObj->items['FIRST_NAME'], array()); ?></td>
+            <th>Contact City:</th>
+            <td><?php echo $this->formText('contact_city', $this->personObj->items['CONTACT_CITY'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Last Name:</th>
+            <td><?php echo $this->formText('last_name', $this->personObj->items['LAST_NAME'], array()); ?></td>
+            <th>Contact State:</th>
+            <td><?php echo $this->formText('contact_state', $this->personObj->items['CONTACT_STATE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Contact City:</th>
+            <td><?php echo $this->formText('contact_city', $this->personObj->items['CONTACT_CITY'], array()); ?></td>
+            <th>Contact Post Code:</th>
+            <td><?php echo $this->formText('contact_post_code', $this->personObj->items['CONTACT_POST_CODE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Contact State:</th>
+            <td><?php echo $this->formText('contact_state', $this->personObj->items['CONTACT_STATE'], array()); ?></td>
+            <th>Contact Phone No:</th>
+            <td><?php echo $this->formText('contact_phone', $this->personObj->items['CONTACT_PHONE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Post Code:</th>
+            <td><?php echo $this->formText('post_code', $this->personObj->items['POST_CODE'], array()); ?></td>
+            <th>Contact Country:</th>
+            <td><?php echo $this->formText('contact_country', $this->personObj->items['CONTACT_COUNTRY'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Country:</th>
+            <td><?php echo $this->formText('country', $this->personObj->items['COUNTRY'], array()); ?></td>
+            <th>2nd Contact First Name:</th>
+            <td><?php echo $this->formText('second_contact_first_name', $this->personObj->items['SECOND_CONTACT_FIRST_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Fax No</th>
+            <td><?php echo $this->formText('fax_no', $this->personObj->items['FAX_NO'], array()); ?></td>
+            <th>2nd Contact Last Name:</th>
+            <td><?php echo $this->formText('second_contact_last_name', $this->personObj->items['SECOND_CONTACT_LAST_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Telephone No:</th>
+            <td><?php echo $this->formText('phone_no', $this->personObj->items['PHONE_NO'], array()); ?></td>
+            <th>2nd Phone No:</th>
+            <td><?php echo $this->formText('second_phone_no', $this->personObj->items['SECOND_PHONE_NO'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Mobile No:</th>
+            <td><?php echo $this->formText('mobile_no', $this->personObj->items['MOBILE_NO'], array()); ?></td>
+            <th>2nd Mobile No:</th>
+            <td><?php echo $this->formText('second_mobile_no', $this->personObj->items['SECOND_MOBILE_NO'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Email Address:</th>
+            <td><?php echo $this->formText('email', $this->personObj->items['EMAIL'], array()); ?></td>
+            <th>2nd Fax No:</th>
+            <td><?php echo $this->formText('second_fax_no', $this->personObj->items['SECOND_FAX_NO'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Web Site:</th>
+            <td><?php echo $this->formText('web_site', $this->personObj->items['WEB_SITE'], array()); ?></td>
+            <th>2nd Email:</th>
+            <td><?php echo $this->formText('second_email', $this->personObj->items['SECOND_EMAIL'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Contact Status:</th>
+            <td><?php echo $this->formSelectStrict('status',
+                                                   $this->personObj->items['STATUS'] != null ? $this->personObj->items['STATUS']: 'CU',
+                                                   array(),
+                                                   $this->contactStatusList);?></td>
+            <th>Created By:</th>
+            <td><?php echo $this->formNote('create_by', $this->personObj->items['CREATE_BY'], array()); ?></td>
+        </tr>
+        <tr>
+            <th></th>
+            <td></td>
+            <th>Created Date:</th>
+            <td><?php echo $this->formNote('create_date', $this->personObj->items['CREATE_DATE'], array()); ?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'ADD ADDRESS'); ?></li>
+    </ul>
+</form>
+<script type="text/javascript">
+$(document).ready(function(){
+});
+</script>
+<?php echo $this->render('footer.phtml');

@@ -1,0 +1,58 @@
+<?php
+$groups = array();
+foreach ($this->headers as $key => $val) {
+    if (substr($val, 0, 5) == 'GROUP' && substr($val, -2) == '__') {
+        $groups[] = $val;
+    }
+}
+sort($groups);
+
+$columns = $indexes = array();
+foreach ($this->data as $key => $row) {
+    $index = '';
+    foreach($groups as $val) {
+        $index .= $row[$val];
+    }
+    $keysIndexed[$index][]= $key;
+    $indexes[] = $index;
+}
+$indexes = array_unique($indexes);
+sort($indexes);
+
+/**
+ * Make Excel structure.
+ */
+// Create format for title, header and footer.
+$format = $this->xls->addFormat();
+$format->setBold();
+
+$worksheet = $this->xls->addWorksheet('test');
+
+// Append title.
+$worksheet->write(0, 0, $this->escape(strip_tags($this->reportHeader)), $format);
+$cols = count($this->headers);
+$worksheet->setMerge(0, 0, 0, $cols);
+
+// Append header.
+for ($i = 0; $i < count($this->headers); $i++) {
+    $worksheet->write(1, $i, $this->headers[$i], $format);
+}
+
+// Append data.
+$i = 2;
+foreach ($indexes as $index) {
+    foreach ($keysIndexed[$index] as $key) {
+        $j = 0;
+        foreach ($this->data[$key] as $column) {
+            $worksheet->writeString($i, $j++, $column);
+        }
+        $i++;
+    }
+}
+
+// Append footer.
+$worksheet->write($i, 0, $this->escape(strip_tags($this->reportFooter)), $format);
+$worksheet->setMerge($i, 0, $i, $cols);
+
+$this->xls->close();
+exit;

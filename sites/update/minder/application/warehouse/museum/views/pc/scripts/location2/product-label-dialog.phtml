@@ -1,0 +1,135 @@
+<!-- product label dialog -->
+<div style="display: none;" id="product_label_dialog" title="Print Product Labels" class="flora">
+    <form name="product_label_form" id='product_label_form' action="" method="POST">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td colspan="2">
+                    <input type="radio" name="product_label_type" value="PRODUCT_LABEL" checked="checked" /> Item Barcode &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="product_label_type" value="PRODUCT_INNER" /> Inner Pack &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="product_label_type" value="PRODUCT_OUTER" /> Outer Pack
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <div class="disabled" style="padding: 0 10px; text-align: center; border: blue 1px solid;">Product Id: <span class="PROD_ID"><?php echo ((isset($this->firstSelectedLine['PROD_ID'])) ? $this->firstSelectedLine['PROD_ID'] : '');?></span></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <div class="disabled" style="padding: 0 10px; text-align: center; border: blue 1px solid;"><span class="PROD_DESCRIPTION"></span><?php echo ((isset($this->firstSelectedLine['SHORT_DESC'])) ? $this->firstSelectedLine['SHORT_DESC'] : '');?></div>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <td>Qty of Labels</td>
+                            <td><input style="width: 40px;" type="text" name="first_label_qty" value="1" /></td>
+                            <td>Total Printed on Label</td>
+                            <td><input style="width: 40px;" type="text" name="first_label_total" value="1" /></td>
+                        </tr>
+                        <tr>
+                            <td>Qty of Labels</td>
+                            <td><input style="width: 40px;" type="text" name="second_label_qty" value="0" /></td>
+                            <td>Total Printed on Label</td>
+                            <td><input style="width: 40px;" type="text" name="second_label_total" value="0" /></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td align="center">
+                    <button name="PRINT" class="green-button">PRINT</button>
+                </td>
+                <td align="center">
+                    <button name="CANCEL" class="yellow-button">CANCEL</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- product label dialog -->
+
+<script type="text/javascript ">
+
+    $(document).ready(function() {
+        initProductLabelDialog();
+    });
+
+    function initProductLabelDialog() {
+        $('#product_label_dialog').dialog(
+            {
+                autoOpen  : false,
+                width     : 500,
+                height    : 255,
+                resizable : false
+            }
+        ).unbind('dialogopen.product-details-search-results-form').bind('dialogopen.product-details-search-results-form', function(event, ui) {
+            $(this).show();
+            $(this).find('input[name=qty1]').focus();
+        });
+
+        $('#product_label_dialog button[name=CANCEL]').unbind('click.product-details-search-results-form').bind('click.product-details-search-results-form', function(evt){
+            evt.preventDefault();
+            $('#product_label_dialog').dialog('close');
+        });
+
+        $('#product_label_dialog button[name=PRINT]').unbind('click.product-details-search-results-form').bind('click.product-details-search-results-form', productLabelDialogPrintOnClick);
+    }
+
+    function destroyProductLabelDialog() {
+        $('#product_label_dialog').dialog('destroy').remove();
+    }
+
+    function productLabelDialogUpdateProdIdAndDescription(prodId, description) {
+        $('#product_label_dialog .PROD_ID').html(prodId);
+        $('#product_label_dialog .PROD_DESCRIPTION').html(description);
+    }
+
+    function productLabelDialogGetProdId() {
+        return $('#product_label_dialog .PROD_ID').html();
+    }
+
+    function productLabelDialogPrintOnClick(evt) {
+        evt.preventDefault();
+
+        var dataToSubmit = {
+            'selection_namespace'  : '<?php echo $this->issnNamespace?>'
+        };
+        $.map($('#product_label_form').serializeArray(), function(elementOfArray, indexInArray){
+            dataToSubmit[elementOfArray.name] = elementOfArray.value;
+            return null;
+        });
+
+        if (dataToSubmit.first_label_qty > 100) {
+            if (!confirm('You try to print ' + dataToSubmit.first_label_qty + ' labels. Are you sure?'))
+                return;
+        }
+
+        if (dataToSubmit.second_label_qty > 100) {
+            if (!confirm('You try to print ' + dataToSubmit.second_label_qty + ' labels. Are you sure?'))
+                return;
+        }
+
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'print-product-label'));?>',
+            dataToSubmit,
+            function(response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                }
+
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+            }
+        );
+    }
+</script>

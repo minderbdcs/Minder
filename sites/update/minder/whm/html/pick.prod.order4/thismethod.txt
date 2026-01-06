@@ -1,0 +1,3 @@
+started from pick.order.order3
+allow issn replacement by any issn for the ssn's ssn_id in the pick item
+

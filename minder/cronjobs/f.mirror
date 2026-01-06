@@ -1,0 +1,25 @@
+#
+# on saturday on mid evening do a level 0 full backup
+# done
+# on other days do a daily level 1 backup in the mid evening
+# done
+# on saturday on late evening do a level 1 daily backup
+# done
+# in hourly
+#     if hour < mid evening = 11 or hour > late  = 17
+#        do a level 2 hourly backup
+# 
+# now in fullbackup.sh copy the created file to minderdb in /backup/mirror
+# also in dailybackup.sh
+#also in hourlybackup.sh but remove hour file the file name
+
+#at the end of the copy to minderdr send a flag file to minderdr so that cmdr can do the changes to the db
+#so will have the .0 file from saturday
+#                 .1 file from the last day (or saturday night) daily changes since saturday mid evening
+#                 .2 file of changes since .1 file
+#so must do a db file delete and create from the 3 files.
+#
+# when the .0 file is copied delete the existing .1 and .2 files
+#          .1                                    .2 file. 
+# what about the .1 file not exists
+#                .2

@@ -1,0 +1,152 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'edit-mapping'))?>" method="post" enctype="multipart/form-data">
+    <?php echo $this->formHidden('record_id', $this->data['RECORD_ID'], array()); ?>
+    <h1>EDIT RECORD: <?php echo $this->escape($this->data['RECORD_ID']); ?></h1>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return check();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', null)?></li>
+    </ul>
+        <table class="summary"style="width:99%">
+        <tr>
+            <th>MAP TYPE:</th>
+            <td><?php echo $this->formText('map_type', $this->data['MAP_TYPE'], array('class' => 'mandatory')); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMPORT_FILENAME:</th>
+            <td><?php echo $this->formText('map_import_filename', $this->data['MAP_IMPORT_FILENAME'], array('class' => 'mandatory')); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMPORT_SHEET:</th>
+            <td><?php echo $this->formText('map_import_sheet', $this->data['MAP_IMPORT_SHEET'], array('class' => 'mandatory')); ?></td>
+        </tr>
+         <tr>
+            <th>MAP_IMPORT_COL:</th>
+            <td><?php echo $this->formText('map_import_col', $this->data['MAP_IMPORT_COL'], array('class' => 'mandatory')); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_TABLE:</th>
+            <td><?php echo $this->formText('map_ims_table', $this->data['MAP_IMS_TABLE'], array('class' => 'mandatory')); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_FIELDNAME:</th>
+            <td><?php echo $this->formText('map_ims_field_name', $this->data['MAP_IMS_FIELDNAME'], array('class' => 'mandatory')); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_FIELDTYPE:</th>
+            <td>
+                <?php echo $this->formText('map_ims_field_type', $this->data['MAP_IMS_FIELDTYPE'], array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_FORMAT:</th>
+            <td><?php echo $this->formText('map_ims_format', $this->data['MAP_IMS_FORMAT'], array('class' => 'mandatory')); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_SUFFIX:</th>
+            <td><?php echo $this->formText('map_ims_suffix', $this->data['MAP_IMS_SUFFIX'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_PREFIX:</th>
+            <td><?php echo $this->formText('map_ims_prefix', $this->data['MAP_IMS_PREFIX'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_FIND:</th>
+            <td><?php echo $this->formText('map_ims_find', $this->data['MAP_IMS_FIND'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_REPLACE:</th>
+            <td><?php echo $this->formText('map_ims_replace', $this->data['MAP_IMS_REPLACE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>CREATED_BY:</th>
+            <td><?php echo $this->formText('created_by', $this->data['CREATED_BY'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>CREATED_DATE:</th>
+            <td><?php echo $this->formText('create_date', $this->data['CREATED_DATE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>MAP_IMS_DEFAULT:</th>
+            <td><?php echo $this->formText('map_ims_default', $this->data['MAP_IMS_DEFAULT'], array()); ?></td>
+        </tr>
+      </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return check();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', null)?></li>
+    </ul>
+</form>
+<script type="text/javascript">
+<!--
+
+$().ready(function(){
+    
+    $('#create_date').datepicker({dateFormat: 'yy-mm-dd'});
+
+})
+
+function check(){
+    
+    
+    if($('#map_type')[0].value == '') {
+        $('#map_type').addClass('mandatory');
+        $('#map_type').focus();
+        return false;    
+    } else {
+         $('#map_type').removeClass('mandatory'); 
+    }
+    
+    if($('#map_import_filename')[0].value == '') {
+        $('#map_import_filename').addClass('mandatory');
+        $('#map_import_filename').focus();
+        return false;    
+    } else {
+         $('#map_import_filename').removeClass('mandatory'); 
+    }
+    
+    if($('#map_import_sheet')[0].value == '') {
+        $('#map_import_sheet').addClass('mandatory');
+        $('#map_import_sheet').focus();
+        return false;    
+    } else {
+         $('#map_import_sheet').removeClass('mandatory'); 
+    }
+    
+    if($('#map_import_col')[0].value == '') {
+        $('#map_import_col').addClass('mandatory');
+        $('#map_import_col').focus();
+        return false;    
+    } else {
+         $('#map_import_col').removeClass('mandatory'); 
+    }
+    
+    if($('#map_ims_table')[0].value == '') {
+        $('#map_ims_table').addClass('mandatory');
+        $('#map_ims_table').focus();
+        return false;    
+    } else {
+         $('#map_ims_table').removeClass('mandatory'); 
+    }
+    
+    if($('#map_ims_fieldname')[0].value == '') {
+        $('#map_ims_fieldname').addClass('mandatory');
+        $('#map_ims_fieldname').focus();
+        return false;    
+    } else {
+         $('#map_ims_fieldname').removeClass('mandatory'); 
+    }
+    
+    if($('#map_ims_format')[0].value == '') {
+        $('#map_ims_format').addClass('mandatory');
+        $('#map_ims_format').focus();
+        return false;    
+    } else {
+         $('#map_ims_format').removeClass('mandatory'); 
+    }
+    
+    $('#prompt_add').submit();
+    
+}
+ 
+-->
+</script>
+<?php echo $this->render('footer.phtml');

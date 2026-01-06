@@ -1,0 +1,150 @@
+<?php
+    $totalSelected = ($this->total > 0 && $this->total == $this->totalSelect);
+?>
+
+<h1>LOANED TO:<?php echo $this->locn_name; ?></h1>
+   <div style="position: relative; left:10px;">
+        <b>Selected:</b> <span  id="rows_selected" style="font-weight: bold;"><?php echo $this->totalSelect; ?></span>
+        <label for="results_per_page">View By:</label>
+        <?php echo $this->formSelect('show_by_loans',
+                                    $this->loans_show_by,
+                                    array('onchange' => 'pageParams()'),
+                                    array(5  => 5,
+                                          10 => 10,
+                                          15 => 15,
+                                          20 => 20,
+                                          30 => 30,
+                                          40 => 40,
+                                          50 => 50,
+                                          100 => 100)) ?>
+        <label for="page">Page:</label>
+        <?php echo $this->formSelect('pageselector_loans',
+                                           $this->loans_pageselected,
+                                           array('onchange' => 'pageParams();'),
+                                           $this->loans_pages); ?>
+    </div>
+<div style="width: 655px; height: 250px; overflow: scroll;">
+    <table id="lines_loans" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_rows', null, array('checked' => $totalSelected, 'onclick' => 'select_all_loans_rows(this)')); ?>
+            </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+        
+<?php   foreach ($this->data as $history) {  ?>
+            <tr id="<?php echo $history['ROW_ID']; ?>">
+                <th><?php  
+                            if(in_array($history['ROW_ID'], $this->conditions)) {
+                                echo $this->formCheckbox($history['ROW_ID'], $history['ROW_ID'], array('checked' => 'true', 'onclick' => 'selectRow(this)')) . '</th>';
+                            } else {
+                                echo $this->formCheckbox($history['ROW_ID'], $history['ROW_ID'], array('onclick' => 'selectRow(this)')) . '</th>';
+                            } 
+                    
+                           $tooltip = 'No description'; 
+                           foreach ($this->headers as $key => $val) { ?>
+                           
+                                <td><?php echo $this->escape($history[$key]) ?></td>
+                                
+                     <?php } ?>
+        
+            </tr>
+        <?php } ?>
+        	<tr class="even" style="display: none;"><td><input type="checkbox" name =""></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>	 	        
+        </tbody>
+    </table>
+</div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter_issues' style="display: inline;">
+                <div id='num_rec_issues'>
+                    Total records <?php echo ($this->total) ? $this->total : '0';?>.
+                    Show from <?php echo ($this->shownFrom) ? $this->shownFrom : '0';?>
+                    to <span id="issues_count" class="float: right;"><?php echo ($this->shownTill) ? $this->shownTill : '0';?></span>
+                </div>
+            </li>
+    </ul>
+    <br>
+    <form action="/minder/otc/loans-export">
+    <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+        <li>
+            <input type="submit" class="order-button" name="report" value="REPORT: CSV"/>
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="report" value="REPORT: XLS"/>
+        </li>
+        <li>
+            <input type="button" class="order-button" name="report" value="CANCEL" onclick="cancelLoaned(); return false;"/>
+        </li>
+    </ul>
+    </form>
+<script type="text/javascript">
+    function cancelLoaned() {
+        $("#list_loans_dialog").dialog("close");
+    }
+
+    function updateSelectAllRowsCheckbox(data) {
+        if (data.totalRows > 0 && data.selected == data.totalRows)
+            $('#lines_loans [name="select_all_rows"]').attr('checked', true);
+        else
+            $('#lines_loans [name="select_all_rows"]').removeAttr('checked');
+    }
+
+	function select_all_loans_rows(node){
+        var selected = $(node).attr('checked');
+
+		$.getJSON('/minder/otc/list-loans-mark-ajax',
+			{
+                'id': 'all',
+                'selected': selected
+            },
+			function (data) {
+				$('#rows_selected').text(data.selected);
+                updateSelectAllRowsCheckbox(data);
+		    }
+        );
+		
+		if(selected) {
+			$('#lines_loans input[type=checkbox]').attr('checked', 'true');
+		} else {
+			$('#lines_loans input[type=checkbox]').removeAttr('checked');
+		}
+	}
+	
+    function  selectRow(node){
+        var selected = $(node).attr('checked');
+        var id = $(node).attr('id');
+        $.getJSON(
+            '/minder/otc/list-loans-mark-ajax',
+            {
+                'id': id,
+                'selected': selected
+            },
+            function (data) {
+                $('#rows_selected').text(data.selected);
+                updateSelectAllRowsCheckbox(data);
+            }
+        );
+    }
+	
+	function pageParams() {
+		var perPage = $("#show_by_loans :selected").val();
+		var page    = $("#pageselector_loans :selected").val();
+		$.getJSON('/minder/otc/list-loans-mark-ajax',
+		         {
+                     perpage: perPage,
+                     page:    page
+                 },
+		         function (data) {
+			         $("#list_loans_dialog").load("/minder/otc/list-loans-ajax");
+		         }
+        );
+	}
+	
+</script>

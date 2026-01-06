@@ -1,0 +1,83 @@
+<div id="import_audit_dialog" class="flora otc-import_audit_dialog" title="Import Audit File" style="display: none;"
+     xmlns="http://www.w3.org/1999/html">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <table class="summary" style="width:99%">
+            <tr>
+                <td>
+                    Select file:
+                </td>
+                <td>
+                    <?php echo $this->formFile('auditFile', '', array()); ?>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var
+            $importAuditDialog = $('#import_audit_dialog');
+
+        // dialog add borrower
+        $importAuditDialog.dialog({
+            buttons: {SAVE: importAuditFile, HTML:true, CANCEL: closeImportAuditDialog},
+            width: '600px',
+            height: '230px',
+            autoOpen: false,
+            position: [0,65],
+            buttonStyle: 'otc-dialog-button',
+            insertHtml:  ''
+        }).bind('dialogclose', function(event, ui) {
+            $('#barcode').focus();
+            $importAuditDialog.removeAttr('active');
+        }).bind('dialogopen', function(event, ui) {
+            $importAuditDialog.attr('active', true);
+
+            $(this).show();
+        });
+
+    });
+
+    function openAuditDialog(){
+        $("#import_audit_dialog").dialog("open");
+        return false;
+    }
+
+    function closeImportAuditDialog(){
+        $('#import_audit_dialog').dialog("close");
+        return false;
+    }
+
+    function isAddImportAuditDialogActive() {
+        return !!$("#import_audit_dialog").attr('active');
+    }
+
+    function addImportAuditFileCompletedListener(namespace, callback) {
+        var fullName = 'import-audit-file-completed.' + namespace;
+        $("#import_audit_dialog").unbind(fullName).bind(fullName, callback);
+    }
+
+    function notifyImportAuditFileCompleted(importResult) {
+        var evt = $.Event('import-audit-file-completed');
+        evt.importResult = importResult;
+        $("#import_audit_dialog").trigger(evt);
+    }
+
+    function importAuditFile(){
+        $.ajaxFileUpload({
+            url:'<?php echo $this->url(array('action' => 'import-audit-file')); ?>',
+            secureuri:false,
+            fileElementId:'auditFile',
+            dataType: 'json',
+            success: function (importResults)
+            {
+                notifyImportAuditFileCompleted(importResults);
+            },
+            error: function (data, status, e) {
+                showErrors([e]);
+            }
+        });
+        closeImportAuditDialog();
+    }
+</script>

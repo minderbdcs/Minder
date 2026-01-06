@@ -1,0 +1,1 @@
+<span>Total <span title="{{= $item.data.getTitle()}}">{{= $item.data.getValue()}}</span> records.</span>

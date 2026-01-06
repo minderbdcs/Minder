@@ -1,0 +1,124 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <h1>ISSN: <?php echo $this->escape($this->issnObj->grnNo); ?></h1>
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="return"></li>
+    </ul>
+        <table class="summary">
+        <tr>
+            <th>GRN Type</th>
+            <td><?php echo $this->escape($this->issnObj->grnType);?></td>
+            <th>Pallet Owner</th>
+            <td><?php echo $this->escape($this->issnObj->palletsYn);?></td>
+        </tr>
+        <tr>
+            <th>Order #</th>
+            <td><?php echo $this->escape($this->issnObj->orderNo);?></td>
+            <th>Pallet Qty</th>
+            <td><?php echo $this->escape($this->issnObj->grnPalletQty);?></td>
+        </tr>
+        <tr>
+            <th>Order Line #</th>
+            <td><?php echo $this->escape($this->issnObj->orderLineNo);?></td>
+            <th>Hire Crate Owner</th>
+            <td><?php echo $this->escape($this->issnObj->packCrateOwner);?></td>
+        </tr>
+        <tr>
+            <th>Carrier</th>
+            <td><?php echo $this->escape($this->issnObj->carrier);?></td>
+            <th>Hire Crate Type</th>
+            <td><?php echo $this->escape($this->issnObj->packCrateType);?></td>
+        </tr>
+        <tr>
+            <th>Supplier ID</th>
+            <td><?php echo $this->escape($this->issnObj->returnId);?></td>
+            <th>Hire Crate Qty</th>
+            <td><?php echo $this->escape($this->issnObj->packCrateQty);?></td>
+        </tr>
+        <tr>
+            <th>GRN Date</th>
+            <td><?php echo $this->escape($this->issnObj->grnDate);?></td>
+            <th>Last Line #</th>
+            <td><?php echo $this->escape($this->issnObj->lastLineNo);?></td>
+        </tr>
+        <tr>
+            <th>AWB Consignment #</th>
+            <td><?php echo $this->escape($this->issnObj->awbConsignmentNo);?></td>
+            <th>Last Pallet #</th>
+            <td><?php echo $this->escape($this->issnObj->lastPalletNo);?></td>
+        </tr>
+        <tr>
+            <th>Total Connote Packs</th>
+            <td><?php echo $this->escape($this->issnObj->totalQtyPacks);?></td>
+            <th>User ID</th>
+            <td><?php echo $this->escape($this->issnObj->userId);?></td>
+        </tr>
+        <tr>
+            <th>Shipped Date</th>
+            <td><?php echo $this->escape($this->issnObj->shippedDate);?></td>
+            <th>Device ID</th>
+            <td><?php echo $this->escape($this->issnObj->deviceId);?></td>
+        </tr>
+        <tr>
+            <th>Owner ID</th>
+            <td><?php echo $this->escape($this->issnObj->ownerId);?></td>
+            <th>GRN Printed</th>
+            <td><?php echo $this->escape($this->issnObj->grnPrinted);?></td>
+        </tr>
+        <tr>
+            <th>Shipping Container #</th>
+            <td><?php echo $this->escape($this->issnObj->containerNo);?></td>
+            <th>Last Update</th>
+            <td><?php echo $this->escape($this->issnObj->lastUpdateDate);?></td>
+        </tr>
+        <tr>
+            <th>Container Type</th>
+            <td><?php echo $this->escape($this->issnObj->shipContainerType);?></td>
+            <th></th>
+            <td></td>
+        </tr>
+        <tr>
+            <th>Receipt Flag</th>
+            <td><?php echo $this->escape($this->issnObj->receiptFlag);?></td>
+            <th></th>
+            <td></td>
+        </tr>
+        <tr>
+            <th>Comments</th>
+            <td><?php echo $this->escape($this->issnObj->comments);?></td>
+            <th></th>
+            <td></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="return"></li>
+<!--        <li><button name="action" type="submit" value="edit">Edit</button></li>
+        <li><button name="action" type="submit" value="return">Return to GRN List</button></li>-->
+    </ul>
+    <div>
+      <input type='hidden' name='show_by' id='show_by' value='<?php echo $this->showBy; ?>'/>
+      <input type='hidden' name='start_item' id='start_item' value='<?php echo $this->startItem; ?>'/>
+      <input type='hidden' name='grn_no' id='grn_no' value='<?php echo $this->grnNo; ?>'/>
+    </div>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function ()
+{
+    $.ajaxSetup({async: false,
+                 complete: onAjaxSuccess,
+                 error: onAjaxError,
+                 beforeSend: onAjaxBeforeSend});
+    $("#limit_company").get(0).disabled = true;
+    $("#limit_warehouse").get(0).disabled = true;
+});
+function goEdit()
+{
+    frmSubmit();
+}
+function goReturn()
+{
+    frmSubmit();
+}
+</script>
+<?php echo $this->render('footer.phtml');

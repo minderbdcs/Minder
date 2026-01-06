@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * Make Excel structure.
+ */
+// Create format for title, header and footer.
+$format = $this->xls->addFormat();
+$format->setBold();
+
+$worksheet = $this->xls->addWorksheet('test');
+
+// Append title.
+$cols = count($this->headers);
+$worksheet->setMerge(0, 0, 0, $cols);
+
+// Append header.
+$i = 0;
+foreach ($this->headers as $value) {
+    $worksheet->write(1, $i, $value, $format);
+    $i++;
+}
+
+// Append data.
+$i = 2;
+    foreach ($this->data as $row) {
+        $j = 0;
+        foreach ($this->headers as $key => $val) {
+            $worksheet->writeString($i, $j++, $row[$key]);
+        }
+        $i++;
+    }
+
+// Append footer.
+$worksheet->setMerge($i, 0, $i, $cols);
+
+$this->xls->close();
+exit;

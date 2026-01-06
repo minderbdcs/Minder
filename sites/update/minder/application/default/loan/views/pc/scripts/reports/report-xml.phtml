@@ -1,0 +1,55 @@
+<?php
+$groups = array();
+foreach ($this->headers as $key => $val) {
+    if (substr($val, 0, 5) == 'GROUP' && substr($val, -2) == '__') {
+        $groups[] = $val;
+    }
+}
+sort($groups);
+
+$columns = array();
+foreach ($this->data as $key => $row) {
+    $index = '';
+    foreach($groups as $val) {
+        $index .= $row[$val];
+    }
+    $keysIndexed[$index][]= $key;
+    $indexes[] = $index;
+}
+$indexes = array_unique($indexes);
+sort($indexes);
+
+/**
+ * Make DOM.
+ */
+$dom = new DOMDocument('1.0', 'iso-8859-1');
+$root = $dom->createElement('root');
+$dom->appendChild($root);
+
+// Append title.
+$root->appendChild($dom->createElement('title', $this->escape(strip_tags($this->reportHeader))));
+
+// Append header.
+$header = $dom->createElement('header');
+foreach ($this->headers as $column) {
+    $header->appendChild($dom->createElement('cell', $this->escape($column)));
+}
+$root->appendChild($header);
+
+// Append data.
+foreach ($indexes as $index) {
+    foreach ($keysIndexed[$index] as $key) {
+        $domRow = $dom->createElement('row');
+        foreach ($this->data[$key] as $column) {
+            $domRow->appendChild($dom->createElement('cell', $this->escape($column)));
+        }
+        $root->appendChild($domRow);
+    }
+}
+
+// Append footer.
+$root->appendChild($dom->createElement('footer', $this->escape(strip_tags($this->reportFooter))));
+
+// Output result.
+$dom->formatOutput = true;
+echo $dom->saveXML();

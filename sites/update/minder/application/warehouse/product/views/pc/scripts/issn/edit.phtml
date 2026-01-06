@@ -1,0 +1,223 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<form name="main" id="main" action="<?php echo $this->url(array('module'     => 'warehouse',
+                                          'controller' => 'issn',
+                                          'action'     => 'edit'))?>" method="post">
+    <h1>EDIT ISSN: <?php echo $this->escape($this->issnObj->id); ?></h1>
+  <?php $this->formHidden('edt_issn_ssn_id', $this->issnObj->id); ?>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return frmSubmit();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', array('onclick' => 'return frmSubmit();'))?></li>
+    </ul>
+        <table class="summary"style="width:99%">
+        <tr>
+            <th>ISSN Status</th>
+            <td><?php echo $this->formSelect('edt_issn_issn_status', $this->issnObj->items['ISSN_STATUS'], array(), $this->issnStatusList);?></td>
+            <th>Last Updated</th>
+            <td><?php echo $this->formNote('edt_issn_last_update_date', $this->issnObj->items['LAST_UPDATE_DATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Product ID</th>
+            <td><?php echo $this->formSelect('edt_issn_prod_id', $this->issnObj->items['PROD_ID'], array(), $this->productList); ?></td>
+            <th>Prev. Product ID</th>
+            <td><?php echo $this->formNote('edt_issn_prev_prod_id', $this->issnObj->items['PREV_PROD_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Warehouse ID</th>
+            <td><?php echo $this->formSelect('edt_issn_wh_id', $this->issnObj->items['WH_ID'], array(), $this->warehouseList); ?></td>
+            <th>Prev.Prev.Product ID</th>
+            <td><?php echo $this->formNote('edt_issn_prev_prev_prod_id', $this->issnObj->items['PREV_PREV_PROD_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Current Location</th>
+            <td><?php echo $this->formText('edt_issn_locn_id', $this->issnObj->items['LOCN_ID'], array()); ?></td>
+            <th>Prod. ID Updated</th>
+            <td><?php echo $this->formNote('edt_issn_prod_id_update', $this->issnObj->items['PROD_ID_UPDATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Company ID</th>
+            <td><?php echo $this->formSelect('edt_issn_company_id', $this->issnObj->items['COMPANY_ID'], array(), $this->companyList); ?></td>
+            <th>Prev.Prod.ID Updated</th>
+            <td><?php echo $this->formNote('edt_issn_prev_prod_id_update', $this->issnObj->items['PREV_PROD_ID_UPDATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Division</th>
+            <td><?php echo $this->formSelect('edt_issn_division_id', $this->issnObj->items['DIVISION_ID'], array(), $this->divisionList); ?></td>
+            <th>Prev. WH ID</th>
+            <td><?php echo $this->formNote('edt_issn_prev_wh_id', $this->issnObj->items['PREV_WH_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Current Qty</th>
+            <?php if($this->minder->isStockAdjust || $this->minder->userId == 'Admin') {?>
+                <td><?php echo $this->formText('edt_issn_current_qty', $this->issnObj->items['CURRENT_QTY'], array()); ?></td>
+            <?php } else {?>
+                <td><?php echo $this->formNote('edt_issn_current_qty', $this->issnObj->items['CURRENT_QTY'], array()); ?></td>
+            <?php } ?>
+            <th>Prev.Prev. WH ID</th>
+            <td><?php echo $this->formNote('edt_issn_prev_prev_wh_id', $this->issnObj->items['PREV_PREV_WH_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Moved Into Date</th>
+            <td><?php echo $this->formText('edt_issn_into_date', $this->issnObj->items['INTO_DATE'], array()); ?></td>
+            <th>Prev. Location</th>
+            <td><?php echo $this->formNote('edt_issn_prev_locn_id', $this->issnObj->items['PREV_LOCN_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Prev. Prev. Location</th>
+            <td><?php echo $this->formNote('edt_issn_prev_prev_locn_id', $this->issnObj->items['PREV_PREV_LOCN_ID']); ?></td>
+            <th>Prev. Moved Into Date</th>
+            <td><?php echo $this->formNote('edt_issn_prev_date', $this->issnObj->items['PREV_DATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Serial No.</th>
+            <td><?php echo $this->formText('edt_issn_serial_number', $this->issnObj->items['SERIAL_NUMBER'], array()); ?></td>
+            <th>Original Qty</th>
+            <?php if($this->minder->isAdmin) { ?>
+                <td><?php echo $this->formText('edt_issn_original_qty', $this->issnObj->items['ORIGINAL_QTY'], array()); ?></td>
+            <?php } else { ?>
+                <td><?php echo $this->formNote('edt_issn_original_qty', $this->issnObj->items['ORIGINAL_QTY']); ?></td>
+            <?php } ?>
+        </tr>
+        <tr>
+            <th>Original SSN</th>
+            <td><?php echo $this->formNote('edt_issn_original_ssn', $this->issnObj->items['ORIGINAL_SSN'], array()); ?></td>
+            <th>Previous Qty</th>
+            <td><?php echo $this->formNote('edt_issn_prev_qty', $this->issnObj->items['PREV_QTY']); ?></td>
+        </tr>
+        <tr>
+            <th>Reserved No.</th>
+            <td><?php echo $this->formText('edt_issn_pick_order', $this->issnObj->items['PICK_ORDER'], array()); ?></td>
+            <th>Audit Date</th>
+            <td><?php echo $this->formNote('edt_issn_audit_date', $this->issnObj->items['AUDIT_DATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Audit Code</th>
+            <td><?php echo $this->formSelect('edt_issn_audited', $this->issnObj->items['AUDITED'], array(), $this->auditCodeList); ?></td>
+            <th>Label Date</th>
+            <td><?php echo $this->formNote('edt_issn_label_date', $this->issnObj->items['LABEL_DATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Status Code</th>
+            <td><?php echo $this->formSelect('edt_issn_status_code', $this->issnObj->items['STATUS_CODE'], array(), $this->ssnStatusList); ?></td>
+            <th>User ID</th>
+            <td><?php echo $this->formNote('edt_issn_user_id', $this->issnObj->items['USER_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Package Type</th>
+            <td><?php echo $this->formSelect('edt_issn_package_type', $this->issnObj->items['ISSN_PACKAGE_TYPE'], array(), $this->packageTypeList); ?></td>
+            <th>Prev. Package Type</th>
+            <td><?php echo $this->formNote('edt_issn_prev_package_type', $this->issnObj->items['ISSN_PREV_PACKAGE_TYPE']); ?></td>
+        </tr>
+        <tr>
+            <th>Pack ID</th>
+            <td><?php echo $this->formText('edt_issn_pack_id', $this->issnObj->items['PACK_ID'], array()); ?></td>
+            <th>Despatch ID</th>
+            <td><?php echo $this->formNote('edt_issn_despatch_id', $this->issnObj->items['DESPATCH_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Kit</th>
+            <td><?php echo $this->formText('edt_issn_kitted', $this->issnObj->items['KITTED'], array()); ?></td>
+            <th>Created Date</th>
+            <td><?php echo $this->formNote('edt_issn_create_date', $this->issnObj->items['CREATE_DATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Prev.Prev.Prod.ID.Update</th>
+            <td><?php echo $this->formText('prev_prev_prod_id_update', $this->issnObj->items['PREV_PREV_PROD_ID_UPDATE'], array()); ?></td>
+            <th>Despatched Date</th>
+            <td><?php echo $this->formText('despatched_date', $this->issnObj->items['DESPATCHED_DATE']); ?></td>
+        </tr>
+        <tr>
+            <th>Prev. Reserved No</th>
+            <td><?php echo $this->formText('prev_reserved_no', $this->issnObj->items['PREV_PICK_ORDER'], array()); ?></td>
+            <th>Picked Qty</th>
+            <td><?php echo $this->formText('picked_qty', $this->issnObj->items['PICKED_QTY']); ?></td>
+        </tr>
+        <tr>
+            <th>Prev. Prev. Resvd. No.</th>
+            <td><?php echo $this->formText('prev_prev_resvd_no', $this->issnObj->items['PREV_PREV_PICK_ORDER'], array()); ?></td>
+            <th>Prev. Pack ID</th>
+            <td><?php echo $this->formText('prev_pack_id', $this->issnObj->items['PREV_PACK_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>Prev. Despatch ID</th>
+            <td><?php echo $this->formText('prev_despatch_id', $this->issnObj->items['PREV_DESPATCH_ID'], array()); ?></td>
+            <th>Prev. Prev. Desp. ID</th>
+            <td><?php echo $this->formText('prev_prev_desp_id', $this->issnObj->items['PREV_PREV_DESPATCH_ID']); ?></td>
+        </tr>
+        <tr>
+            <th>ISSN Description</th>
+            <td><?php echo $this->formText('issn_description', $this->issnObj->items['ISSN_DESCRIPTION'], array()); ?></td>
+            <th></th>
+            <td></td>
+        </tr>
+
+        <?php
+            $intWidgetCount = count($this->arrDynamicLabel);
+            $intFlag = 1;
+            foreach ($this->arrDynamicLabel as $strKey => $strValue) {
+                if($intFlag % 2 != 0){
+                        echo "<tr>";
+                    }
+                    echo "<th>$strValue</th>";
+                    echo "<td>".$this->formText('edt_issn_other'.str_ireplace("OTHER", "", $strKey), $this->issnObj->items[$strKey], array());
+                    echo "</td>";
+                    if($intFlag % 2 == 0){
+                        echo "</tr>";
+                    }
+                    if($intFlag == $intWidgetCount && ($intWidgetCount % 2 != 0)){
+                        echo "<td></td><td></td></tr>";
+                    }
+                    ++$intFlag;
+            }
+        ?>
+
+        </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return frmSubmit();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', array('onclick' => 'return frmSubmit();'))?></li>
+    </ul>
+    <div id='filter' style="display:none">
+      <input type='text' value='<?php echo $this->startItem; ?>' class='flt' id='flt_start_item' name='flt_start_item'>
+      <input type='text' value='<?php echo $this->showBy; ?>' class='flt' id='flt_show_by' name='flt_show_by'>
+  </div>
+</form>
+<script type="text/javascript">
+var cacheValue = 50;
+$(document).ready(function (){
+    $.ajaxSetup({async: false,
+                 complete: onAjaxSuccess,
+                 error: onAjaxError,
+                 beforeSend: onAjaxBeforeSend});
+    $('#edt_issn_into_date').datepicker({dateFormat: 'yy/mm/dd'});
+    $("#limit_company").get(0).disabled = true;
+    $("#limit_warehouse").get(0).disabled = true;
+    $('#edt_issn_locn_id').autocomplete('<?php echo $this->url(array('module'     => 'warehouse',
+                                                                    'controller' => 'issn',
+                                                                    'action'     => 'lookup')); ?>/',
+                                    {matchSubset: 1,
+                                     matchContains: 1,
+                                     cacheLength: cacheValue,
+                                     formatItem: formatItemWithDesc,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'location_id_srch', truncate: 'yes'},
+                                     onItemSelect: locationIdUpdate});
+    
+    $('#prev_prev_prod_id_update').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#despatched_date').datepicker({dateFormat: 'yy-mm-dd'});
+   
+    
+});
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+function locationIdUpdate(item) {
+}
+
+</script>
+<?php echo $this->render('footer.phtml');

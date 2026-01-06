@@ -1,0 +1,313 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array('autocomplete' => 'off');
+    $attributesForMassUpdate = array('autocomplete' => 'off', 'style' => 'width: 12em;');
+    $attributesForSelect = array();
+
+?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+<h2><?php echo $this->pageTitle; ?></h2>
+                <table class="search">
+                    <tr>
+                        <th>
+                            Location Name:
+                        </th>
+                        <td colspan="3">
+                            <?php echo $this->formNote('locn_name', $this->line->items['LOCN_NAME'], $attributes); ?>
+                        </td>
+                        <th>
+                            Replenishment Product:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('prod_id', $this->line->items['PROD_ID'], $attributes); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Transfer Status:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('move_stat', $this->line->items['MOVE_STAT'], $attributes); ?>
+                        </td>
+                        <th>
+                            Location Status:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('locn_stat', $this->line->items['LOCN_STAT'], $attributes); ?>
+                        </td>
+                        <th>
+                            Replenishment Locn.:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('replenish', $this->line->items['REPLENISH'], $attributes); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Storage Unit:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('locn_type', $this->line->items['LOCN_TYPE'], $attributes); ?>
+                        </td>
+                        <th>
+                            Storage Type:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('store_type', $this->line->items['STORE_TYPE'], $attributes); ?>
+                        </td>
+                        <th>
+                            Permission Level.:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('perm_level', $this->line->items['PERM_LEVEL'], $attributes); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Inventory Area:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('store_area', $this->line->items['STORE_AREA'], $attributes); ?>
+                        </td>
+                        <th>
+                            Handling Method:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('store_meth', $this->line->items['STORE_METH'], $attributes); ?>
+                        </td>
+                        <th>
+                            Temperature Zone:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('temperature_zone', $this->line->items['TEMPERATURE_ZONE'], $attributes); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Last Audited:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('last_audited_date', $this->line->items['LAST_AUDITED_DATE'], $attributes); ?>
+                        </td>
+                        <th>
+                            Location Sequence:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('locn_seq', $this->line->items['LOCN_SEQ'], $attributes); ?>
+                        </td>
+                        <th>
+                            Zone:
+                        </th>
+                        <td>
+                            <?php echo $this->formNote('zone_c', $this->line->items['ZONE_C'], $attributes); ?>
+                        </td>
+                    </tr>
+                </table>
+<?php if ($this->minder->isAdmin) { ?>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'EDIT LOCATION', array('onclick' => 'frmSubmit()')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'ADD NEW LOCATION', array('onclick' => 'frmSubmit()')) ?></li>
+        <li><?php echo $this->formSubmit('action', 'DELETE LOCATION', array('onclick' => 'return goDelete()')) ?></li>
+        <li><?php echo $this->formSubmit('action', 'RETURN', array('onclick' => 'frmSubmit()')) ?></li>
+    </ul>
+        <table>
+        <tr>
+            <td>
+            <fieldset>
+            <legend>Mass update</legend>
+                <table>
+                    <tr>
+                        <th rowspan="2">
+                            <?php echo $this->formSubmit('action', 'MASS ISSN UPDATE', array("style" => "height:4em;", 'onclick' => 'frmSubmit()')); ?>
+                        </th>
+                        <td style="padding: 0.2em;">
+                            Company ID:
+                        </td>
+                        <td style="padding: 0.2em;">
+                            <?php echo $this->formSelect('company_id_upd', selectFilterValue('company_id_upd', $this->conditions), $attributesForMassUpdate, $this->companyIdList); ?>
+                        </td>
+                        <td style="padding: 0.2em;">
+                            Prod ID:
+                        </td>
+                        <td style="padding: 0.2em;">
+                            <?php echo $this->formSelect('prod_id_upd', selectFilterValue('prod_id_upd', $this->conditions), $attributesForMassUpdate, $this->productIdList); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.2em;">
+                            ISSN Status:
+                        </td>
+                        <td style="padding: 0.2em;">
+                            <?php echo $this->formSelect('issn_stat_upd', selectFilterValue('issn_stat_upd', $this->conditions), $attributesForMassUpdate, $this->issnStatusList); ?>
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+            </td>
+            <td>
+            <fieldset>
+                <legend>On-Screen Transfer</legend>
+                <table>
+                    <tr>
+                        <th rowspan="2">
+                            <?php echo $this->formSubmit('action', 'TRANSFER', array("style" => "height:4em;", 'onclick' => 'frmSubmit()')); ?>
+                        </th>
+                        <td style="padding: 0.2em;">
+                            Into WH_ID:
+                        </td>
+                        <td style="padding: 0.2em;">
+                            <?php echo $this->formSelect('wh_id_upd', selectFilterValue('storage_type_upd', $this->conditions), $attributesForMassUpdate, $this->warehouseList); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.2em;">
+                            Into LOCN_ID:
+                        </td>
+                        <td style="padding: 0.2em;">
+                            <?php echo $this->formSelect('locn_id_upd', selectFilterValue('storage_type_upd', $this->conditions), $attributesForMassUpdate, $this->locationList); ?>
+                        </td>
+                    </tr>
+                </table>
+            </fieldset>
+        </td>
+        </tr>
+    </table>
+<?php } else { ?>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'RETURN', array('onclick' => 'frmSubmit()')) ?></li>
+    </ul>
+<?php } ?>
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;font-weight: bold;">
+                            <div style="float:left;">
+                                Location: <span>ISSN LIST</span>
+                            </div>
+        </div>
+        <div style="float:clear">
+        <span>&nbsp;</span>
+        </div>
+<?php echo $this->render('/location/issnlist.phtml'); ?>
+</form>
+<script type="text/javascript">
+<!--
+var cacheValue = 50;
+var selectedNum;
+$(document).ready( function () {
+        $.ajaxSetup({async: false,
+                     complete: onAjaxSuccess,
+                     error: onAjaxError,
+                     beforeSend: onAjaxBeforeSend});
+        $("#table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+        $("#tabs #select_complete").bind("click", selectWholeTable);
+
+        showSelected($("#table #select_all").get(0), "init");
+<?php
+
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'location',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+});
+
+function limitChanged()
+{
+    frmSubmit();
+    return true;
+}
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function selectWholeTable()
+{
+    var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+    var checkOnOff = this.checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    calcOther(this, $($(this).parent().parent()[0]));
+    return true;
+}
+
+function frmClear()
+{
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+function calcOther(element, method)
+{
+    var countEl = 0;
+    if ('auto' == method) {
+        var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = element.checked;
+    } else if ('init' == method) {
+        var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = 'init';
+    } else {
+        var container_id = '#' + $(method)[0].id;
+        var method = element.checked;
+    }
+    $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'location', 'module' => 'warehouse')); ?>',
+             { field: 'QTY',
+               inAction: '<?php echo 'show'; ?>',
+               activeTab: container_id,
+               method: method,
+               id: element.id,
+               value: element.value }, function(json) {
+                   var answer = eval(json);
+                   $("#selected_num", container_id).text(answer.selected_num);
+                   selectedNum = answer.selected_num;
+               });
+}
+
+function goDelete()
+{
+    //var res = confirm('You try to delete ' + selectedNum + ' locations. Are you really?');
+    res = true;
+    if (res) {
+        return frmSubmit();
+    } else {
+        return false;
+    }
+}
+
+function show(n)
+{
+    frmSubmit();
+    return true;
+}
+
+function frmSubmit()
+{
+    $("#active_tab").val($("#tabs > ul").tabsSelected());
+    document.main.submit();
+    return true;
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

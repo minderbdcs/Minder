@@ -1,0 +1,91 @@
+<b>IMPORTS</b> <?php echo $this->desc2; ?>
+
+<div style="display: inline;">
+	<label for="show_by">View By : </label>
+	<select onchange="frmSubmit()" id="show_by" name="show_by">
+		<?php foreach ($this->rowPerPage as $key=>$val) { ?>
+		<option label="<?php echo $val; ?>" value="<?php echo $val; ?>"><?php echo $val; ?></optionwe>
+		<?php } ?>
+	</select>
+	<label for="page">Page : </label>
+	<select onchange="frmSubmit()" id="pageselector" name="pageselector">
+		<?php for($i=0;$i<$this->pagesCount;$i++) { ?>
+			<option selected="selected" label="1" value="0">1</option>
+		<?php } ?>
+	</select>
+</div>
+
+<table id="import_table" class="withborder tablesorter">
+	<thead>
+		<tr>
+		    <th>
+		    	<input type="checkbox" id="select_all_imports">
+		    </th>
+		    <th>MESSAGE_ID</th>
+		    <th>TRN_VERSION</th>
+		    <th>TRN_TYPE</th>
+		    <th>TRN_CLASS</th>
+		    <th>TRN_DATE</th>
+		</tr>
+	</thead>
+	<tbody>
+<?php
+	foreach ($this->rows as $row) {
+?>
+	  <tr>
+	    <td width="10"><input id="<?php echo $row[0]; ?>" type="checkbox" class="importrows" id="mark" onclick="selectRow(this);"
+     <?php if (array_search($row['0'], $this->imports_rows_selected)!==false) { ?>
+       checked="checked" 
+     <?php } ?>	    
+	    ></td>
+	    <td><?php echo $row[8]; ?></td>
+	    <td><?php echo $row[1]; ?></td>
+	    <td><?php echo $row[2]; ?></td>
+	    <td><?php echo $row[3]; ?></td>
+	    <td><?php echo $row[4]; ?></td>
+	  </tr>
+<?php
+	} 
+?>
+	</tbody>
+</table>
+Total records: <span id="total"><?php echo $this->total; ?></span> Show from <span id="from"><?php echo $this->from; ?></span> to <span id="to"><?php echo $this->to; ?></span><br><br>
+<input type="submit" name="do" value="REPORT: CSV" style="width: 120px; background-color: lightgreen;">
+
+<script type="text/javascript">
+<!--
+
+$(document).ready(function(){
+
+	$('#import_table').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+	
+});
+
+	$('#select_all_imports').click(function(){
+		$.getJSON('/minder/trolley/mark-imports',
+		{prod_id: 'all'},
+		function (data) {
+			$('#rows_selected').text(data.selected);
+		})
+		
+		if($('#select_all_imports')[0].checked==true) {
+			$('input.importrows[type=checkbox]').attr('checked', 'true');
+		} else {
+			$('input.importrows[type=checkbox]').removeAttr('checked');
+		}
+		
+		return;
+	});
+	
+	 function  selectRow(node){
+		id = $(node).attr('id');
+		$.getJSON('/minder/trolley/mark-imports',
+		{id: id},
+		function (data) {
+			$('#rows_selected').text(data.selected);
+		});
+		return;
+	}
+
+-->
+</script>

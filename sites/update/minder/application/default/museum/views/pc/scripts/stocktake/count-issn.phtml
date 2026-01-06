@@ -1,0 +1,96 @@
+<form name="count-issn-form" id="count-issn-form"
+    action="<?php echo $this->url(array('module'=>'default', 'controller'=>'stocktake', 'action'=>'load-count-issn')) . '?table=count-issns&method=post' ; ?>"
+    method="post">
+<?php echo $this->messenger()->all(); ?>
+<?php echo $this->formHidden('in_location', $this->issnsInLocation); ?>
+<?php echo $this->formHidden('counted', $this->issnsCounted); ?>
+<?php echo $this->formHidden('locn_id', $this->locnId); ?>
+<?php echo $this->formHidden('wh_id', $this->whId); ?>
+<h2>COUNT ISSN's = <?php echo $this->issnsInLocation; ?></h2>
+<table>
+    <tbody>
+        <tr>
+            <td>
+            <table>
+                <tbody>
+                    <tr>
+                        <th><?php echo $this->formLabel('ci_st_ssn_id', 'ISSN: '); ?></th>
+                        <td><?php echo $this->formText('ci_st_ssn_id', '', array()); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+            </td>
+            <td>
+            <table>
+                <tbody>
+                    <tr>
+                        <th><?php echo $this->formLabel('ci_count', 'COUNT: '); ?></th>
+                        <td><?php echo $this->formText('ci_count', $this->stCount, array()); ?></td>
+                    </tr>
+                    <tr <?php if (!$this->showRecount) echo 'class="hidden"';?>>
+                        <th><?php echo $this->formLabel('ci_recount', 'RECOUNT: '); ?></th>
+                        <td><?php echo $this->formText('ci_recount', $this->stCount, array()); ?></td>
+                    </tr>
+                </tbody>
+            </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<h3>Location Total ISSN's <?php echo $this->issnsInLocation; ?>. Counted: <?php echo $this->issnsCounted; ?></h3>
+<ul class="toolbar">
+    <li>
+        <?php echo $this->formSubmit('action', 'SAVE COUNT', array('onlick' => 'return saveCount();')); ?>
+    </li>
+    <li>
+        <?php echo $this->formSubmit('action', 'EXIT COUNT', array('onclick' => 'return exitCount();')); ?>
+    </li>
+</ul>
+</form>
+<script type="text/javascript">
+<!--
+<?php
+if ($this->reloadSsns) {
+?>
+/*
+    $('#ssns-container').load('<?php echo $this->url(array('action' => 'load-ssns')) . '?table=ssns';?>',
+                    function () {
+                    });
+*/
+<?php
+}
+?>
+
+$(document).ready( function (){
+var options = {
+        beforeSubmit: function() {
+            $('.messages').remove();
+            $('.errors').remove();
+            $('.warnings').remove();
+        },
+        target:     '#count-issn-form',
+        url:        '<?php echo $this->url(array('module'=>'default', 'controller'=>'stocktake', 'action'=>'load-count-issn')) . '?table=count-issn&method=post' ; ?>',
+        success:    function() {
+        }
+    };
+    $('#count-issn-form').ajaxForm(options);
+});
+
+function saveCount()
+{
+
+    return true;
+}
+function exitCount()
+{
+    $('#count-issn-countainer').empty();
+    /*
+    $('#count-issn-form').ajaxSubmit({
+            success: function(response) {
+            }
+        });
+    */
+    return false;
+}
+//-->
+</script>

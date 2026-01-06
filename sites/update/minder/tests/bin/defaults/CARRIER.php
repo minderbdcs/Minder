@@ -1,0 +1,27 @@
+<?php
+
+return array (
+    'CARRIER_ID' => 'POST',
+    'PREFIX' => 'AP',
+    'ACCOUNT' => 'UNKNOWN',
+    'FTP_USER' => 'PINPOINTCATA',
+    'START_NO' => 1,
+    'END_NO' => 9999999,
+    'PALLET_LABEL_QTY' => 2,
+    'CARTON_LABEL_QTY' => 1,
+    'SATCHEL_LABEL_QTY' => 1,
+    'FTP_PASSWORD' => 'password',
+    'TRN_TYPE' => 'DSOT',
+    'DISPLAY_BUTTON' => 'F',
+    'DEFAULT_CONNOTE_ISSO' => 'F',
+    'LABEL_NUMBER_BASE' => 10,
+    'UOM_DT' => 'CM',
+    'UOM_WT' => 'KG',
+    'CONNOTE_PREFIX' => 'AP',
+    'CONNOTE_ACCOUNT' => 'UNKNOWN',
+    'CONNOTE_NUMBER_BASE' => 10,
+    'CONNOTE_GENERATOR' => 'CARRIER_CONNOTE_ID_GEN2',
+    'CONNOTE_PARAM_ID' => 'CONNOTE_POST',
+    'DEFAULT_SERVICE_TYPE' => '114',
+    'PO_BOX_USE_UGLY' => 'F',
+);

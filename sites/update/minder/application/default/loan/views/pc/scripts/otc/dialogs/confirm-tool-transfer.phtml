@@ -1,0 +1,79 @@
+<div id="confirm_tool-transfer_dialog" class="flora otc-confirm_tool-transfer_dialog" title="Confirm Tool Transfer" style="display: none;">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <h1>
+            This Tool is on loan to: <span class="loaned-to"></span>
+            at <?php echo $this->options()->getCostCenterCaption();?>: <span class="cost-center"></span>
+        </h1>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        // dialog add tool
+        $('#confirm_tool-transfer_dialog').dialog({
+            buttons: {SAVE: doToolTransferConfirm, HTML: '', CANCEL: closeToolTransferDialog},
+            width: '1000px',
+            height: '250px',
+            autoOpen: false,
+            position: [0, 65],
+            buttonStyle: 'otc-dialog-button'
+        }).bind('dialogopen', function(event, ui) {
+            var $confirmTool = $('#confirm_tool-transfer_dialog');
+
+            $confirmTool.attr('active', 'active');
+            $confirmTool.parents('.ui-dialog').find('button').each(function() {
+                var
+                    $this = $(this),
+                    buttonText = $(this).text();
+                if (buttonText == 'SAVE' || buttonText == 'CANCEL') {
+                    $this.attr('data-barcode', buttonText.toUpperCase());
+                }
+            });
+            $(this).show();
+            $('#barcode').focus();
+        }).bind('dialogclose', function(){
+            $('#confirm_tool-transfer_dialog').removeAttr('active');
+            $('#barcode').focus();
+        });
+    });
+
+    function setToolTransferConfirmListener(namespace, callback) {
+        var fullEventName = 'confirm.' + namespace;
+
+        $('#confirm_tool-transfer_dialog').unbind(fullEventName).bind(fullEventName, callback);
+    }
+
+    function doToolTransferConfirm(evt) {
+        var
+            confirmEvent = $.Event('confirm');
+        closeToolTransferDialog();
+        $('#confirm_tool-transfer_dialog').trigger(confirmEvent);
+    }
+
+    function openToolTransferDialog(loanedTo, costCenter){
+        var $confirmTool = $("#confirm_tool-transfer_dialog");
+
+        $confirmTool.find('.loaned-to').text(loanedTo);
+        $confirmTool.find('.cost-center').text(costCenter);
+        $confirmTool.dialog("open");
+
+        return false;
+    }
+
+    function closeToolTransferDialog(){
+        var $confirmTool = $('#confirm_tool-transfer_dialog');
+
+        $confirmTool.removeAttr('active');
+        $confirmTool.dialog("close");
+        return false;
+    }
+
+    function isConfirmToolTransferDialogActive() {
+        return !!$('#confirm_tool-transfer_dialog').attr('active');
+    }
+
+    function pressConfirmToolTransferDialogButton(barcode) {
+        $('#confirm_tool-transfer_dialog').parents('.ui-dialog').find('button[data-barcode="' + barcode + '"]').click();
+    }
+
+</script>

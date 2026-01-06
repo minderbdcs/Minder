@@ -1,0 +1,14 @@
+<?php
+    $result =         array(
+            'errors'     => $this->errors,
+            'warnings'   => $this->warnings,
+            'messages'   => $this->messages,
+            'sysScreens' => array()
+    );
+
+    foreach ($this->sysScreens as $namespace => $ssDesc) {
+        $result['sysScreens'][$namespace] = $this->jsSearchResultDataset($ssDesc['ssName'], $ssDesc['rows'], $ssDesc['selectedRows'], $ssDesc['paginator']);
+    }
+        
+    echo json_encode($result);
+?>

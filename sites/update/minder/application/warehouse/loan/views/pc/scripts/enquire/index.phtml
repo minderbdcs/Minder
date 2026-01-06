@@ -1,0 +1,128 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors) {
+    echo $this->render('footer.phtml');
+    return;
+}
+?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<div class="prompt select-warehouse hidden">
+    Select Warehouse
+</div>
+
+<div class="prompt scan-label hidden">
+    Use Input: <strong>Field</strong> above and scan or key in any of the following: <?php echo implode(', ', $this->enquireTypesDescription);?>.
+</div>
+
+<?php foreach($this->searchResults as $enquireType => $searchResult) {
+    switch ($enquireType) {
+        case (Minder_Enquire_Manager::PROD_ID):
+            echo $this->render('enquire/prod-id.phtml');
+            break;
+    }
+} ?>
+
+<script type="text/javascript">
+    minderNamespace('Minder.Warehouse.Enquire', function() {
+        this.onLoad = function() {
+            var
+                $barcode = $('#barcode'),
+                $limitWarehouse = $('#limit_warehouse'),
+                show = $limitWarehouse.find('option:selected').val() == 'all';
+
+            <?php foreach ($this->dataIdentifiers as $paramDescription) {?>
+                $barcode.minderBarcodeInputAddDescriptors([<?php echo $paramDescription;?>]);
+            <?php }?>
+
+            $barcode.bind('parse-success', $.proxy(this.onBarcode, this));
+            $barcode.bind('parse-error', $.proxy(this.onFailedBarcode, this));
+
+            $limitWarehouse.change($.proxy(this.onWarehouseChange, this));
+
+            this.showSelectWarehousePrompt(show);
+            this.showScanLabelPrompt(!show);
+        };
+
+        this.showSelectWarehousePrompt = function(show) {
+            if (show) {
+                $('.select-warehouse').show();
+            } else {
+                $('.select-warehouse').hide();
+            }
+        };
+
+        this.showScanLabelPrompt = function(show) {
+            if (show) {
+                $('.scan-label').show();
+            } else {
+                $('.scan-label').hide();
+            }
+        };
+
+        this.onWarehouseChange = function(event) {
+            var
+                show = ($(event.target).find('option:selected').val() == 'all');
+
+            this.showSelectWarehousePrompt(show);
+            this.showScanLabelPrompt(!show);
+            $('#barcode').focus();
+        };
+
+        this.hideAll = function() {
+            Minder.Warehouse.Enquire.Product.hide();
+        };
+
+        this.enquireFor = function(dataIdentifier) {
+            this.hideAll();
+
+            if ($('#limit_warehouse').find('option:selected').val() == 'all') {
+                return;
+            }
+
+            switch (dataIdentifier.param_type) {
+                case '<?php echo Minder_Enquire_Manager::PROD_ID;?>':
+                    Minder.Warehouse.Enquire.Product.enquireFor(dataIdentifier);
+                    break;
+                default:
+                    throw 'Unknown Enquire Type: ' + dataIdentifier.param_type;
+            }
+        };
+
+        this.onBarcode = function(event) {
+            var
+                $target = $(event.target);
+
+            $target.val('');
+
+            $('#globalSearchMessage').text(event.parseResult.paramDesc.param_type + ': ' + event.parseResult.paramDesc.param_filtered_value);
+
+            this.enquireFor(event.parseResult.paramDesc);
+        };
+
+        this.onFailedBarcode = function(event) {
+            console.log(event);
+
+            $(event.target).val('');
+            $('#globalSearchMessage').text('');
+            showErrors(['Unsupported label: ' + event.parseResult.paramDesc.param_raw_value]);
+        }
+    });
+
+    $(function() {
+        Minder.Warehouse.Enquire.onLoad();
+    });
+
+    function makeReport(format, sysScreen) {
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/screen/' + escape(sysScreen);
+    }
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>
+
+<?php
+echo $this->VarianceSRTemplate();
+?>

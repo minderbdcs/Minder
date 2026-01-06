@@ -1,0 +1,4 @@
+Total {{= $item.data.getTotalRowsAmount()}}.
+{{if $item.data.getTotalRowsAmount()}}
+&nbsp;Shown from {{= $item.data.getFirstRowNumber()}} to {{= $item.data.getLastRowNumber()}}.
+{{/if}}

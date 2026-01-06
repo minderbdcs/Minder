@@ -1,0 +1,370 @@
+<?php
+    $uomDescriptor = $this->getHelper('UomDescriptor');
+    
+    try{
+        $uomGrops = $uomDescriptor->getUomDescriptionByType(array('DT', 'WT'));
+        
+        $uomSelects = array();
+        $codes      = array();
+        
+        foreach ($uomGrops as $groupCode => $group) {
+            $uomSelects[$groupCode] = array();
+            foreach ($group as $code => $description) {
+                $codes[] = $uomSelects[$groupCode][$code] = $code;
+            }
+        }
+        
+        $standardUoms = $uomDescriptor->getUomTypes(array('DT', 'WT'));
+        
+        $codes[] = $standardUoms['DT']['STANDARD_UOM'];
+        $codes[] = $standardUoms['WT']['STANDARD_UOM'];;
+        $codes[] = $this->connoteWTCode;
+        $codes[] = $this->connoteDTForVTCode;
+        $codes[] = $this->connoteVTCode;
+        
+        $uoms = $uomDescriptor->UomDescriptor($codes);
+    
+        $defaultDT      = $uoms[$standardUoms['DT']['STANDARD_UOM']];
+        $defaultWT      = $uoms[$standardUoms['WT']['STANDARD_UOM']];
+        
+        $connoteWT      = $uoms[$this->connoteWTCode];
+        $connoteDTforVT = $uoms[$this->connoteDTForVTCode]; //need this to calculate Volume and Total Volume
+        $connoteVT      = $uoms[$this->connoteVTCode];
+        
+    }catch (Exception $e) {
+        Zend_Registry::get('logger')->debug(array('file' => __FILE__, 'line' => __LINE__, $e->getMessage(), $e->getTrace()));
+    }
+
+    $this->headers = array(
+        'TYPE' => 'TYPE',
+        'QTY' => 'QTY',
+        'L' => 'L ' . $this->formSelect('DIMENSION_UOM', $defaultDT['CODE'], array('style' => 'width:50px;'), $uomSelects['DT']) . '',
+        'W' => 'W ' . $this->formSelect('DIMENSION_UOM', $defaultDT['CODE'], array('style' => 'width:50px;'), $uomSelects['DT']) . '',
+        'H' => 'H ' . $this->formSelect('DIMENSION_UOM', $defaultDT['CODE'], array('style' => 'width:50px;'), $uomSelects['DT']) . '',
+        'VOL' => 'VOL (' . $connoteVT['CODE'] . ')',
+        'WT' => 'WT ' . $this->formSelect('PACK_WEIGHT_UOM', $defaultWT['CODE'], array('style' => 'width:50px;'), $uomSelects['WT']) . '',
+        'TOTAL_WT' => 'TOT.WT (' . $connoteWT['CODE'] . ')',
+        'TOTAL_VOL' => 'TOT.VOL (' . $connoteVT['CODE'] . ')'
+    );
+
+    $this->packageTypes = array(
+        ''   => '',
+        'C'  => 'CARTON',
+        'P'  => 'PALLET',
+        'S'  => 'SATCHEL'
+    );
+    
+?>
+
+ <div id="pack_dimentions">
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div style="font-weight: bold; text-transform: uppercase;">Pack Dimensions</div>
+         <div>
+            <table class="withborder tablesorter pack_dimentions" style="margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th></th>
+                    <?php foreach ($this->headers as $collumnId => $caption) {?>
+                        <th><?php echo $caption?></th>
+                    <?php } ?>
+                    </tr>
+                    <tbody id="pack_dimentions_data_set">
+                        <tr id="pack_dimensions_row_sample" class="hidden">
+                            <th>
+                                <?php echo $this->formHidden('DIMENSION_UOM', $defaultDT['CODE'], array('row_id' => 'sample'));?>
+                                <?php echo $this->formHidden('VOLUME_UOM', $connoteVT['CODE'], array('row_id' => 'sample'));?>
+                                <?php echo $this->formHidden('PACK_WEIGHT_UOM', $defaultWT['CODE'], array('row_id' => 'sample'));?>
+                                <?php echo $this->formHidden('TOTAL_VOLUME_UOM', $connoteVT['CODE'], array('row_id' => 'sample'));?>
+                                <?php echo $this->formHidden('TOTAL_PACK_WEIGHT_UOM', $connoteWT['CODE'], array('row_id' => 'sample'));?>
+                            </th>
+                            <?php foreach ($this->headers as $collumnId => $caption) {?>
+                                <?PHP switch (strtoupper($collumnId)) {
+                                    case 'TYPE': 
+                                        echo '<td>' . $this->formSelect($collumnId, '', array('row_id' => 'sample'), $this->packageTypes) . '</td>';
+                                        break;
+                                    case 'QTY':
+                                    case 'L':
+                                    case 'W':
+                                    case 'H':
+                                    case 'WT':
+                                        echo '<td>' . $this->formText($collumnId, 0, array('row_id' => 'sample', 'style' => 'width: 70px;')) . '</td>';
+                                        break;
+                                    default:
+                                    ?>
+                                    <td id="<?php echo $collumnId;?>" row_id="sample"></td>
+                                    <?php
+                                }?>
+                            <?php } ?>
+                        </tr>
+                    </tbody>
+                </thead>
+            </table>
+
+            <!-- orders info start -->
+            <table class="withborder" width="100%">
+                <tr>
+                    <td>Total Entered Pallets: <span class="total_pallets">0</span></td>
+                    <td>Total Entered Cartons: <span class="total_cartons">0</span></td>
+                    <td>Total Entered Satchels: <span class="total_satchels">0</span></td>
+                    <td>Total Required Labels: <span class="total_labels">0</span></td>
+                </tr>
+                <tr>
+                    <td>Overall Total Packages: <span class="total_packages">0</span></td>
+                    <td>&nbsp;</td>
+                    <td>Total Weight: <span class="total_weight">0</span> Kgs</td>
+                    <td>Total Volume: <span class="total_volume">0</span> Cu. Mtrs.</td>
+                </tr>
+            </table>
+            <!-- orders info end -->
+         </div>
+ 
+    <input type="hidden" id="pack_dimentions_id_sequence" value="0" />
+    <div style="display: none;">
+        <?php 
+            foreach ($uoms as $code => $description) {
+                echo $this->formHidden($code, $description['TO_STANDARD_CONV'], array('class' => 'to_standard_conv'));
+            }
+        ?>
+    </div>
+</div>
+</div>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+//        $('#pack_dimentions').delegate('input, select', 'keypress', {fieldsScopeSel: ('#pack_dimentions input, #pack_dimentions select')}, moveNextOnEnter);
+        $('#pack_dimentions #DIMENSION_UOM').unbind('.pack_dimensions').bind('change.pack_dimensions', function(evt){
+            $('#pack_dimentions #DIMENSION_UOM').val($(this).val());
+//            $('#pack_dimentions #DIMENSION_UOM').attr('to_standard_conv', $('#pack_dimentions .to_standard_conv#' + $(this).val()).val());
+            updateAllRows();
+        });
+        $('#pack_dimentions #DIMENSION_UOM').trigger('change');
+
+        $('#pack_dimentions #PACK_WEIGHT_UOM').unbind('.pack_dimensions').bind('change.pack_dimensions', function(evt){
+            $('#pack_dimentions #PACK_WEIGHT_UOM').val($(this).val());
+//            $('#pack_dimentions #PACK_WEIGHT_UOM').attr('to_standard_conv', $('#pack_dimentions .to_standard_conv#' + $(this).val()).val());
+            updateAllRows();
+        });
+        $('#pack_dimentions #PACK_WEIGHT_UOM').trigger('change');
+
+        addPackDimentionsRow(true);
+    });
+    
+    function addPackDimentionsRow(setDefaults) {
+        setDefaults = (setDefaults === true) ? setDefaults : false;
+        var sampleRow = $('#pack_dimensions_row_sample');
+        
+        var newRow = sampleRow.clone();
+        newRow.find('td, input, select').each(function(){
+            if ($(this).attr('row_id') == 'sample') {
+                $(this).attr('row_id', 'new');
+            }
+        });
+        
+        newRow.attr('id', 'pack_dimensions_row_new').removeClass('hidden');
+        newRow.insertBefore(sampleRow);
+        newRow.delegate('input, select', 'change', packDimentionsRowChanged);
+        
+        if (setDefaults) {
+            newRow.find('#TYPE').val('<?php echo $this->defaultPackType;?>');
+            newRow.find('#QTY').val('<?php echo $this->defaultPackQty;?>');
+            newRow.find('#WT').val('<?php echo $this->defaultWeight;?>').change();
+        }
+        
+    }
+    
+    function packDimentionsRowChanged(evt) {
+        var selectedRow;
+        
+        if ($(this).attr('row_id') == 'new') {
+            var rowId   =  parseInt($('#pack_dimentions_id_sequence').val());
+            $('#pack_dimentions_id_sequence').val(rowId + 1);
+            selectedRow = $('#pack_dimensions_row_new');
+            selectedRow.attr('id', 'pack_dimensions_row_' + rowId);
+
+            selectedRow.find('td, input, select').each(function(){
+                if ($(this).attr('row_id') == 'new') {
+                    $(this).attr('row_id', rowId);
+                }
+            });
+            addPackDimentionsRow();
+            
+        } else {
+            selectedRow = $('#pack_dimensions_row_' + $(this).attr('row_id'));
+        }
+        
+        updateRowData(selectedRow);
+    }
+    
+    function updateAllRows() {
+        $('#pack_dimentions #pack_dimentions_data_set tr').each(function(){
+            updateRowData($(this));
+        });
+    }
+    
+    function updateRowData(selectedRow) {
+        if (selectedRow.find('#TYPE').val() == 'P') {
+            selectedRow.find('input').each(function(){
+                switch ($(this).attr('id')) {
+                    case 'L':
+                    case 'W':
+                    case 'H':
+                        $(this).attr('disabled', 'true');
+                        break;
+                }
+            });
+        } else {
+            selectedRow.find('input').each(function(){
+                switch ($(this).attr('id')) {
+                    case 'L':
+                    case 'W':
+                    case 'H':
+                        $(this).removeAttr('disabled');
+                        break;
+                }
+            });
+        }
+        
+        var rowWtUom      = selectedRow.find('#PACK_WEIGHT_UOM').val();
+        var rowTotalWtUom = selectedRow.find('#TOTAL_PACK_WEIGHT_UOM').val();
+        var rowDtUom      = selectedRow.find('#DIMENSION_UOM').val();
+        var rowDtToVtUom  = '<?php echo $connoteDTforVT['CODE'];?>';
+        var rowVtUom      = selectedRow.find('#VOLUME_UOM').val();
+        
+        var wtFactor      = parseFloat($('#pack_dimentions .to_standard_conv#' + rowTotalWtUom).val()) / parseFloat($('#pack_dimentions .to_standard_conv#' + rowWtUom).val());
+        var dtFactor      = parseFloat($('#pack_dimentions .to_standard_conv#' + rowDtToVtUom).val()) / parseFloat($('#pack_dimentions .to_standard_conv#' + rowDtUom).val());
+        wtFactor          = (isNaN(wtFactor) || wtFactor === 0) ? 1 : wtFactor;
+        dtFactor          = (isNaN(dtFactor) || dtFactor === 0) ? 1 : dtFactor;
+        
+        var rowQty        = selectedRow.find('#QTY').val();
+        var rowWt         = selectedRow.find('#WT').val();
+        
+        var wtTitle       = '= ' + rowQty + ' * ' + rowWt + ' [' + rowWtUom + ']' + ' * ' + wtFactor.toString() + ' [' + rowTotalWtUom + ' / ' + rowWtUom + ']';
+        var jqTotalWt     = selectedRow.find('#TOTAL_WT');
+        
+        jqTotalWt.val((rowQty * rowWt * wtFactor));
+        jqTotalWt.html('' + parseFloat(jqTotalWt.val()).toFixed(4) );
+        jqTotalWt.attr('title', wtTitle);
+        
+        var rowL          = selectedRow.find('#L').val();
+        var rowW          = selectedRow.find('#W').val();
+        var rowH          = selectedRow.find('#H').val();
+        
+        var jqVol         = selectedRow.find('#VOL');
+        var jqTotalVol    = selectedRow.find('#TOTAL_VOL');
+        var vtTitle       = '= ' + rowL + ' [' + rowDtUom + ']' + ' * ' + dtFactor + ' [' + rowDtToVtUom + ' / ' + rowDtUom + '] * ' + rowW + ' [' + rowDtUom + ']' + ' * ' + dtFactor + ' [' + rowDtToVtUom + ' / ' + rowDtUom + '] * ' + rowH + ' [' + rowDtUom + ']' + ' * ' + dtFactor + ' [' + rowDtToVtUom + ' / ' + rowDtUom + '] ';
+        
+        if (selectedRow.find('#TYPE').val() == 'P') {
+            jqVol.val('0');
+            jqVol.removeAttr('title');
+        } else {
+            jqVol.val((rowL * rowW * rowH * dtFactor * dtFactor * dtFactor));
+            jqVol.attr('title', vtTitle);
+        }
+        
+        var rowVol        = jqVol.val();
+        
+        jqVol.html('' + parseFloat(rowVol).toFixed(4) );
+
+        var totalVtTitle  = '= ' + rowQty + ' * ' + rowVol + ' [' + rowVtUom + ']';
+
+        jqTotalVol.val((rowQty * rowVol));
+        jqTotalVol.html('' + parseFloat(rowQty * rowVol).toFixed(4) );
+        jqTotalVol.attr('title', totalVtTitle);
+        
+        updateTotals();
+    }
+    
+    function updateTotals() {
+        var totalSatchels = 0;
+        var totalPallets  = 0;
+        var totalCartons  = 0;
+        var totalWeight   = 0;
+        var totalVolume   = 0;
+        $('#pack_dimentions_data_set').find('tr').each(function(){
+            switch($(this).attr('id')) {
+                case 'pack_dimensions_row_new':
+                case 'pack_dimensions_row_sample':
+                    break;
+                default:
+                    switch ($(this).find('#TYPE').val()) {
+                        case 'C' :
+                            totalCartons += parseInt($(this).find('#QTY').val());
+                            break;
+                        case 'P' :
+                            totalPallets += parseInt($(this).find('#QTY').val());
+                            break;
+                        case 'S' :
+                            totalSatchels += parseInt($(this).find('#QTY').val());
+                            break;
+                    }
+                    totalWeight += parseFloat($(this).find('#TOTAL_WT').val());
+                    totalVolume += parseFloat($(this).find('#TOTAL_VOL').val());
+            }
+        });
+        
+        $('.total_pallets').val(totalPallets);
+        $('.total_cartons').val(totalCartons);
+        $('.total_satchels').val(totalSatchels);
+        $('.total_labels').val(totalPallets + totalCartons + totalSatchels);
+        $('.total_packages').val(totalPallets + totalCartons + totalSatchels);
+        $('.total_weight').val(totalWeight);
+        $('.total_volume').val(totalVolume);
+        
+        $('.total_pallets').html(totalPallets);
+        $('.total_cartons').html(totalCartons);
+        $('.total_satchels').html(totalSatchels);
+        $('.total_labels').html(totalPallets + totalCartons + totalSatchels);
+        $('.total_packages').html(totalPallets + totalCartons + totalSatchels);
+
+        $('.total_weight').html(parseFloat(totalWeight).toFixed(4));
+        $('.total_volume').html(parseFloat(totalVolume).toFixed(4));
+        $('#pack_dimentions').trigger('totals-updated', [{
+            totalPallets  : $('.total_pallets').val(),
+            totalCartons  : $('.total_cartons').val(),
+            totalSatchels : $('.total_satchels').val(),
+            totalLabels   : $('.total_labels').val(),
+            totalPackages : $('.total_packages').val(),
+            totalWeight   : $('.total_weight').val(),
+            TotalVolume   : $('.total_volume').val()
+        }]);
+    }
+    
+    function getPakIdDimensions() {
+        var result = [];
+        
+        $('#pack_dimentions_data_set').find('input, select, td').each(function() {
+            var rowId = $(this).attr('row_id');
+            
+            if (rowId == 'new' || rowId == 'sample') 
+                return;
+            
+            if (!result[rowId])
+                result[rowId] = {TYPE: '', QTY: 0, L: 0, W: 0, H: 0, TOTAL_WT: 0, TOTAL_VOL: 0};
+            
+            switch ($(this).attr('id')) {
+                case 'TYPE':
+                case 'QTY':
+                case 'L':
+                case 'W':
+                case 'H':
+                case 'TOTAL_WT':
+                case 'TOTAL_VOL':
+                case 'WT':
+                case 'VOL':
+                case 'DIMENSION_UOM':
+                case 'PACK_WEIGHT_UOM':
+                case 'VOLUME_UOM':
+                case 'TOTAL_PACK_WEIGHT_UOM':
+                case 'TOTAL_VOLUME_UOM':
+                    result[rowId][$(this).attr('id')] = $(this).val();
+                    break;
+            }
+        });
+        return result;
+    }
+    
+    /* ]]> */
+</script>

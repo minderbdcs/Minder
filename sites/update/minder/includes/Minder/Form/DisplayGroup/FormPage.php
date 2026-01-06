@@ -1,0 +1,17 @@
+<?php
+
+class Minder_Form_DisplayGroup_FormPage extends Minder_Form_DisplayGroup {
+    public function loadDefaultDecorators()
+    {
+        if ($this->loadDefaultDecoratorsIsDisabled()) {
+            return;
+        }
+
+        $decorators = $this->getDecorators();
+        if (empty($decorators)) {
+            $this->addDecorator('FormElements')
+                 ->addDecorator(array('pageDl' => 'HtmlTag'), array('tag' => 'dl'))
+                 ->addDecorator('FormPage');
+        }
+    }
+}

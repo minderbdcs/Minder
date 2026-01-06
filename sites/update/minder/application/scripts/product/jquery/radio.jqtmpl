@@ -1,0 +1,3 @@
+{{each($value, $label) $item.data.getOptions()}}
+    <label>{{= $label}}: <input type="radio" value="{{= $value}}"/></label>&nbsp;
+{{/each}}

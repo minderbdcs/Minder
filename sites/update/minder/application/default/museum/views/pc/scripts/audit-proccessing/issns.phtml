@@ -1,0 +1,220 @@
+<form name="issns-form" id="issns-form" action="<?php echo $this->url(array('method' => 'post')); ?>" method="post">
+<h3>ISSN List</h3>
+<?php echo $this->messenger()->all(); ?>
+<?php
+foreach ($this->ssns as $id) {
+    echo $this->formHidden('list_ssns[]', $id);
+}
+
+?>
+    <div id="tabs2">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left;">
+                            <b>
+                                Selected: <span  id="selected_num">0</span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+             Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', 'all_values', array()); ?>
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => '$("#issns-form").trigger("submit"); return true; '),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelect('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => '$("#issns-form").trigger("submit"); return true; '),
+                                               $this->pages); ?>
+        </div>
+        <ul class="toolbar">
+            <li>
+                <?php echo $this->formSubmit('action', 'UPDATE PENDING ACTION', array('onclick' => 'return updatePending();')); ?>
+            </li>
+            <li>
+                <?php
+                echo $this->formLabel('upd_st_action', 'Pending Action: ');
+                echo $this->formSelect('upd_st_action', selectFilterValue('st_action', $this->conditions), array(), $this->actionList);
+                ?>
+            </li>
+        </ul>
+        <table id="<?php echo $this->escape($this->tableId) ?>" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           'any_value',
+                                           array('onclick' => 'selectAll(this)'));?>
+            </th>
+            <th></th>
+            <?php
+                foreach ($this->headers as $key => $header) {
+                    echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+                }
+            ?>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+                foreach ($this->data as $line) {
+            ?>
+                <tr>
+                    <th>
+                    <?php
+                            echo $this->formCheckbox('recs[' . $this->escape($line->id) . ']',
+                                                     $this->escape($line->id),
+                                                     array('class' => 'issn_checkbox',
+                                                           'id' => $this->escape($line->id),
+                                                           'checked' => selectFilterValue($this->escape($line->id), $this->conditions['recs']),
+                                                           'onclick' => 'showSelected(this)'));
+                        ?>
+                    </th>
+                    <td class="toolbutton"></td>
+                    <?php
+                        foreach ($this->headers as $key => $val) {
+                            /*
+                            if (strtolower($key) == 'st_count') {
+                                echo '<td><a class="edit-variance" line="' . $this->escape($line->id) .
+                                     '" st_locn_id="' . $this->escape($line['ST_LOCN_ID']) .
+                                     '" wh_id="' . $this->escape($line['WH_ID']) .
+                                     '" st_ssn_id="' . $this->escape($line['ST_SSN_ID']) .
+                                     '" name="edit[' . $this->escape($line->id) . '][' . $this->escape(strtolower($key)) . ']">' . $this->escape($line->items[$key]) . '</a></td>';
+                            } else {
+                            */
+                            if ($key == 'ST_ACTION') {
+                                echo '<td title="' . $this->actionList[$line->items[$key]] . '">' . $this->escape($line->items[$key]) . '</td>';
+                                  
+                            } elseif ($key == 'ST_STATUS') {
+                                echo '<td title="' . $this->statusList[$line->items[$key]] . '">' . $this->escape($line->items[$key]) . '</td>';
+                            } else {
+                                echo '<td>' . $this->escape($line->items[$key]) . '</td>';
+                            }
+                            //}
+                        }
+                    ?>
+                </tr>
+            <?php
+                }
+            ?>
+            </tbody>
+        </table>
+    </div>
+    <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">Total
+        <?php echo $this->numRecords . " records. ";?>
+        <?php echo "Show from " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + 1); ?>
+        <?php echo " to " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + count($this->data));?>
+    </div>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formButton('action', 'REPORT: CSV', array('onclick' => 'return reportCSVissns();')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'APPLY VARIANCE', array()); ?>
+        </li>
+        <li>
+            <?php echo $this->formButton('action', 'ADD COUNT', array('onclick' => 'return showCountLocnList();')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'DELETE COUNT', array('onclick' => 'return deleteCount()')); ?>
+        </li>
+    </ul>
+    <?php echo $this->formHidden('total', $this->numRecords); ?>
+</form>
+<script type="text/javascript">
+<!--
+var options = {
+        beforeSubmit: function() {
+            $('#issns-container > .messages').remove();
+            $('#issns-container > .errors').remove();
+            $('#issns-container > .warnings').remove();
+        },
+        target:     '#issns-form',
+        url:        '<?php echo $this->url(array('method' => 'post')); ?>',
+        success:    function(response) {
+                $('#issns-container').html(response);
+                $('#ssns-container').load('<?php echo $this->url(array('action' => 'load-ssns', 'table' => 'ssns'));?>?no-child-refresh=true',
+                        function () {
+                        });
+        }
+    };
+$(document).ready( function (){
+    $('.edit-variance').click(function(){editVariance(this);});
+    $('#issns-form').ajaxForm(options);
+});
+
+function showCountLocnList()
+{
+    $('#issn-count-container').empty();
+    $('#count-location-container').load('<?php echo $this->url(array('action' => 'load-count-location', 'table' => 'locations'));?>',
+        function () {
+        });
+    return false;
+}
+
+function deleteCount()
+{
+    /*
+    var listIssns = new Array();
+    $('.issn_checkbox', '#issns-form').each(function(){ if (this.checked) {listIssns.push(this.id);}});
+    $('#issns-form').ajaxSubmit({
+            success: function(response) {
+                $('#issns-container').html(response);  
+            }
+    });*/
+
+    return false;
+}
+function editVariance(element)
+{
+    if ($('input', element).length == 0) {
+        $('.toolbutton', $(element)
+            .parent()
+            .parent())
+            .html('<input type="image" class="toolbutton" value="1" src="<?php echo $this->baseUrl ?>icons/add.png" name="add"/>'+
+                  '<input type="image" value="2" class="toolbutton" src="<?php echo $this->baseUrl ?>icons/close.png" name="close" onclick="return cancelEditVariance(\'' + $(element).attr('line') + '\')"/>' +
+                  '<input type="hidden" value="' + $(element).attr('st_ssn_id') + '" name="edit[' + $(element).attr('line') + '][st_ssn_id]">' +
+                  '<input type="hidden" value="' + $(element).attr('st_locn_id') + '" name="edit[' + $(element).attr('line') + '][st_locn_id]">' +
+                  '<input type="hidden" value="' + $(element).attr('wh_id') + '" name="edit[' + $(element).attr('line') + '][wh_id]">');
+        $(element).html('<input type="text" class="edit-variance cell" name="' +
+                        element.name + '" value="' + $(element).text() + '"/>');
+        $('input', element)[0].focus();
+    }
+    $('#issns-form').ajaxForm(options);
+    return false;
+}
+function cancelEditVariance(line)
+{
+    $('.edit-variance[line="' + line + '"] > input').each(function(){
+        $('a[name="' + this.name + '"]').text(this.defaultValue);
+    });
+    $('.toolbutton', $('.edit-variance[line="' + line + '"]').parent().parent()).html('');
+    return false;
+}
+
+function reportCSVissns()
+{
+    var s = $('#issns-form').formSerialize();
+    var generator = window.open('<?php echo $this->url(array('method' => 'REPORT: CSV'));?>?' + s, 'subwin');
+    return true;
+}
+
+function updatePending()
+{
+}
+//-->
+</script>

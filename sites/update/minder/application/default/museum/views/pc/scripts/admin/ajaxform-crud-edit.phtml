@@ -1,0 +1,182 @@
+<?php //echo $this->render('header.phtml'); ?>
+<?php
+if ($this->rowNumber == 1) {
+    $prevAttr = array('disabled' => 'disabled');
+} else {
+    $prevAttr = array();
+}
+
+if ($this->rowNumber == $this->numRecords) {
+    $nextAttr = array('disabled' => 'disabled');
+} else {
+    $nextAttr = array();
+}
+
+?>
+<div id="edit" style="overflow:auto" class="flora">
+<form action="" method="post" name="ajaxmain" id="ajaxmain" enctype="multipart/form-data">
+<?php
+echo $this->formHidden('record_id', $this->row->id);
+echo $this->formHidden('row_number', $this->rowNumber);
+
+switch ($this->mode) {
+    case 'ADD':
+        echo $this->formHidden('mode', 'savenew');
+    break;
+    default:
+        //echo $this->formHidden('mode', $this->mode);
+    break;
+}
+?>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE", array("onclick" => "frmAjaxSubmit()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "CANCEL", array("onclick" => "frmAjaxSubmit()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "FIRST", array("onclick" => "frmAjaxSubmit()") + $prevAttr); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "PREV.", array("onclick" => "frmAjaxSubmit()") + $prevAttr); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "NEXT", array("onclick" => "frmAjaxSubmit()") + $nextAttr); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "LAST", array("onclick" => "frmAjaxSubmit()") + $nextAttr); ?>
+        </li>
+    </ul>
+    <table class="summary">
+<?php
+        foreach ($this->row as $key => $val) {
+            
+            if ($key == 'RECORD_ID' && $this->mode == 'ADD') {
+                //don't show RECOD_ID at all, when inserting new record
+                continue;
+            }
+            
+            echo "<tr><th><b>" . $key . "</b></th>";
+            echo "<th>" . $this->row->getFieldInfo($key)->type . "(" . $this->row->getFieldInfo($key)->length . ")" . "</th>";
+            switch ($this->row->getFieldInfo($key)->type) {
+                case 'BLOB':
+                    $bid = md5($val);
+                    $session = new Zend_Session_Namespace('blobs');
+                    $session->blob[$bid] = $val;
+                    $image = @imagecreatefromstring($val);
+                    if ($image) {
+                        echo "<td><img alt=\"No image\" src=\"" . $this->url(array('controller' => 'custom', 'action' => $bid)) . "\">";
+                        echo $this->formHidden('MAX_FILE_SIZE', '600000');
+                        echo "<br />";
+                        echo $this->formFile(strtolower($key), '', array()) . "</td></tr>";
+                    } else {
+                        echo "<td>" . $this->formTextarea(strtolower($key), $val, ENT_QUOTES, array());
+                        echo $this->formHidden('MAX_FILE_SIZE', '600000');
+                        echo "<br />";
+                        echo $this->formFile(strtolower($key), '', array());
+                        echo "</td></tr>";
+                    }
+                    break;
+                case 'TIMESTAMP':
+                    echo "<td>" . $this->formText(strtolower($key), $val, array('class' => 'withdatepicker')) . "</td></tr>";
+                    break;
+                default:
+                    $readOnlyFileds =   array();
+                    if (strtoupper($this->tableName) == 'SYS_USER') {
+                        $readOnlyFileds =   array('COMPANY_ID', 'DEFAULT_WH_ID', 'PASS_WORD', 'SYS_ADMIN', 'EDITABLE', 'SALE_MANAGER', 'CREDIT_MANAGER', 'INVENTORY_OPERATOR', 'STOCK_ADJUST', 'WH_MANAGER');
+                    }
+                    $attributes     =   array();
+                    
+                    if(in_array($key, $readOnlyFileds) && $this->minder->userId !=='Admin'){
+                        $attributes['readonly'] =   'readonly';
+                    }
+                    
+                    if($this->pageTitle == 'SYS_USER' && $this->minder->userId != 'Admin' && $this->mode == 'ADD'){
+                        switch($key){
+                            case 'DEFAULT_WH_ID':
+                                $val    =   $this->minder->defaultControlValues['DEFAULT_WH_ID'];
+                                break;
+                            case 'COMPANY_ID':
+                                $val    =   $this->minder->defaultControlValues['COMPANY_ID'];
+                                break;
+                            case 'PASS_WORD':
+                                $val    =   'pass';
+                                break;
+                            case 'SYS_ADMIN':
+                                $val    =   'F';
+                                break;
+                            case 'EDITABLE':
+                                $val    =   'F';
+                                break;
+                            case 'SALE_MANAGER':
+                                $val    =   'F';
+                                break;
+                            case 'CREDIT_MANAGER':
+                                $val    =   'F';
+                                break;
+                            case 'INVENTORY_OPERATOR':
+                                $val    =   'F';
+                                break;
+                            case 'STOCK_ADJUST':
+                                $val    =   'F';
+                                break;
+                        }
+                    }
+                    
+                    if ('PASS_WORD' == $key && $this->minder->userId !=='Admin') {
+                        echo "<td>" . $this->formNote(strtolower($key), '******', array()) . "</td></tr>";
+                    }elseif ('RECORD_ID' == $key) {
+                        //RECORD_ID always show as readonly, as it has generator, and shoudn't be inserted manualy
+                        $attributes['readonly'] =   'readonly';
+                        echo "<td>" . $this->formText(strtolower($key), $val, $attributes) . "</td></tr>";
+                    }elseif (array_key_exists($key, $this->selectables)) {
+                        echo "<td>" . $this->formSelect(strtolower($key), $val, $attributes, $this->selectables[$key]) . "</td></tr>";
+                    } elseif (array_key_exists($key, $this->radiobuttons)) {
+                        echo "<td>" . $this->formRadio(strtolower($key), $val, $attributes, $this->radiobuttons[$key]) . "</td></tr>";
+                    } else {
+                        echo "<td>" . $this->formText(strtolower($key), $val, $attributes) . "</td></tr>";
+                    }
+                    break;
+            }
+
+        }
+?>
+    </table>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE", array("onclick" => "frmAjaxSubmit()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "CANCEL", array("onclick" => "frmAjaxSubmit()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "FIRST", array("onclick" => "frmAjaxSubmit()") + $prevAttr); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "PREV.", array("onclick" => "frmAjaxSubmit()") + $prevAttr); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "NEXT", array("onclick" => "frmAjaxSubmit()") + $nextAttr); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "LAST", array("onclick" => "frmAjaxSubmit()") + $nextAttr); ?>
+        </li>
+    </ul>
+</form>
+</div>
+<script type="text/javascript">
+<!--
+$(document).ready( function (){
+    $('.withdatepicker').datepicker({dateFormat: 'yy/mm/dd'});
+});
+
+function frmAjaxSubmit()
+{
+    document.forms.ajaxmain.submit();
+    return false;
+}
+//-->
+</script>
+
+<?php //echo $this->render('footer.phtml'); ?>

@@ -1,0 +1,11 @@
+<div id="info_bar" class="with_border">
+    <ul>
+        <li>Purchase Order: <?php echo $this->purchaseOrderId ? $this->escape($this->purchaseOrderId) : '&mdash;' ?></li>
+        <li>Inwards Consignment No: <?php echo $this->consignmentNo ? $this->escape($this->consignmentNo) : '&mdash;' ?></li>
+        <li>Line: <?php echo $this->poLine ? $this->escape($this->poLine) : '&mdash;' ?></li>
+    </ul>
+</div>
+<div class="with_border" style="font-weight: bold; border-top: none;">
+Product: <?php echo empty($this->infProdInfo) ? '&mdash;' : $this->escape($this->infProdInfo) ?><br />
+Quantity required: <?php echo $this->escape($this->infReqQty); /*&nbsp; &nbsp;UoM: <?php echo $this->escape($this->infUom)*/ ?>
+</div>

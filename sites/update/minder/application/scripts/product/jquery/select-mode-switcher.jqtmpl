@@ -1,0 +1,1 @@
+<input type="radio" name={{= $item.data.getName()}} {{if $item.data.getValue() == 'one'}}checked="checked"{{/if}}/>

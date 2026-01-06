@@ -1,0 +1,644 @@
+<?php
+$this->headScript(Zend_View_Helper_HeadScript::FILE, $this->baseUrl() . '/scripts/ui/jquery-1.3.2.min.js');
+$this->headScript(Zend_View_Helper_HeadScript::FILE, $this->baseUrl() . '/scripts/jquery.inherit-1.3.2.M.js');
+$this->headScript(Zend_View_Helper_HeadScript::FILE, $this->baseUrl() . '/scripts/Minder/model.js');
+$this->headScript(Zend_View_Helper_HeadScript::FILE, $this->baseUrl() . '/scripts/Minder/Model/page.js');
+$this->headScript(Zend_View_Helper_HeadScript::FILE, $this->baseUrl() . '/scripts/Minder/Model/dataSet.js');
+$this->headScript(Zend_View_Helper_HeadScript::FILE, $this->baseUrl() . '/scripts/Minder/Model/sysScreen.js');
+/**
+ * @var Minder2_Model_Page $page
+ */
+$page = $this->page;
+if (empty($page))
+    return;
+
+/**
+ * @param Minder2_Model_Page $page
+ * @param Zend_View $view
+ * @return void
+ */
+function initPOScreen($page, $view) {
+    $poScreen = $page->getScreen('RECEIVE_PO');
+
+    if (is_null($poScreen)) {
+        $view->messages()->addWarning('RECEIVE_PO screen is not defined.');
+        return;
+    }
+
+    $poScreen->selectComplete(false);
+    $screenModelDecorator = $poScreen->getDecorator('screenModel');
+    if (!is_null($screenModelDecorator)) {
+        $screenModelDecorator->setOption('javaScriptModel', 'PurchaseOrderModel');
+        $poScreen->addDecorator($screenModelDecorator);
+    }
+
+    $attachSearchModelDecorator = $poScreen->getDecorator('attachSearchResultModel');
+    if (!is_null($attachSearchModelDecorator)) {
+        $attachSearchModelDecorator->setOption('searchMethod', 'onReceivePOSearch');
+        $poScreen->addDecorator($attachSearchModelDecorator);
+    }
+
+    $page->addScreen($poScreen);
+}
+
+/**
+ * @param Minder2_Model_Page $page
+ * @param Zend_View $view
+ * @return void
+ */
+function initPOLinesScreen($page, $view) {
+    $polScreen = $page->getScreen('RECEIVE_POLINE');
+
+    if (is_null($polScreen)) {
+        $view->messages()->addWarning('RECEIVE_POLINE screen is not defined.');
+        return;
+    }
+
+    $polScreen->removeDecorator('setData');
+    $polScreen->removeDecorator('setSummary');
+
+    $polScreen->selectComplete(false);
+    $screenModelDecorator = $polScreen->getDecorator('screenModel');
+    if (is_null($screenModelDecorator))
+        return;
+
+    $screenModelDecorator->setOption('javaScriptModel', 'POLinesModel');
+    $polScreen->addDecorator($screenModelDecorator);
+    $page->addScreen($polScreen);
+}
+
+/**
+ * @param Minder2_Model_Page $page
+ * @param Zend_View $view
+ * @return void
+ */
+function initAllocateScreen($page, $view) {
+    $allocateScreen = $page->getScreen('RECEIVE_ALLOCATE');
+
+    if (is_null($allocateScreen)) {
+        $view->messages()->addWarning('RECEIVE_ALLOCATE screen is not defined.');
+        return;
+    }
+
+    $allocateScreen->removeDecorator('setData');
+    $allocateScreen->removeDecorator('setSummary');
+
+    $screenModelDecorator = $allocateScreen->getDecorator('screenModel');
+    if (!is_null($screenModelDecorator)) {
+        $screenModelDecorator->setOption('javaScriptModel', 'AllocateModel');
+        $allocateScreen->addDecorator($screenModelDecorator);
+    }
+
+    $page->addScreen($allocateScreen);
+}
+
+initPOScreen($page, $this);
+initPOLinesScreen($page, $this);
+initAllocateScreen($page, $this);
+echo $this->render('/receive/grn-details.phtml');
+echo $page;
+echo $this->render('/receive/allocate-details.phtml');
+?>
+
+<script type="text/javascript">
+    var PurchaseOrderModel = $.inherit(
+            Minder_Model_SysScreen,
+            {
+                _grnDetailsContainer: null,
+
+                selectRow: function(rowId, origin, selected) {
+                    this._selectRow(rowId, selected);
+                    this.notify(Minder_Model_DataSet.rowSelectedEvent, null);
+                },
+
+                _selectRow: function(rowId, selected) {
+                    selected = (typeof selected == 'undefined') ? true : !!selected;
+                    if (this._dataSet == null) return this;
+
+                    if (rowId == 'all') {
+                        this._dataSet.selectAll(this, false);
+                    } else {
+                        this._dataSet.selectRow(rowId, this, selected);
+                    }
+
+                    var selectedRows = this.getSelectedRows(true);
+
+                    if (selectedRows.length > 0) {
+                        $('#RECEIVE_PO-SEARCH_RESULTS').hide();
+                        $('#RECEIVE_PO-SEARCH_FORM').hide();
+                        $('#RECEIVE_POLINE-SEARCH_RESULTS').show();
+                        $('#RECEIVE_POLINE-SEARCH_RESULTS > div').data('minderElement').getModel().loadDependentItems(this);
+                        this._getGrnDetailContainer().minderGrnDetailsController('show', 1);
+                        this._getGrnDetailContainer().block();
+
+                        this._getGrnDetailContainer().unbind('.po').bind('cancel-button-click.po', function(evt) {
+                            evt.preventDefault();
+                            getPOModel().selectRow('all', null, false);
+                        });
+                        this._loadPurchaseOrderDetails(selectedRows.shift());
+                    } else {
+                        this._getGrnDetailContainer().minderGrnDetailsController('hide');
+                        $('#RECEIVE_PO-SEARCH_RESULTS').show();
+                        $('#RECEIVE_PO-SEARCH_FORM').show();
+                        $('#RECEIVE_POLINE-SEARCH_RESULTS').hide();
+                    }
+                },
+
+                _loadPurchaseOrderDetails: function(row) {
+                    this._callRemote('loadPurchaseOrderDetails', [row], this._loadPurchaseOrderDetailsCallback);
+                },
+
+                _loadPurchaseOrderDetailsCallback: function(response) {
+                    if (response.error && response.error.message)
+                        showErrors([response.error.message]);
+
+                    this._getGrnDetailContainer().unblock();
+
+                    if (response.result) {
+                        if (response.result.purchaseOrder)
+                        this._getGrnDetailContainer().minderGrnDetailsController('fill', response.result.purchaseOrder);
+                    }
+                },
+
+                _makeSearchCallback: function(response) {
+                    this.__base(response);
+
+                    if (response.result) {
+                        if (response.result.items && response.result.items.length == 1) {
+                            var row = response.result.items.shift();
+                            this._selectRow(row['__rowId'], true);
+                        }
+                    }
+                },
+
+                _getGrnDetailContainer: function() {
+                    if (this._grnDetailsContainer == null)
+                        this._grnDetailsContainer = $('#grn-details');
+
+                    return this._grnDetailsContainer;
+                }
+            },
+            {
+                
+            }
+    );
+
+    var POLinesModel = $.inherit(
+            Minder_Model_SysScreen,
+            {
+                _grnDetailsContainer: null,
+
+                setGrn: function(val, origin) {
+                    this.setFieldValue('__GRN', val, origin);
+                },
+
+                getGrn: function() {
+                    return this.getFieldValue('__GRN');
+                },
+
+                selectRow: function(rowId, origin, selected) {
+                    this._selectRow(rowId, selected);
+                    this.notify(Minder_Model_DataSet.rowSelectedEvent, null);
+                },
+
+                _selectRow: function(rowId, selected) {
+                    selected = (typeof selected == 'undefined') ? true : !!selected;
+                    if (this._dataSet == null) return this;
+
+                    if (rowId == 'all') {
+                        this._dataSet.selectAll(this, false);
+                    } else {
+                        this._dataSet.selectRow(rowId, this, selected);
+                    }
+
+                    var row = this.getRow(rowId);
+
+                    if (row == null)
+                        return;
+
+                    this._loadGrnDetails(row, this.getGrn());
+                    this.notifyDataUpdateStarted(this);
+                },
+
+                _loadGrnDetails: function(row, grn) {
+                    var _this = this;
+
+                    this._callRemote('loadGrnDetails', [row, grn], this._loadGrnDetailsCallback);
+                },
+
+                _loadGrnDetailsCallback: function(response) {
+                    this.notify(Minder_Model_DataSet.dataChangedEvent, this);
+
+                    if (response.error && response.error.message)
+                        showErrors([response.error.message]);
+
+                    if (response.result) {
+                        if (!response.result.purchaseOrderLine) {
+                            showErrors(['PURCHASE_ORDER_LINE is empty.']);
+                            return;
+                        }
+
+                        if (!response.result.grn)
+                            this._gotoCreateGrn(response.result.purchaseOrderLine);
+                        else
+                            this._gotoAcceptGrn(response.result.purchaseOrderLine, response.result.grn)
+                    }
+                },
+
+                _gotoCreateGrn: function(purchaseOrderLine) {
+                    var _this = this;
+                    this._getGrnDetailContainer().minderGrnDetailsController('fill', purchaseOrderLine);
+                    this._getGrnDetailContainer().unbind('.po-lines').bind('previous-button-click.po-lines', function(evt) {
+                        $(this).minderGrnDetailsController('show', 1);
+                        $('#RECEIVE_POLINE-SEARCH_RESULTS').show();
+                        getPOLinesModel().selectRow('all', null, false);
+                    }).bind('accept-button-click.po-lines', function(evt) {
+                        var rows = _this.getSelectedRows(true);
+                        if (rows.length < 1)
+                            return;
+
+                        _this._getGrnDetailContainer().block();
+                        _this._callRemote('accept', [rows.shift(), evt.acceptDetails], _this._acceptCallback);
+                    });
+                    $('#RECEIVE_POLINE-SEARCH_RESULTS').hide();
+                    this._getGrnDetailContainer().minderGrnDetailsController('show', 2);
+
+                    if (purchaseOrderLine.PO_LINE_STATUS == 'CL')
+                        showWarnings(['Purchase Order Line is already completed.']);
+
+                    if (purchaseOrderLine.PO_LINE_STATUS == 'OS')
+                        showWarnings(['Purchase Order Line is oversupplied.']);
+                },
+
+                _gotoAcceptGrn: function(purchaseOrderLine, grn) {
+                    var allocateDetailsModel = getAllocateDetailsModel();
+                    allocateDetailsModel.resetState();
+
+                    this.setGrn(grn);
+                    this._getGrnDetailContainer().minderGrnDetailsController('fill', purchaseOrderLine);
+                    this._getGrnDetailContainer().minderGrnDetailsController('fillGrn', grn);
+                    allocateDetailsModel.setPurchaseOrder(purchaseOrderLine.PURCHASE_ORDER);
+                    allocateDetailsModel.setPoLine(purchaseOrderLine.PO_LINE);
+                    allocateDetailsModel.setGrn(grn);
+
+                    this._getGrnDetailContainer().minderGrnDetailsController('show', 3);
+                    $('#RECEIVE_POLINE-SEARCH_RESULTS').hide();
+                    $('#RECEIVE_ALLOCATE-SEARCH_RESULTS').show();
+                    $('#RECEIVE_ALLOCATE-SEARCH_RESULTS > div').data('minderElement').getModel().searchProdId(purchaseOrderLine.PROD_ID);
+                    $('#ALLOCATE-DETAILS-CONTAINER').show();
+
+                    if (purchaseOrderLine.PO_LINE_STATUS == 'CL')
+                        showWarnings(['Purchase Order Line is already completed.']);
+
+                    if (purchaseOrderLine.PO_LINE_STATUS == 'OS')
+                        showWarnings(['Purchase Order Line is oversupplied.']);
+                },
+
+
+                _acceptCallback: function(response) {
+                    this._getGrnDetailContainer().unblock();
+
+                    if (response.error && response.error.message)
+                        showErrors([response.error.message]);
+
+                    if (response.result) {
+                        if (response.result.messages && response.result.messages.length > 0)
+                            showMessage(response.result.messages);
+
+                        if (response.result.warnings && response.result.warnings.length > 0)
+                            showWarnings(response.result.warnings);
+
+                        if (response.result.errors && response.result.errors.length > 0) {
+                            showErrors(response.result.errors);
+                            return;
+                        }
+
+                        this._gotoAcceptGrn(response.result.purchaseOrderLine, response.result.grn);
+                    }
+                },
+
+                _getGrnDetailContainer: function() {
+                    if (this._grnDetailsContainer == null)
+                        this._grnDetailsContainer = $('#grn-details');
+
+                    return this._grnDetailsContainer;
+                }
+            },
+            {
+
+            }
+    );
+
+    var AllocateModel = $.inherit(
+        Minder_Model_SysScreen,
+        {
+            _offscreenSelectedUnits: null,
+            _grnDetailsContainer: null,
+            _receiveDirectDelivery: <?php echo $this->receiveDirectDeliveryEnabled ? 'true' : 'false';?>,
+
+            enableDirectDelivery: function(enable) {
+                enable = (typeof enable == 'undefined') ? true : !!enable;
+                this._receiveDirectDelivery = enable;
+            },
+
+            disableDirectDelivery: function() {
+                this.enableDirectDelivery(false);
+            },
+
+            directDeliveryEnabled: function() {
+                return this._receiveDirectDelivery;
+            },
+
+            getFieldValue: function(name) {
+                switch (name) {
+                    case '_TOTAL_SELECTED_UNITS':
+                        return this._getTotalSelectedUnits();
+                        break;
+                    default:
+                        return this.__base(name);
+                }
+            },
+
+            _setFieldValue: function(name, value) {
+                switch (name) {
+                    case '_TOTAL_SELECTED_UNITS':
+                        this._offscreenSelectedUnits = null;
+                        this.__base(name, value);
+                        this._updateAlocateDetailsTotalSelectedUnits(this._getTotalSelectedUnits());
+                        this._updateAllocateDetailsPickLabels(this.getSelectedRowsAmount());
+                        break;
+                    default:
+                        this.__base(name, value);
+                }
+            },
+
+            _setFields: function(fields) {
+                this.__base(fields);
+                this._offscreenSelectedUnits = null;
+                this._updateAlocateDetailsTotalSelectedUnits(this._getTotalSelectedUnits());
+                this._updateAllocateDetailsPickLabels(this.getSelectedRowsAmount());
+            },
+
+            _getOnscreenSelectedUnits: function() {
+                if (this._dataSet == null)
+                    return 0;
+
+                var selectedQty = this._dataSet.getSelectedRows().map(function(item){
+                    return item.REQUIRED_TO_COMPLETE_QTY ? item.REQUIRED_TO_COMPLETE_QTY : 0;
+                });
+
+                var sum = 0;
+
+                $.each(selectedQty, function(index, value){value = parseInt(value); sum += isNaN(value) ? 0 : value});
+
+                return sum;
+            },
+
+            _getOffscreenSelectedUnits: function() {
+                if (this._offscreenSelectedUnits == null) {
+                    this._offscreenSelectedUnits = this._fields['_TOTAL_SELECTED_UNITS'] - this._getOnscreenSelectedUnits();
+                    this._offscreenSelectedUnits = isNaN(this._offscreenSelectedUnits) ? null : this._offscreenSelectedUnits;
+                }
+
+                return this._offscreenSelectedUnits;
+            },
+
+            _getTotalSelectedUnits: function() {
+                return this._fields['_TOTAL_SELECTED_UNITS'] = this._getOffscreenSelectedUnits() + this._getOnscreenSelectedUnits();
+            },
+
+            searchProdId: function(prodId) {
+                this.notify(this.__self.dataUpdateStartedEvent, this);
+                this._callRemote(
+                    'searchProdId',
+                    [
+                        prodId,
+                        this._getRowOffset(),
+                        this._getShowBy()
+                    ],
+                    this._searchProdIdCallback
+                );
+            },
+
+            _setData: function(data) {
+                this.__base(data);
+                this._offscreenSelectedUnits = null;
+                this._updateAlocateDetailsTotalSelectedUnits(this._getTotalSelectedUnits());
+                this._updateAllocateDetailsPickLabels(this.getSelectedRowsAmount());
+            },
+
+            _getAlocateDetailsModel: function() {
+                var $container = $('#ALLOCATE-DETAILS-CONTAINER > table');
+                if ($container.length < 1)
+                    return null;
+                if (!$('#ALLOCATE-DETAILS-CONTAINER > table').data().minderElement)
+                    return null;
+
+                return $('#ALLOCATE-DETAILS-CONTAINER > table').data().minderElement.getModel();
+            },
+
+            _updateAllocateDetailsTotalReceived: function(val) {
+                var allocateDetailsModel = this._getAlocateDetailsModel();
+
+                if (!allocateDetailsModel)
+                    return;
+
+                allocateDetailsModel.setTotalReceivedUnits(val);
+            },
+
+            _updateAlocateDetailsTotalSelectedUnits: function(val) {
+                var allocateDetailsModel = this._getAlocateDetailsModel();
+
+                if (!allocateDetailsModel)
+                    return;
+
+                allocateDetailsModel.setTotalSelectedUnits(val);
+            },
+
+            _updateAllocateDetailsPickLabels: function(val) {
+                var allocateDetailsModel = this._getAlocateDetailsModel();
+
+                if (!allocateDetailsModel)
+                    return;
+
+                allocateDetailsModel.setTotalPickLabels(val);
+            },
+
+            _searchProdIdCallback: function(response) {
+                if (response.error && response.error.message)
+                    showErrors([response.error.message]);
+
+                if (response.result) {
+                    if (response.result.items)
+                        this.setData(response.result.items);
+
+                    if (response.result.fields)
+                        this.setFields(response.result.fields);
+                }
+            },
+
+            receive: function(allocateDetails) {
+                this._callRemote(
+                    'receive',
+                    [
+                        allocateDetails,
+                        this.getDataRows()
+                    ],
+                    this._receiveCallback
+                );
+            },
+
+            _receiveCallback: function(response) {
+                if (response.error && response.error.message)
+                    showErrors([response.error.message]);
+
+                if (response.result) {
+                    if (response.result.messages && response.result.messages.length > 0)
+                        showMessage(response.result.messages);
+
+                    if (response.result.warnings && response.result.warnings.length > 0)
+                        showWarnings(response.result.warnings);
+
+                    if (response.result.errors && response.result.errors.length > 0) {
+                        showErrors(response.result.errors);
+                        return;
+                    }
+
+                    if (getAllocateDetailsModel().deliveryIsComplete() == 'yes')
+                        gotoSearchPurchaseOrder();
+                    else
+                        gotoSelectPOLine();
+                }
+            },
+
+            selectRow: function(rowId, origin, selected) {
+                if (!this.directDeliveryEnabled()) {
+                    showWarnings(['Receive Direct Delivery is disabled. Check system setup.']);
+                    this.notify(Minder_Model_DataSet.rowSelectedEvent, this);
+                    return;
+                }
+
+                this.__base(rowId, origin, selected);
+            },
+
+            _selectRow: function(rowId, selected) {
+                this.__base(rowId, selected);
+                this._updateAlocateDetailsTotalSelectedUnits(this._getTotalSelectedUnits());
+                this._updateAllocateDetailsPickLabels(this.getSelectedRowsAmount());
+                return this;
+            }
+        },
+        {
+            itemsReceivedEvent: 'itemsReceivedEvent'
+        }
+    );
+
+    function getPOLinesModel() {
+        return $('#RECEIVE_POLINE-SEARCH_RESULTS > div').data('minderElement').getModel();
+    }
+
+    function getPOModel() {
+        return $('#RECEIVE_PO-SEARCH_RESULTS > div').data('minderElement').getModel();
+    }
+
+    function getReceiveAllocateModel() {
+        return $('#RECEIVE_ALLOCATE-SEARCH_RESULTS > div').data('minderElement').getModel();
+    }
+
+    function getAllocateDetailsModel() {
+        return $('#ALLOCATE-DETAILS-CONTAINER > table').data('minderElement').getModel();
+    }
+
+    function cancelPOLine() {
+        gotoSearchPurchaseOrder();
+    }
+
+    function onReceivePOSearch(evt) {
+        var poModel = getPOModel();
+        var searchModel = evt.sender;
+
+        var searchFields = searchModel.getSearchFields();
+        poModel.makeSearch(searchFields);
+
+        var allocateDetailsModel = getAllocateDetailsModel();
+        var poLinesModel = getPOLinesModel();
+
+        for (var i in searchFields) {
+            var searchField = searchModel.getField(i);
+            if (searchField == null) continue;
+
+            if (searchField.SSV_NAME == 'GRN') {
+                allocateDetailsModel.setGrn(searchFields[i]);
+                poLinesModel.setGrn(searchFields[i]);
+                $('#grn-details').minderGrnDetailsController('fillGrn', searchFields[i]);
+
+            }
+        }
+    }
+
+    function gotoSearchPurchaseOrder() {
+        $('#RECEIVE_PO-SEARCH_RESULTS').show();
+        $('#RECEIVE_PO-SEARCH_FORM').show();
+        $('#RECEIVE_POLINE-SEARCH_RESULTS').hide();
+        $('#RECEIVE_ALLOCATE-SEARCH_RESULTS').hide();
+        $('#ALLOCATE-DETAILS-CONTAINER').hide();
+        getPOModel().selectRow('all', null, false);
+        $('#grn-details').hide();
+        $('#grn-details').minderGrnDetailsController('fillGrn', null);
+        getAllocateDetailsModel().setGrn(null);
+        getPOLinesModel().setGrn(null);
+    }
+
+    function gotoSelectPOLine() {
+        $('#RECEIVE_PO-SEARCH_RESULTS').hide();
+        $('#RECEIVE_PO-SEARCH_FORM').hide();
+        $('#RECEIVE_POLINE-SEARCH_RESULTS').show();
+        $('#RECEIVE_ALLOCATE-SEARCH_RESULTS').hide();
+        $('#ALLOCATE-DETAILS-CONTAINER').hide();
+        $('#grn-details').minderGrnDetailsController('show', 1);
+        getPOLinesModel().loadDependentItems(getPOModel());
+    }
+
+    $(function(){
+        $('#RECEIVE_PO-SEARCH_RESULTS').show();
+        $('#RECEIVE_PO-SEARCH_FORM').show();
+        $('#RECEIVE_POLINE-SEARCH_RESULTS').hide();
+        $('#RECEIVE_ALLOCATE-SEARCH_RESULTS').hide();
+        $('#ALLOCATE-DETAILS-CONTAINER').hide();
+
+        $(document).delegate('#grn-details', 'total-received-change', function(evt) {
+            var _getAlocateDetailsModel = function() {
+                var $container = $('#ALLOCATE-DETAILS-CONTAINER > table');
+                if ($container.length < 1)
+                    return null;
+                if (!$('#ALLOCATE-DETAILS-CONTAINER > table').data().minderElement)
+                    return null;
+
+                return $('#ALLOCATE-DETAILS-CONTAINER > table').data().minderElement.getModel();
+            };
+
+            var totalReceived = parseInt(evt.totalReceived);
+            totalReceived = isNaN(totalReceived) ? 0 : totalReceived;
+
+            var allocateDetailsModel = _getAlocateDetailsModel();
+
+            if (!allocateDetailsModel)
+                return;
+
+            allocateDetailsModel.setTotalReceivedUnits(totalReceived);
+        });
+
+        $('#ALLOCATE-DETAILS-CONTAINER').bind('back-btn-click', function(evt) {
+            evt.preventDefault();
+            gotoSelectPOLine();
+        });
+
+        $('#ALLOCATE-DETAILS-CONTAINER').bind('print-btn-click', function(evt) {
+            evt.preventDefault();
+            if (getAllocateDetailsModel().canAllocate())
+                getReceiveAllocateModel().receive(getAllocateDetailsModel().getAllocateDetails());
+            else
+                showWarnings(['Incorrect Total Print Units.']);
+        });
+    });
+</script>

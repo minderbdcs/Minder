@@ -1,0 +1,35 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<form action="<?php echo $this->url(); ?>" method="post">
+<table>
+    <tr>
+        <th>User ID:</th><td><?php echo $this->formText('Search[user_id_be]', $this->search->userIdBe, array('autocomplete' => 'off')); ?></td>
+    </tr>
+    <tr>
+        <th>Company ID:</th><td><?php echo $this->formText('Search[company_id_be]', $this->search->companyIdBe, array('autocomplete' => 'off')); ?></td>
+    </tr>
+    <tr>
+        <th>Device ID:</th><td><?php echo $this->formText('Search[device_id_be]', $this->search->deviceIdBe, array('autocomplete' => 'off')); ?></td>
+    </tr>
+</table>
+<div id="buttons">
+<input type="submit" value="Search" />
+<input type="button" value="New" onclick="location='<?php echo $this->url(array('action' => 'new')); ?>'" />
+</div>
+</form>
+<table id="results" class="withborder">
+    <tr>
+        <th>User ID</th><th>Device ID</th><th>Company ID</th>
+    </tr>
+<?php
+    foreach ($this->results as $sysUser) {
+        echo '<tr>';
+        echo '<td><a href="' . $this->url(array('controller' => 'sys-user', 'action' => 'show', 'id' => $sysUser->userId), null, true). '">' . $this->escape($sysUser->userId) . '</a></td>';
+          echo '<td>' . $this->escape($sysUser->deviceId) . '</td>';
+          echo '<td>' . $this->escape($sysUser->companyId) . '</td>';
+          echo "</tr>\n";
+    }
+?>
+</table>
+
+<?php echo $this->render('footer.phtml'); ?>

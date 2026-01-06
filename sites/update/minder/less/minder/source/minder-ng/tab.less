@@ -1,0 +1,51 @@
+.mdr-tab-content {
+  display: none;
+  border: 1px solid #519e2d;
+  padding: 10px;
+
+  &.mdr-active {
+    display: block;
+  }
+}
+
+.mdr-tab-list {
+  padding-left: 3px;
+  height: 27px;
+
+  li {
+    display: inline-block;
+    margin-left: 3px;
+    vertical-align: top;
+
+    a {
+      display: block;
+      margin-top: 5px;
+      background: url("i/tabs.png") 100% 0;
+      padding-right: 12px;
+
+      span {
+        display: block;
+        line-height: 20px;
+        font-weight: bold;
+        background: url("i/tabs.png") 0 0;
+        padding-left: 12px;
+        padding-top: 1px;
+        color: white;
+      }
+    }
+
+
+    &.mdr-active {
+      a {
+        margin-top: 0;
+        background-position: 100% -23px;
+
+        span {
+          padding-top: 0;
+          background-position: 0 -23px;
+          line-height: 27px;
+        }
+      }
+    }
+  }
+}

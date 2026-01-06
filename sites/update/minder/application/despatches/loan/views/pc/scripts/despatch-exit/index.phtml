@@ -1,0 +1,386 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<div id="search_form_container">
+    <?php echo $this->searchForm; ?>
+</div>
+
+<div id="tab_container">
+</div>
+
+<?php echo $this->render('despatch-exit/awaiting-exit-carrier.phtml');?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+        
+        $('#tab_container').minderSearchResult(response.sysScreens['<?php echo $this->namespace;?>']);
+
+        initButtons();
+        $('#barcode').focus();
+        $('#tab_container').dequeue();
+    }
+    
+    function tabContainerOnSelectRow(evt) {
+        var paginator = $('#tab_container').minderSearchGetPaginatorState();
+        
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+        
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $('#tab_container').queue(function() {
+            $('#tab_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#tab_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function loadData() {
+        var paginator = $('#tab_container').minderSearchGetPaginatorState();
+        
+        var dataToSend = {
+            'sysScreens' : {
+                '<?php echo $this->namespace?>' : {
+                    'paginator' : paginator
+                }
+            }
+        };
+        
+        $('#tab_container').queue(function() {
+            $('#tab_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#tab_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function tabContainerOnPageChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnShowByChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnPreSort(evt) {
+
+    }
+
+    function tabContainerOnSort(evt) {
+        loadData();
+    }
+    
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+        dataToSend.action = 'search';
+        
+        $('#barcode').val('').parent().block();
+        $('#tab_container').queue(function() {
+            $('#tab_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#tab_container > div').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onBarcodeSuccess(evt) {
+        var connoteTest = /^CONNOTE_\w+/,
+            paramDescription = evt.parseResult.paramDesc;
+        $('#barcode').val('').focus();
+        
+        if (paramDescription.param_name == 'SCREEN_BUTTON') {
+            if (paramDescription.param_filtered_value == 'CANCEL' && Minder.AwaitingExit.Dlg.ExitCarrier.isActive()) {
+                Minder.AwaitingExit.Dlg.ExitCarrier.closeDialog();
+            } else {
+                var foundButton = $('#tab_container').find('input[type=submit][name=' + paramDescription.param_filtered_value + ']');
+
+                if (!foundButton.attr('disabled')) {
+                    foundButton.click();
+                }
+            }
+        } else if (paramDescription.param_name == 'CARRIER_ID') {
+            if (!Minder.AwaitingExit.Dlg.ExitCarrier.isActive()) {
+                Minder.AwaitingExit.Dlg.ExitCarrier.showDialog();
+            }
+
+            Minder.AwaitingExit.Dlg.ExitCarrier.setCarrier(paramDescription.param_filtered_value);
+        } else if (connoteTest.test(paramDescription.param_name)) {
+            if (Minder.AwaitingExit.Dlg.ExitCarrier.isActive()) {
+                Minder.AwaitingExit.Dlg.ExitCarrier.setPackId(paramDescription.param_filtered_value);
+            } else {
+                SCANNING_EXITOnParseSuccess.call(evt.target, evt);
+            }
+        } else {
+            SCANNING_EXITOnParseSuccess.call(evt.target, evt);
+        }
+    }
+
+    function refreshList() {
+        $('#barcode').parent().block();
+        loadData();
+        $('#tab_container').queue(function() {
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function refreshBtnOnClick(evt) {
+        refreshList();
+    }
+    
+    function acceptCancelAction(actionToPerform) {
+        $('#barcode').parent().block();
+        $('#tab_container').queue(function() {
+            $('#tab_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Data...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'accept-cancel'));?>',
+                {'despatchAction': actionToPerform},
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#tab_container > div').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function getSelectedRows() {
+        var
+            result = parseInt($('#tab_container .selected-container').text());
+
+        return isNaN(result) ? 0 : result;
+    }
+
+    function accept() {
+        if (getSelectedRows() < 1) {
+            return;
+        }
+
+        acceptCancelAction('accept');
+    }
+    
+    function acceptBtnOnClick(evt) {
+        accept();
+    }
+
+    function cancel() {
+        if (getSelectedRows() < 1) {
+            return;
+        }
+
+        acceptCancelAction('cancel');
+    }
+
+    function cancelBtnOnClick(evt) {
+        cancel();
+    }
+
+    function reprintLabel() {
+        if (getSelectedRows() < 1) {
+            return;
+        }
+
+        $('#tab_container').queue(function() {
+            $('#tab_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Printing Labels...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'reprint-labels'));?>',
+                {},
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#tab_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function reprintLabelBtnOnClick(evt) {
+        reprintLabel();
+    }
+
+    function initButtons() {
+    }
+    
+    function startAutorefresh() {
+        loadData();
+        $('#tab_container').queue(function() {
+            setTimeout(startAutorefresh, 10000);
+            $(this).dequeue();
+        });
+    }
+
+    function makeReport(format, sysScreen) {
+        if (getSelectedRows() < 1) {
+            return;
+        }
+
+        var nameSpace = '';
+        switch (sysScreen) {
+            case '<?php echo $this->ssName;?>' :
+                nameSpace = '<?php echo $this->namespace;?>';
+                break;
+            default:
+                throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+        }
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(nameSpace);
+    }
+
+    function globalSearch(event) {/*suppress default globalSearch method*/}
+
+    function getNamespaceMap() {
+        return {
+            '<?php echo $this->ssName;?>': '<?php echo $this->namespace;?>'
+        };
+    }
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        var $barcode = $('#barcode');
+        $('#tab_container').minderSearchResult(<?php echo json_encode($this->jsScreenDefinition);?>);
+        $('#tab_container').minderSearchResult({autosorter:true, customSort:true});
+        $('#tab_container').minderSearchResult(<?php echo json_encode($this->jsScreenDataset);?>);
+        $('#tab_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', tabContainerOnPageChanged)
+            .bind('show-by-changed', tabContainerOnShowByChanged)
+            .bind('pre-sort', tabContainerOnPreSort)
+            .bind('sort', tabContainerOnSort);
+
+        $(document).bind('do-search', documentOnDoSearch);
+
+        $barcode.minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->carrierIdParam;?>]});
+        $barcode.minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->screenButtonsParam;?>]});
+        <?php
+            foreach ($this->connoteBarcodeDescriptions as $barcodeDescription) {
+
+        ?>
+        $barcode.minderBarcodeInput(
+            {
+                'barcodeDescriptors' : [<?php echo $barcodeDescription;?>]
+            }
+        );
+        <?php
+            }
+        ?>
+        $barcode.bind('parse-success', onBarcodeSuccess).bind('parse-error', function(evt){
+            showErrors([evt.parseResult.errorMsg], 10000);
+            $('#barcode').val('').focus();
+        });
+        initButtons();
+        setTimeout(startAutorefresh, 10000);
+        $barcode.focus();
+
+        $.minderReport({
+            "printServiceUrl": '<?php echo $this->url(array('module' => 'default', 'controller' => 'service', 'action' => 'run-report'));?>',
+            'viewServiceUrl': '<?php echo $this->url(array('module' => 'default', 'controller' => 'service', 'action' => 'show-report'));?>',
+            'namespaceMap' : getNamespaceMap()
+        });
+    });
+    
+  
+/* ]]> */
+</script>
+
+<?php
+echo $this->StandardSRTemplate(array('SRRows', 'SRDefaultButtons', 'SRTabContainer'));
+?>
+
+<!-- will use custom rows template-->
+<script type="text/x-jquery-tmpl" id="rows-tmpl">
+    <tr row_id="${row_id}" class="ROW-ID-${row_id} {{if $item.data.checked}}selected-row{{/if}}">
+        {{if $item.parent.parent.parent.data.canSelect}}
+            <th style="white-space: nowrap;">
+                <input class="row_selector {{= $item.parent.parent.parent.data.namespace}}" row_id="${row_id}" selection_namespace="{{= $item.parent.parent.parent.data.namespace}}" type="checkbox" {{if $item.data.checked}}checked="chcecked"{{/if}}>
+            </th>
+        {{/if}}
+
+        {{tmpl($item.parent.parent.parent.commonMethods.getFields($item.parent.parent.parent.data, $item.parent.parent.data.SST_TAB_NAME)) '#cell-tmpl'}}
+
+    </tr>
+</script>
+
+<!-- will use custom buttons-->
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        <ul class="toolbar">
+            {{each $item.data.buttons}}
+            <li><input type="submit" onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" value="{{= $value.SSB_TITLE}}" name="{{= $value.SSB_BUTTON_NAME}}" /></li>
+            {{/each}}
+        </ul>
+    </div>
+</script>
+
+<script id="tab-container-tmpl" type="text/x-jquery-tmpl">
+    <div id="${tabContainerId}" class="ui-tabs-container">
+
+        {{if sysScreenName != "AWAITING_EXIT_CARRIER"}}
+            <ul class="ui-tabs-nav">
+                {{tmpl(tabs) '#tabs-headers-tmpl'}}
+            </ul>
+        {{/if}}
+
+        <div class="ui-tabs-panel-header">
+            <div class="sys-screen-title" title="${sysScreenName}">${sysScreenCaption}</div>
+            {{if canSelect}}
+                <div class="paginator-container">
+                    <label disablefor="1">Select All Rows on all pages</label>
+                    <input name="select_complete" {{if $item.data.paginator.totalRows == $item.data.paginator.selectedRows}} checked="checked" {{/if}} {{if $item.data.paginator.selectionMode == 'one'}} disabled="disabled" {{/if}} id="select_complete" row_id="select_complete" class="select_complete ${namespace}" selection_namespace="${namespace}" type="checkbox">
+                </div>
+            {{/if}}
+            {{if usePagination}}
+                {{tmpl(paginator) '#paginator-tpl'}}
+            {{/if}}
+
+            {{if hasHeader}}
+                {{tmpl($item.data) '#header-tmpl'}}
+            {{/if}}
+        </div>
+
+        {{tmpl(tabs) '#tabs-tmpl'}}
+    </div>
+</script>
+<?php echo $this->render('footer.phtml'); ?>

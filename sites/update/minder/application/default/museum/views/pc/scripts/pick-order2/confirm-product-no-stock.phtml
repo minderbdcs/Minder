@@ -1,0 +1,112 @@
+<?php
+    $confirmButtons = array();
+
+    if ($this->minder->defaultControlValues['CONFIRM_WITH_NO_PROD'] == 'T')
+        $confirmButtons[] = $this->formButton('PROD_ADD_REQUESTED', 'ADD REQUESTED', array('class' => 'green-button'));
+
+    $confirmButtons[] = $this->formButton('PROD_ADD_AVAILABLE', 'ADD AVAILABLE', array('class' => 'green-button'));
+    $confirmButtons[] = $this->formButton('PROD_DO_NOT_ADD', 'DO NOT ADD', array('class' => 'yellow-button'));
+?>
+
+<!-- confirm product dialog -->
+<div style="display: none;" id="confirm_product_no_stock_dialog" title="Confirm" class="flora">
+    <form name="confirm_product_no_stock_form" id='confirm_product_no_stock_form' action="" method="POST">
+        <input type="hidden" name="PICK_ITEM_PROVIDER_NAME" id="PICK_ITEM_PROVIDER_NAME" value="" />
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td colspan="<?php echo count($confirmButtons);?>">
+                    Insufficient Available Stock for <span class="prod-id"></span> (Available = <span class="available"></span>, Required = <span class="required"></span>)
+                </td>
+            </tr>
+            <tr><td colspan="<?php echo count($confirmButtons);?>">&nbsp;</td></tr>
+            <tr>
+
+                <?php foreach ($confirmButtons as $button) { ?>
+                <td align="center">
+                    <?php echo $button;?>
+                </td>
+                <?php } ?>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- product label dialog -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        initConfirmProductNoStockDialog();
+    });
+
+    function initConfirmProductNoStockDialog() {
+        var confirmDialog = $('#confirm_product_no_stock_dialog');
+        confirmDialog.dialog(
+            {
+                autoOpen  : false,
+                width     : 440,
+                height    : 160,
+                resizable : true
+            }
+        ).unbind('dialogopen.confirm-form').bind('dialogopen.confirm-form', function(event, ui) {
+            $(this).show();
+        });
+
+        confirmDialog.find('#PROD_ADD_REQUESTED').unbind('click.confirm-form').bind('click.confirm-form', onProdAddRequestedClick);
+        confirmDialog.find('#PROD_ADD_AVAILABLE').unbind('click.confirm-form').bind('click.confirm-form', onProdAddAvailableClick);
+        confirmDialog.find('#PROD_DO_NOT_ADD').unbind('click.confirm-form').bind('click.confirm-form', onProdDoNotAddClick);
+    }
+
+    function confirmAddWithNoStock(addMode) {
+        $.post(
+            '<?php echo $this->url(array('action' => 'confirm-add-with-no-stock'));?>',
+            {
+                'addMode' : addMode,
+                'providerName' : $('#PICK_ITEM_PROVIDER_NAME').val()
+            },
+            confirmAddWithNoStockCallback,
+            'json'
+        );
+    }
+
+    function confirmAddWithNoStockCallback(response) {
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.location) {
+            location.href = response.location;
+        }
+    }
+
+    function onProdAddRequestedClick(evt) {
+        evt.preventDefault();
+
+        confirmAddWithNoStock('<?php echo Minder_AddPickItemRoutine_Request::ADD_MODE_FORCE_REQUESTED;?>');
+
+        $('#confirm_product_no_stock_dialog').dialog('close');
+
+        return false;
+    }
+    
+    function onProdAddAvailableClick(evt) {
+        evt.preventDefault();
+
+        confirmAddWithNoStock('<?php echo Minder_AddPickItemRoutine_Request::ADD_MODE_FORCE_AVAILABLE;?>');
+
+        $('#confirm_product_no_stock_dialog').dialog('close');
+
+        return false;
+    }
+
+    function onProdDoNotAddClick(evt) {
+        evt.preventDefault();
+
+        $('#confirm_product_no_stock_dialog').dialog('close');
+
+        return false;
+    }
+
+</script>

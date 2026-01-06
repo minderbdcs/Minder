@@ -1,0 +1,101 @@
+<?php
+if(!empty($this->toolError)) {
+    echo '<b>' . $this->toolError . '</b>';
+    return;
+}
+?>
+
+<b>TOOL No: <?php echo $this->toolInfo; ?></b>
+    
+<table class="summary">
+    <tr>
+        <th>
+            <b>Disposal Details:</b>
+        </th>
+        <td style="text-align:right;">
+
+        </td>
+    </tr>
+    <tr>
+        <th>Disposed Date:</th>
+        <td>
+            <?php echo $this->formText('disposal_date', '', array()); ?>
+        </td>
+    </tr>
+    <tr>
+        <th>Disposal Cost:</th>
+        <td>
+            <?php echo $this->formText('disposal_cost', '', array()); ?>
+        </td>
+    </tr>
+    <tr>
+        <th>Disposal Income:</th>
+        <td>
+            <?php echo $this->formText('disposal_price', '', array()); ?>
+        </td>
+    </tr>
+    <tr>
+        <th>Disposal Notes:</th>
+        <td>
+            <textarea id="disposal_notes" name="disposal_notes"></textarea>
+        </td>
+    </tr>
+</table>
+
+<ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+    <li>
+        <input type="submit" class="order-button" name="save-disposal" value="SAVE DISPOSAL" onclick="saveDisposal();"/>
+    </li>
+    <li>
+        <input type="button" class="order-button" name="cancel" value="CANCEL" onclick="cancelDisposalDialog(); return false;"/>
+    </li>
+</ul>
+
+<div id="dispose-messages"></div>
+
+<script type="text/javascript">
+
+    // attach datepicker to disposalDate
+    $(document).ready(function() {
+        $("#disposal_date").datepicker({dateFormat: 'yy-mm-dd', beforeShow: function() {
+            var
+                dialogZIndex = parseInt($("#dispose_tool_dialog").parents(".ui-dialog").css('z-index') || $('#datepicker_div').css('z-index')) || 1000;
+
+            $('#datepicker_div').css('z-index', dialogZIndex + 2);
+            if (typeof console != 'undefined')console.log('before show');
+            if (typeof console != 'undefined')console.log($("#dispose_tool_dialog").parents(".ui-dialog").css('z-index'));
+
+            return {};
+        }});
+        $("#dispose_tool_dialog").dialog().bind('dialogclose', function() {
+            $("#disposal_date").datepicker('hide');
+        });
+
+    });
+
+    function cancelDisposalDialog() {
+        $("#dispose_tool_dialog").dialog("close");
+    }
+
+    function saveDisposal() {
+        $.post('<?php echo $this->url(array('action' => 'save-disposal'))?>',
+            {
+                date     : $("#disposal_date").val(),
+                cost     : $("#disposal_cost").val(),
+                price    : $("#disposal_price").val(),
+                notes    : $("#disposal_notes").val()
+            },
+            function(response) {
+                $("#dispose_tool_dialog").dialog("close");
+
+                if (response.messages && response.messages.length > 0)
+                    showMessage(response.messages);
+
+                if (response.errors && response.errors.length > 0)
+                    showErrors(response.errors);
+            },
+            'json'
+        );
+    }
+
+</script>

@@ -1,0 +1,10 @@
+<?php
+    $result =         array(
+            'errors'     => $this->errors,
+            'warnings'   => $this->warnings,
+            'messages'   => $this->messages,
+            'sysScreens' => $this->sysScreens
+    );
+
+    echo json_encode($result);
+?>

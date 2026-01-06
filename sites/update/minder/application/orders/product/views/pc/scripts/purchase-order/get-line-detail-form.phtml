@@ -1,0 +1,101 @@
+
+<form id="detail_line_form" method="post">
+    <?php if ($this->recordId == 'new') {?>
+        <h1>LINE DETAILS: ADD</h1>
+    <?php } else {?>
+        <h1>LINE DETAILS: EDIT</h1>
+    <?php }?>
+   
+    <table class="summary"style="width:99%">
+        <?php if ($this->recordId == 'new') {?>
+            <?php echo $this->formHidden('record_id', $this->recordId) ?>
+        <?php } else {?>
+        <tr>
+            <th>RECORD_ID</th>
+            <td><?php echo $this->formText('record_id', $this->recordId, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <?php }?>
+        <tr>
+            <th>PURCHASE_ORDER</th>
+            <td><?php echo $this->formText('purchase_order', $this->purchaseOrderNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE</th>
+            <td><?php echo $this->formText('po_line', $this->purchaseLineNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>SSN_ID</th>
+            <td><?php echo $this->formText('ssn_id', isset($this->lineDetails['SSN_ID']) ? $this->lineDetails['SSN_ID'] : '', array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER1</th>
+            <td><?php echo $this->formText('psl_other1', isset($this->lineDetails['PSL_OTHER1']) ? $this->lineDetails['PSL_OTHER1'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER2</th>
+            <td><?php echo $this->formText('psl_other2', isset($this->lineDetails['PSL_OTHER2']) ? $this->lineDetails['PSL_OTHER2'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER_DATE3</th>
+            <td><?php echo $this->formText('psl_other_date3', isset($this->lineDetails['PSL_OTHER_DATE3']) ? $this->lineDetails['PSL_OTHER_DATE3'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER_DATE4</th>
+            <td><?php echo $this->formText('psl_other_date4', isset($this->lineDetails['PSL_OTHER_DATE4']) ? $this->lineDetails['PSL_OTHER_DATE4'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_STATUS</th>
+            <td><?php echo $this->formSelect('psl_status', isset($this->lineDetails['PSL_STATUS']) ? $this->lineDetails['PSL_STATUS'] : '', null, $this->pslStatusList) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_ORDER_QTY</th>
+            <td><?php echo $this->formText('psl_order_qty', isset($this->lineDetails['PSL_ORDER_QTY']) ? $this->lineDetails['PSL_ORDER_QTY'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_RECEIVED_QTY</th>
+            <td><?php echo $this->formText('psl_received_qty', isset($this->lineDetails['PSL_RECEIVED_QTY']) ? $this->lineDetails['PSL_RECEIVED_QTY'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_DATE</th>
+            <td><?php echo $this->formText('last_update_date', isset($this->lineDetails['LAST_UPDATE_DATE']) ? $this->lineDetails['LAST_UPDATE_DATE'] : '', null) ?></td></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_BY</th>
+            <td><?php echo $this->formText('last_update_by', isset($this->lineDetails['LAST_UPDATE_BY']) ? $this->lineDetails['LAST_UPDATE_BY'] : '', null) ?></td>
+        </tr>
+        <tr>
+            <th>DEVICE_ID</th>
+            <td><?php echo $this->formText('device_id', isset($this->lineDetails['DEVICE_ID']) ? $this->lineDetails['DEVICE_ID'] : '', null) ?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="save_new_line" value="SAVE" onclick="return false;"/></li>
+        <li><input type="submit" name="action" value="CANCEL" onclick="return cancelSaveLine();" /></li>
+    </ul>
+</form>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $('#psl_other_date3').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#psl_other_date4').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#last_update_date').datepicker({dateFormat: 'yy-mm-dd'});
+//        $('#detail_line_form_container').show();
+        $('#detail_line_form input[name=save_new_line]').unbind('click.new-line-detail-form').bind('click.new-line-detail-form', saveNewLineOnClick);
+    });
+    
+    function saveNewLineOnClick(evt) {
+        evt.preventDefault();
+        
+        var saveEvent = $.Event('save');
+        saveEvent.formData = $('#detail_line_form').serializeArray();
+        $('#detail_line_form').trigger(saveEvent);
+        
+    }
+    
+    function cancelSaveLine(){
+        var cancelEvent = $.Event('cancel');
+        $('#detail_line_form').trigger(cancelEvent);
+        return false;
+    }
+   
+</script>

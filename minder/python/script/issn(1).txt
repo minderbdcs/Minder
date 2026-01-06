@@ -1,0 +1,3 @@
+*SSN_ID,CURRENT_QTY,INTO_DATE,LOCN_ID
+"sssss",2,34567,"ddddddd"
+

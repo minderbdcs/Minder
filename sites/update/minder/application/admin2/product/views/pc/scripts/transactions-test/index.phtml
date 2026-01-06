@@ -1,0 +1,135 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<b>TRANSACTIONS_TEST SCREEN</b><br><br>
+
+<div id="tr_form">
+    <?php echo $this->transactionsForm; ?>
+</div>
+
+<div style="border-top: 1px solid rgb(153, 153, 153); border-bottom: 1px solid rgb(153, 153, 153);"> </div>
+<div id="response_result"></div>
+<script type="text/javascript">
+
+    function initForm()
+    {
+        $('#accept_btn').click(onAcceptBtnClick);
+        $('#clear_btn').click(onClearBtnClick);
+        $('#complete').attr('disabled', true);
+        $('#instance_id').attr('disabled', true);
+        $('#exported').attr('disabled', true);
+        $('#trn_date').datepicker({timeFormat: 'yy/mm/dd'});
+        $('#response_result').html("Response result will be here!");
+        $('#input_source').val("SSSSSSSSSS"); // add 10 cause location
+        $('#input_source').attr('readonly', true);
+        $('#error_text').attr('disabled', true);
+        $('#instance_id').val("MASTER");
+        $('#complete').val("F");
+        $('#exported').val("0");
+        $('#person_id').val('<?php echo $this->minder->userId; ?>');
+        $('#device_id').val('<?php echo $this->minder->deviceId; ?>');
+
+    }
+
+    function setFlag(evt, flag)
+    {
+        var pos;
+        var element_id = $(evt.target).attr('id');
+
+        switch (element_id) {
+            case "wh_id"     :  pos = 0;
+                break;
+            case "locn_id"   :  pos = 1;
+                break;
+            case "object"    :  pos = 2;
+                break;
+            case "location"  :  pos = 3;
+                break;
+            case "reference" :  pos = 4;
+                break;
+            case "qty"       :  pos = 5;
+                break;
+            case "person_id" :  pos = 6;
+                break;
+            case "device_id" :  pos = 7;
+                break;
+        }
+
+        pattern     = new RegExp("^(.{" + pos + "}).");
+        state       = new String($('#input_source').val());
+        temp        = state.replace(pattern, flag);  // flag $1K or $1B
+        $('#input_source').val(temp);
+    }
+    
+    function onAcceptBtnClick(evt)
+    {
+        $('#tr_form').block('Transaction Running...');
+
+
+        $.post(
+            '<?php echo $this->url(array('action' => 'accept-transaction'))?>',
+            $('#transactions_test_form').serializeArray(),
+            function(msg) {
+                $('#tr_form').unblock();
+
+                if (msg.response.messages && msg.response.messages.length > 0)
+                    $('#response_result').html("Response result: " + "<b>" + msg.response.messages.toString() + "</b>");
+                if (msg.response.errors && msg.response.errors.length > 0)
+                    showErrors(Array(msg.response.errors));
+            },
+            "json"
+        );
+
+        return false;
+    }
+
+    function onClearBtnClick(evt)
+    {
+        evt.preventDefault();
+        $('#transactions_test_form').clearForm();
+        $('#response_result').html("");
+        $('#input_source').val("SSSSSSSSSS");
+        $('#instance_id').val("MASTER");
+        $('#complete').val("F");
+        $('#exported').val("0");
+        $('#person_id').val('<?php echo $this->minder->userId; ?>');
+        $('#device_id').val('<?php echo $this->minder->deviceId; ?>');
+    }
+
+    $(document).ready(function(){
+        $('#transactions_test_form :input').minderBarcodeInput();
+
+        $('#transactions_test_form :input').bind({
+            'parse-success': function(evt) {
+                setFlag(evt, '$1B');
+            },
+            'parse-error'  : function(evt){
+
+                input  = $(evt.target)[0];
+
+                stored_data  = jQuery.data(input, "data_value");
+                current_data = $(evt.target).val();
+
+                if (stored_data != current_data) {
+                    if ($(evt.target).val()[0] == ']') {
+
+                        old_val = new String ($(evt.target).val());
+                        new_val = old_val.substr(3);
+
+                        jQuery.data(input, "data_value", new_val);
+                        
+                        $(evt.target).val(new_val);
+                        setFlag(evt, '$1B');
+                    }
+                    else
+                        setFlag(evt, '$1K');
+                }
+
+            }
+        });
+
+        initForm();
+    });
+    
+</script>
+<?php echo $this->render('footer.phtml'); ?>
+ 

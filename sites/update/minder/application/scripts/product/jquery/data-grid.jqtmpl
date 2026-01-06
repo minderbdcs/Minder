@@ -1,0 +1,31 @@
+<table class="withborder tablesorter">
+    <thead>
+        <tr>
+        {{each($index, $fieldStruct) $item.data.getFields()}}
+            {{if $fieldStruct.field.getWidth()}}
+            <th width="{{= $fieldStruct.field.getWidth()}}px">
+            {{else}}
+            <th>
+            {{/if}}
+                <span class="minder-grid-view-header FIELD_ID_{{= $fieldStruct.field.getName()}}">Header:{{= $fieldStruct.field.getName()}}</span>
+            </th>
+        {{/each}}
+        </tr>
+    </thead>
+    <tbody>
+        {{each($rowIndex, $row) $item.data.getRows()}}
+        <tr class="ROW_ID_{{= $row.__rowId}}" data-row-id="{{= $row.__rowId}}">
+            {{each($fieldIndex, $fieldStruct) $item.data.getFields()}}
+
+            {{if $fieldStruct.field.getWidthString()}}
+            <td class="ROW_ID_{{= $row.__rowId}} FIELD_ID_{{= $fieldStruct.field.getName()}}"  style="width:{{= $fieldStruct.field.getWidthString()}};" data-row-id="{{= $row.__rowId}}">
+            {{else}}
+            <td class="ROW_ID_{{= $row.__rowId}} FIELD_ID_{{= $fieldStruct.field.getName()}}" data-row-id="{{= $row.__rowId}}">
+            {{/if}}
+                <span class="minder-grid-view-field ROW_ID_{{= $row.__rowId}} FIELD_ID_{{= $fieldStruct.field.getName()}}" data-row-id="{{= $row.__rowId}}">Row:{{= $row.__rowId}}:Field:{{= $fieldStruct.field.getName()}}</span>
+            </td>
+            {{/each}}
+        </tr>
+        {{/each}}
+    </tbody>
+</table>

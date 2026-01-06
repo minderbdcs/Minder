@@ -1,0 +1,217 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all() ?>
+
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+ <div style="width:99%;">
+        <table style="width: 100%">
+            <tr>
+                <td>
+                    <b>DESPATCHED ORDERS:</b> 
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <th>Order #:</th>
+                <td><?php echo $this->formText('order_no', $this->orderNo); ?></td>
+                <th>Customer Ref. #:</th>
+                <td><?php echo $this->formText('customer_po_wo', $this->customerPoWo); ?></td>
+            </tr>
+            <tr>
+                <th>Exit Date From:</th>
+                <td><?php echo $this->formText('exit_date_from', $this->exitDateFrom); ?></td>
+                <th>Exit Date To:</th>
+                <td><?php echo $this->formText('exit_date_to', $this->exitDateTo); ?></td>
+            </tr>
+            <tr>
+                <th>Connote #:</th>
+                <td><?php echo $this->formText('connote', $this->connote); ?></td>
+                <th>Ship By:</th>
+                <td><?php echo $this->formSelect('ship_by', $this->shipBy, null, $this->shipByList); ?></td>
+            </tr>
+            <tr>
+                <th>Product #:</th>
+                <td><?php echo $this->formSelect('product', $this->product, null, $this->productList); ?></td>
+                <th>ISSN:</th>
+                <td><?php echo $this->formText('issn', $this->issn); ?></td>
+            </tr>
+            <tr>
+                <th>Order Type:</th>
+                <td><?php echo $this->formSelect('order_type', $this->orderType, null, $this->orderTypeList); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <br />
+    <input type="submit" class="green-button" name="action" value="Submit Search" />
+    <input type="button" class="green-button" name="action" value="Clear" id="clear" onclick="return frmClear();"/>
+    <input type="submit" class="green-button" name="action" value="CLEAR SELECTION" />
+    <br /><br />
+
+    <hr>
+    <div id="order-list">
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">Orders List</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(5  => 5,
+                                               10 => 10,
+                                               15 => 15,
+                                               20 => 20,
+                                               30 => 30,
+                                               40 => 40,
+                                               50 => 50,
+                                               100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span id="despatched_selected"><?php echo $this->totalSelected; ?></span></li>
+    </ul>
+    <table id="despatchet_items" class="withborder tablesorter" style="margin-bottom: 0;">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_orders" onclick="selectAll(this)" <?php echo $this->upperChecked; ?> /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+<?php
+
+    if($this->minder->isAdmin){
+        foreach ($this->despatchList as $despatchKey => $despatchValue) {
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox($despatchValue['DESPATCH_ID'], $despatchValue['DESPATCH_ID'] . '|' . $despatchValue['PICK_ORDER'], array('checked' => array_key_exists($despatchValue['DESPATCH_ID'] . '|' . $despatchValue['PICK_ORDER'], $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'showSelected(this)'));
+            echo '</th>';
+                foreach ($this->headers as $key => $value) {
+                    echo '<td><a href="' . $this->url(array('action' => 'edit-despatched', 'controller' => 'despatch', 'module' => 'default', 'order' => $despatchValue['PICK_ORDER'])) . '">' . $this->escape($despatchValue[$key]) . '</a></td>';
+                }
+            echo "</tr>\n";
+        }
+    } else {
+        foreach ($this->despatchList as $despatchKey => $despatchValue) {
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox($despatchValue['DESPATCH_ID'], $despatchValue['DESPATCH_ID'] . '|' . $despatchValue['PICK_ORDER'], array('checked' => array_key_exists($despatchValue['DESPATCH_ID'] . '|' . $despatchValue['PICK_ORDER'], $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'showSelected(this)'));
+            echo '</th>';
+                foreach ($this->headers as $key => $value) {
+                    echo '<td>' . $this->escape($despatchValue[$key]) . '</td>';
+                }
+            echo "</tr>\n";
+        }
+    }
+    
+
+
+?>
+<?php if (!count($this->despatchList)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) : ?>
+                <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" width="100%">
+        <tr>
+            <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="button" name="action" class="order-button" value="PACK ID#" /></li>
+        <li><input type="button" name="action" class="order-button" value="ISSN's" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: XLS" /></li>
+    </ul>
+</form>
+
+<div id="item_list" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999;"></div>
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+      $('#despatchet_items').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,0],[2,0]], widgets: ['zebra']});
+      $('#line_list').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,0],[2,0]], widgets: ['zebra']});	
+      
+      $('#exit_date_from').datepicker({dateFormat: 'yy-mm-dd'});    
+      $('#exit_date_to').datepicker({dateFormat: 'yy-mm-dd'});
+
+      $('input[value="PACK ID#"]').bind('click', function(){
+		$('#item_list').load('<?php echo $this->url(array('action' => 'pack-despatch', 'controller' => 'despatch', 'module' => 'default')); ?>').show('normal');
+      });
+
+      $('input[value="ISSN\'s"]').bind('click', function(){
+		$('#item_list').load('<?php echo $this->url(array('action' => 'issn-despatch', 'controller' => 'despatch', 'module' => 'default')); ?>').show('normal');
+      });
+
+      <?php
+			switch($this->load) {
+   		  		case 'pack-despatch':
+   		  			echo sprintf("$('#item_list').load('%s').show('normal')", $this->url(array('action' => 'pack-despatch', 'controller' => 'despatch', 'module' => 'default')));
+   		  			break;
+   		  		case 'issn-despatch':
+   		  			echo sprintf("$('#item_list').load('%s').show('normal')", $this->url(array('action' => 'issn-despatch', 'controller' => 'despatch', 'module' => 'default')));
+   		  			break;
+   		  	}
+      ?>
+
+});
+
+// The handler the one element selection.
+function showSelected(target) {
+
+	$.getJSON('<?php echo $this->url(array('action' => 'mark-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {
+		method: target.checked, 
+		id: 	target.value, 
+		value: 	target.value
+	}, function(json){
+		if (!json.total_selected) {
+            $('#despatched_selected').text(0);
+            $('#item_list').hide('normal');
+        } else {
+            $('#despatched_selected').text(json.total_selected);
+            if(json.what_view == 'pack-despatch'){
+                <?php echo sprintf("$('#item_list').load('%s').show('normal')", $this->url(array('action' => 'pack-despatch', 'controller' => 'despatch', 'module' => 'default'))); ?>    
+            } else {
+                <?php echo sprintf("$('#item_list').load('%s').show('normal')", $this->url(array('action' => 'issn-despatch', 'controller' => 'despatch', 'module' => 'default'))); ?>    
+            } 
+        }
+	});
+
+	onAjaxSuccess();
+}
+
+function frmClear()
+{
+    
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

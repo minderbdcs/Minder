@@ -1,0 +1,50 @@
+.otc-dialog-fonts(@fontSize; @lineHeight) {
+    font-size: @fontSize;
+    line-height: @lineHeight;
+
+    .ui-tabs-nav.ui-tabs-nav-add-tool a {
+        line-height: @lineHeight;
+    }
+
+    form, table, tr, td, th, h1, h2, h3, h4, p, img, input, textarea, keygen, select, button, meter, progress {
+        font-size: @fontSize;
+        line-height: @lineHeight;
+    }
+
+    table.tablesorter {
+        font-size: @fontSize;
+
+        thead tr th {
+            font-size: @fontSize;
+        }
+    }
+}
+
+.otc-dialogs-image-capture(@messagesWidth; @capturedImageWidth) {
+    #otc-image-capture-dialog {
+        .dialog-messages{
+            width: @messagesWidth;
+        }
+
+        .captured-image-container {
+            img {
+                width: @capturedImageWidth;
+            }
+        }
+    }
+}
+
+.otc-dialogs-query(@summaryWidth) {
+    #query_dialog {
+        [name="prompt"] {
+            .summary {
+                max-width: @summaryWidth;
+            }
+        }
+    }
+}
+
+.otc-dialogs-dimensions(@width; @height) {
+    width: @width;
+    height: @height;
+}

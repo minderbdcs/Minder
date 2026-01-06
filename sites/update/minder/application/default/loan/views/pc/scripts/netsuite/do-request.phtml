@@ -1,0 +1,32 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->minderVariant('TOOL*Minder'); ?>&trade;</h2>
+
+<?php
+if (isset($this->response)) {
+    echo $this->formLabel('request', $this->request);
+    echo '<hr>';
+    ob_start();
+    var_dump($this->response);
+    $content = ob_get_clean();
+    file_put_contents('dump.html', $content);
+    ob_end_clean();
+}
+?>
+<form method="post">
+<ul>
+    <li>
+        <?php echo $this->formSubmit('action', 'DO REQUEST', array()) ?>
+    </li>
+    <li>
+        <?php echo $this->formText('soap_action', $this->soapAction, array()); ?>
+    </li>
+    <li>
+        <?php echo $this->formTextarea('xml', $this->xml, array('style' => 'height:40em;width:100em;')); ?>
+    </li>
+    <li>
+        <?php echo $this->formSubmit('action', 'DO REQUEST', array()) ?>
+    </li>
+</ul>
+</form>
+<?php echo $this->render('footer.phtml'); ?>

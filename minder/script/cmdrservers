@@ -1,0 +1,37 @@
+# The CMDRSERVERS variables is a list of four vars with a global start and stop.
+#
+#
+#
+#CMDRSERVERS is a list of command IDs
+#CMDRSERVERARGS is the command for each id 
+#CMDRSERVERARG2 is the directory to look in 
+#CMDRSERVERARG3 is the fileset to look for
+#CMDRSERVERARG4 is the extension to add to file at the end
+#CMDRSERVERSTOP is the HHMM to stop the running of the server
+#CMDRSERVERSLEEPSECS is the number os seconds interval between scans for files
+CMDRSERVERSTART="0510"
+CMDRSERVERSTOP="2135"
+CMDRSERVERSLEEPSECS="300"
+#CMDRSERVERS="1:bdcs 2:bdcs 3:bdcs 4:bdcs 5:bdcs 6:bdcs 7:bdcs 8:bdcs"
+#CMDRSERVERS="1:bdcs 2:bdcs 3:bdcs 4:bdcs 5:bdcs 6:bdcs 7:bdcs"
+#CMDRSERVERS="1:bdcs 2:bdcs 3:bdcs 4:bdcs 5:bdcs 6:bdcs 7:bdcs 8:bdcs 9:bdcs 10:bdcs"
+#CMDRSERVERS="1:bdcs 2:bdcs 3:bdcs 4:bdcs 5:bdcs 6:bdcs 7:bdcs 8:bdcs 9:bdcs 10:bdcs 11:bdcs 12:bdcs 13:bdcs 14:bdcs"
+#CMDRSERVERS="1:bdcs 2:bdcs 3:bdcs 4:bdcs 5:bdcs 6:bdcs 7:bdcs 8:bdcs 9:bdcs 10:bdcs 11:bdcs 12:bdcs 13:bdcs 14:bdcs 15:bdcs 16:bdcs"
+CMDRSERVERS="1:bdcs 2:bdcs"
+CMDRSERVERARGS[1]="python /data/minder/python/import/importprod.py {} /tmp/importprod.log"
+CMDRSERVERARG2[1]="/data/ftp/default/ftproot/import/"
+CMDRSERVERARG3[1]="*.txt"
+CMDRSERVERARG4[1]=".dat"
+CMDRSERVERARGS[2]="python /data/minder/python/import/importfile.csv.py {} /tmp/importcsv.log"
+CMDRSERVERARG2[2]="/data/ftp/default/ftproot/import2/"
+CMDRSERVERARG3[2]="*.csv"
+CMDRSERVERARG4[2]=".psv"
+#CMDRSERVERARGS[3]="head -1  {} "
+#CMDRSERVERARG2[3]="/data/ftp/default/ftproot/import/"
+#CMDRSERVERARG3[3]="*.tar"
+#CMDRSERVERARG4[3]=".far"
+###############################################################################################################
+#
+#
+#
+

@@ -1,0 +1,24 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php echo $this->messenger()->all(); ?>
+
+<h1>Login</h1>
+<form action="<?php echo $this->url(); ?>" method="post">
+    <?php
+    //echo $this->formSelect('dsn', $this->currentDsn, array(), $this->dsnList); ?>
+    <label><b>Your current Timezone is: </b><span id="tz"></span><br><br>
+    <label>User Id <?php echo $this->formText('userId', $this->userId, array('autocomplete' => 'off')); ?></label>
+    <label>Password <?php echo $this->formPassword('password', '', array('autocomplete' => 'off')); ?></label>
+    <?php echo $this->formSubmit('action', 'Login', array('class' => 'mdr-tool-button', "disabled" => "disabled")); ?>
+    <?php echo $this->formHidden('key', $this->key); ?>
+    <input type="hidden" name="time_zone" id="time_zone">
+</form>
+<p style="margin-top: 10px"><a href="<?php echo $this->url(array('action' => 'logout-all', 'controller' => 'user', 'module' => 'default'), '', true); ?>">Logout all users</a></p>
+<script>
+$(document).ready(function(){
+    var objTimeZone = jstz.determine();
+    $("#time_zone").val(objTimeZone.name()); 
+    $("#action").removeAttr("disabled");
+});
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

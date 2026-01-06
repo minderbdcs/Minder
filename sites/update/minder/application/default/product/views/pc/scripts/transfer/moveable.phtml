@@ -1,0 +1,220 @@
+<?php echo $this->render('header.phtml'); ?>
+<div id="tooltip">
+    <ul class="messages">
+        <li>Key in the WH ID + Location ID +  &lt;Enter&gt; or Scan Location ID Barcode</li>
+    </ul>
+</div>
+<div id="flash_error">
+    <?php echo $this->messenger()->all() ?> 
+</div>
+<div class="errors" style="display: none;" id ="div_errors">
+    <li id="js_error"></li>
+</div>
+<form name="main" id="main_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'transfer', 'action' => 'moveable'), null, true); ?>" method="post">
+<h2><?php echo $this->pageTitle; ?></h2>
+<div id="update_form" style="width:99%;">
+        <table>
+            <tr>
+                <th>
+                    <b>TRANSFER MOVEABLE INTO:</b>
+                </th>
+            </tr>
+            <tr>
+                <th style="align:right">Location InTo:</th>
+                <td><?php echo $this->formText('locn_id', $this->locn_id, null); ?></td>
+                <th></th>
+                <td><span id="locn_name"></span></td>
+            </tr>
+            <tr>
+                <th style="align:right">Moveable Location:</th>
+                <td><?php echo $this->formText('locn_id_2', $this->locn_id_2, null); ?></td>
+                <th>&nbsp;</th>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formButton('action', 'UPDATE', array('onclick' => 'checkParam()')); ?></li>
+        <li><?php echo $this->formButton('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+    </ul>
+</div>
+<div id="issn_lines">
+
+</div>
+</form>   
+
+
+<script type="text/javascript">
+<!--
+
+$(document).ready(function(){
+    var cacheValue      = 1;
+    var numPressEnter   = 0;
+    
+    window.isLocnPrefix = false;
+    
+      
+    $('#locn_id').autocomplete('<?php echo $this->url(array('controller' => 'transfer', 'action' => 'lookup')); ?>/',
+                                    {
+                                     matchSubset: 1,
+                                     matchContains: 1,
+                                     cacheLength: cacheValue,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'locn_id'}
+                                    }
+                              );
+    
+    $('#locn_id').result(function(event, data, formatted) {
+        getLocnId();
+        loandIssnLines();
+        $('#locn_id_2').focus();
+    });
+    
+    
+    if($('#locn_id')[0].value == "") {
+        $('#locn_id').focus();    
+    }
+    
+     if($('#locn_id')[0].value != "") {
+        $('#locn_id_2').focus();
+     }
+    
+    <?php if($this->displayMove) { ?>
+    // Load Locn ID
+    getLocnId();
+    // Load lines after UPDATE.
+    $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default')); ?>', {method: 'init', id: 'select_all', locn_id: $('#locn_id')[0].value});
+    <?php } ?>
+    
+    // added event handler to ENTER
+    $(document).bind('keydown', function(e) {
+        var locn_id_2   = $('#locn_id_2')[0].value;
+        
+        var locRegExp = new RegExp("<?php echo $this->locFilter; ?>");     
+            
+        if(e.keyCode == 13) {
+            
+            if($('#locn_id')[0].value == "") {
+                
+                showError("of the field Location InTo - " + $('#locn_id')[0].value, true);
+         
+                $('#locn_id')[0].value = "";
+                $('#locn_id')[0].focus();
+                
+                return;
+            }
+            
+            if($('#locn_id')[0].value != "" && !isLocn($('#locn_id_2')[0].value)) {
+                
+                showError("of the field Moveable Location - " + $('#locn_id_2')[0].value, true);
+         
+                $('#locn_id_2')[0].value = "";
+                $('#locn_id_2')[0].focus();
+                return;
+            }
+            
+            if($('#locn_id')[0].value == "" && $('#locn_id_2')[0].value == "") {
+                $('#locn_id')[0].focus();
+            } else if($('#locn_id')[0].value == "" && $('#locn_id_2')[0].value != "") {
+                $('#locn_id')[0].focus(); 
+            } else if($('#locn_id')[0].value != "" && $('#locn_id_2')[0].value == "") {
+                $('#locn_id_2')[0].focus();   
+            }
+            
+             showError('', false);    
+             formUpdate();
+              
+        }
+    }); 
+   
+});
+
+function frmClear()
+{
+    $("form#main_form input:text").each(function() {
+        this.value = "";
+    });
+    $("form#main_form select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+    });
+    $('#locn_name').text(' ');
+    window.isLocnPrefix = false;
+     return false;
+}
+
+function getLocnId() {
+    var locnId    = $('#locn_id')[0];
+    $.getJSON('<?php echo $this->url(array('controller' => 'transfer', 'action' => 'search'), '', false); ?>', 
+               {
+                   q: locnId.value, field: 'locn_id'}, 
+                   function(json){
+                   $('#locn_name').text(json.locn_name);     
+               }
+    );
+}
+
+function loandIssnLines() {
+    locn_id = $('#locn_id')[0].value;
+    $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default')); ?>', 
+                          {locn_id: locn_id}
+                         );
+}
+
+function formUpdate() {
+    var locPrefixExp = '<?php echo $this->locFilter['SYMBOLOGY_PREFIX']; ?>';
+    
+    oldForm = $("#main_form");
+    $("#main_form").action = $("#main_form").action + '/moveable';
+    if(window.isLocnPrefix == true) {
+        $("#main_form").append('<input type="hidden" id="toDelete2" name="hid_locn_id" value="' + locPrefixExp + $('#locn_id_2')[0].value +'" />');
+    } else {
+        $("#main_form").append('<input type="hidden" id="toDelete2" name="hid_locn_id" value="' + $('#locn_id_2')[0].value +'" />');
+    }
+    $("#main_form").append('<input type="hidden" id="toDelete" name="action" value="update" />')[0].submit();
+    $('#toDelete').remove();
+    $('#toDelete2').remove();
+    $("#main_form").action = oldForm;
+    return false;
+}
+
+function checkParam() {
+    
+   formUpdate();  
+
+}
+
+function isLocn(value) {
+    var locPrefixExp = new RegExp("(\<?php echo $this->locFilter['SYMBOLOGY_PREFIX']; ?>)+");
+    var locRegExp    = new RegExp("<?php echo $this->locFilter['DATA_EXPRESSION']; ?>"); 
+    if(locPrefixExp.test(value)) {
+        locn_id = value.substr(3, value.length);
+        if(locRegExp.test(locn_id)) {
+            $('#locn_id_2')[0].value = locn_id
+            window.isLocnPrefix = true;
+            return true;
+        } else {
+            return false;
+        }    
+    } else if(locRegExp.test(value)) {
+            return true;
+    } else {
+            return false;
+    } 
+}
+
+function showError(message, disabled) {
+    $('#js_error').text("Unrecognised input " + message);
+    if(disabled) {
+        $('#div_errors').css("display", "block");
+    } else {
+        $('#div_errors').css("display", "none")
+    }         
+}
+
+
+//-->
+</script>   
+<?php echo $this->render('footer.phtml');
+   
+     

@@ -1,0 +1,11 @@
+<ul class="toolbar">
+    <li><input type="submit" id="save_btn" disabled="disabled" class="order-button" value="SAVE CHANGES" /></li>
+    <li><input type="submit" name="report_format" id="order_report_csv_btn" class="order-button" value="REPORT: CSV" onclick="return false;" /></li>
+    <li><input type="submit" name="report_format" id="order_report_xls_btn" class="order-button" value="REPORT: XLS" onclick="return false;" /></li>
+    <?php if ($this->minder->isAdmin || $this->minder->isSalesManagerT() || $this->minder->isCreditManagerT()) {?>
+        <li><input type="submit" id="hold_btn" class="order-button" value="HOLD" /></li>
+        <li><input type="submit" id="print_invoice_btn" disabled="disabled" class="order-button" value="PRINT INVOICE" /></li>
+        <li><input type="submit" id="export_invoice_btn" disabled="disabled" class="order-button" value="EXPORT INVOICE" /></li>
+    <?php }?>
+    <li><input type="submit" id="cancel_btn" disabled="disabled" class="order-button" value="CANCEL CHANGES" onclick="return false;" /></li>
+</ul>

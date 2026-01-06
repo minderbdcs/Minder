@@ -1,0 +1,843 @@
+<?php
+$attributes = array('autocomplete' => 'off');
+$editable = $attributes;
+
+if (!isset($this->action)) {
+    $editable["readonly"] = "true";
+    $editable["disabled"] = "true";
+}
+?>
+
+<div id="search_tabs" style="width:99%" class="ui-tabs-container">
+    <ul>
+        <li><a href="#basic_tab"><span><b>Basic</b></span></a></li>
+        <li><a href="#desc_tab"><span><b>Desc</b></span></a></li>
+        <li><a href="#misc_tab"><span><b>Misc</b></span></a></li>
+    </ul>
+    <div id="basic_tab">
+        <table class="summary">
+            <tr>
+                <th>SSN:</th>
+                <?php if ($this->action == 'create-ssn') {
+                    $editableId['disabled'] = 'true';
+                } else {
+                    $editableId = $editable;
+                }
+                ?>
+                <td><?php echo $this->formText('ssn_id', $this->ssnObj->items['SSN_ID'], $editableId + array('class' => 'mandatory')); ?></td>
+                <th>Company ID:</th>
+                <td><?php echo $this->formSelectStrict('company_id', $this->ssnObj->items['COMPANY_ID'], array(), $this->companyIdList);?></td>
+            </tr>
+            <tr>
+                <th>Supplier ID:</th>
+                <td><?php echo $this->formSelectStrict('supplier_id', $this->ssnObj->items['SUPPLIER_ID'], array(), $this->supplierIdList);?></td>
+                <th>Order No:</th>
+                <td><?php echo $this->formText('po_order', $this->ssnObj->items['PO_ORDER'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>GRN:</th>
+                <td><?php echo $this->formText('grn', $this->ssnObj->items['GRN'], $editable); ?></td>
+                <th>Order Line No:</th>
+                <td><?php echo $this->formText('po_line', $this->ssnObj->items['PO_LINE'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Original Quantity:</th>
+                <td><?php echo $this->formText('original_qty', $this->ssnObj->items['ORIGINAL_QTY'], $editable + array('class' => 'mandatory')); ?></td>
+                <th>Batch Lot No:</th>
+                <td><?php echo $this->formText('lot_batch_no', $this->ssnObj->items['LOT_BATCH_NO']); ?></td>
+            </tr>
+            <tr>
+                <th>Use By Date:</th>
+                <td><?php echo $this->formText('use_by_date', $this->ssnObj->items['USE_BY_DATE']); ?></td>
+                <th>Best By Date:</th>
+                <td><?php echo $this->formText('best_before_date', $this->ssnObj->items['BEST_BEFORE_DATE']); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo  $this->ssnType1Name; ?></th>
+                <td><span class="mandatory"><?php echo $this->formSelectStrict('ssn_type',
+                            $this->ssnObj->items['SSN_TYPE'],
+                            array('class' => 'mandatory')); ?></span></td>
+                <th><?php echo  $this->ssnType2Name; ?></th>
+                <td><?php echo $this->formSelectStrict('generic',
+                        $this->ssnObj->items['GENERIC']); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo  $this->ssnType3Name; ?></th>
+                <td><?php echo $this->formSelectStrict('ssn_sub_type',
+                        $this->ssnObj->items['SSN_SUB_TYPE']); ?></td>
+                <th><?php echo  $this->brandName; ?></th>
+                <td><?php echo $this->formSelectStrict('brand', $this->ssnObj->items['BRAND'], array(), $this->brandList); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo  $this->modelName; ?></th>
+                <td><?php echo $this->formText('model', $this->ssnObj->items['MODEL'], array()); ?></td>
+                <th>Alternate Name:</th>
+                <td><?php echo $this->formText('alt_name', $this->ssnObj->items['ALT_NAME'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Product ID:</th>
+                <td><?php echo $this->formSelectStrict('prod_id', $this->ssnObj->items['PROD_ID'], array(), $this->productList);?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Notes:</th>
+                <td colspan=3><?php echo $this->formTextarea('notes', $this->ssnObj->items['NOTES'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Created By:</th>
+                <td><?php echo $this->formText('created_by', $this->ssnObj->items['CREATED_BY'], array('readonly' => 'true') + array('class' => 'mandatory')); ?></td>
+                <th>Create Date:</th>
+                <td><?php echo $this->formText('create_date', $this->ssnObj->items['CREATE_DATE'], array('class' => 'mandatory')); ?></td>
+            </tr>
+            <tr>
+                <th>Last Updated By:</th>
+                <td><?php echo $this->formNote('last_update_by', $this->ssnObj->items['LAST_UPDATE_BY'], array()); ?></td>
+                <th>Last Update Date:</th>
+                <td><?php echo $this->formNote('last_update_date', $this->ssnObj->items['LAST_UPDATE_DATE'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Warehouse ID:</th>
+                <td><?php echo $this->formSelect('wh_id', $this->ssnObj->items['WH_ID'], $editable + array('class' => 'mandatory'), $this->warehouseList); ?></td>
+                <th>Prev. Warehouse ID:</th>
+                <td><?php echo $this->formNote('prev_wh_id', $this->ssnObj->items['PREV_WH_ID'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Location ID:</th>
+                <td><?php echo $this->formSelect('locn_id', $this->ssnObj->items['LOCN_ID'], $editable + array('class' => 'mandatory'), $this->locationList); ?></td>
+                <th>Prev. Location ID:</th>
+                <td><?php echo $this->formNote('prev_locn_id', $this->ssnObj->items['PREV_LOCN_ID'], array()); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div id="desc_tab">
+        <table class="summary">
+            <?php if (array_key_exists(1, $this->otherNames) || array_key_exists(2, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(1, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other1', $this->otherNames[1]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[1]) {
+                                echo $this->formSelectStrict('other1', $this->ssnObj->items['OTHER1'], array(), $this->otherDetails[1]);
+                            } else {
+                                echo $this->formText('other1', $this->ssnObj->items['OTHER1'], array());
+                            }
+                            ?>
+                            <?php if ($this->others[1]=='TRUE') { ?>
+                                <input type="image" src="/minder/icons/magnglass.png" align="middle" onclick="conditionsA(); return false;">
+                            <?php } ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(2, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other2', $this->otherNames[2]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[2]) {
+                                echo $this->formSelectStrict('other2', $this->ssnObj->items['OTHER2'], array(), $this->otherDetails[2]);
+                            } else {
+                                echo $this->formText('other2', $this->ssnObj->items['OTHER2'], array());
+                            }
+                            ?>
+                            <?php if ($this->others[2]=='TRUE') { ?>
+                                <input type="image" src="/minder/icons/magnglass.png" align="middle" onclick="conditionsB(); return false;">
+                            <?php } ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(3, $this->otherNames) || array_key_exists(4, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(3, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other3', $this->otherNames[3]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[3]) {
+                                echo $this->formSelectStrict('other3', $this->ssnObj->items['OTHER3'], array(), $this->otherDetails[3]);
+                            } else {
+                                echo $this->formText('other3', $this->ssnObj->items['OTHER3'], array());
+                            }
+                            ?>
+                            <?php if ($this->others[3]=='TRUE') { ?>
+                                <input type="image" src="/minder/icons/magnglass.png" align="middle" onclick="conditionsC(); return false;">
+                            <?php } ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(4, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other4', $this->otherNames[4]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[4]) {
+                                echo $this->formSelectStrict('other4', $this->ssnObj->items['OTHER4'], array(), $this->otherDetails[4]);
+                            } else {
+                                echo $this->formText('other4', $this->ssnObj->items['OTHER4'], array());
+                            }
+                            ?>
+                            <?php if ($this->others[4]=='TRUE') { ?>
+                                <input type="image" src="/minder/icons/magnglass.png" align="middle" onclick="conditionsD(); return false;">
+                            <?php } ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(5, $this->otherNames) || array_key_exists(6, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(5, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other5', $this->otherNames[5]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[5]) {
+                                echo $this->formSelectStrict('other5', $this->ssnObj->items['OTHER5'], array(), $this->otherDetails[5]);
+                            } else {
+                                echo $this->formText('other5', $this->ssnObj->items['OTHER5'], array());
+                            }
+                            ?>
+                            <?php if ($this->others[5]=='TRUE') { ?>
+                                <input type="image" src="/minder/icons/magnglass.png" align="middle" onclick="conditionsE(); return false;">
+                            <?php } ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(6, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other6', $this->otherNames[6]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[6]) {
+                                echo $this->formSelectStrict('other6', $this->ssnObj->items['OTHER6'], array(), $this->otherDetails[6]);
+                            } else {
+                                echo $this->formText('other6', $this->ssnObj->items['OTHER6'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(7, $this->otherNames) || array_key_exists(8, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(7, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other7', $this->otherNames[7]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[7]) {
+                                echo $this->formSelectStrict('other7', $this->ssnObj->items['OTHER7'], array(), $this->otherDetails[7]);
+                            } else {
+                                echo $this->formText('other7', $this->ssnObj->items['OTHER7'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(8, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other8', $this->otherNames[8]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[8]) {
+                                echo $this->formSelectStrict('other8', $this->ssnObj->items['OTHER8'], array(), $this->otherDetails[8]);
+                            } else {
+                                echo $this->formText('other8', $this->ssnObj->items['OTHER8'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(9, $this->otherNames) || array_key_exists(10, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(9, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other9', $this->otherNames[9]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[9]) {
+                                echo $this->formSelectStrict('other9', $this->ssnObj->items['OTHER9'], array(), $this->otherDetails[9]);
+                            } else {
+                                echo $this->formText('other9', $this->ssnObj->items['OTHER9'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(10, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other10', $this->otherNames[10]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[10]) {
+                                echo $this->formSelectStrict('other10', $this->ssnObj->items['OTHER10'], array(), $this->otherDetails[10]);
+                            } else {
+                                echo $this->formText('other10', $this->ssnObj->items['OTHER10'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(11, $this->otherNames) || array_key_exists(12, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(11, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other11', $this->otherNames[11]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[11]) {
+                                echo $this->formSelectStrict('other11', $this->ssnObj->items['OTHER11'], array(), $this->otherDetails[11]);
+                            } else {
+                                echo $this->formText('other11', $this->ssnObj->items['OTHER11'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(12, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other1', $this->otherNames[12]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[12]) {
+                                echo $this->formSelectStrict('other12', $this->ssnObj->items['OTHER12'], array(), $this->otherDetails[12]);
+                            } else {
+                                echo $this->formText('other12', $this->ssnObj->items['OTHER12'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(13, $this->otherNames) || array_key_exists(14, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(13, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other13', $this->otherNames[13]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[13]) {
+                                echo $this->formSelectStrict('other13', $this->ssnObj->items['OTHER13'], array(), $this->otherDetails[13]);
+                            } else {
+                                echo $this->formText('other13', $this->ssnObj->items['OTHER13'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(14, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other14', $this->otherNames[14]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[14]) {
+                                echo $this->formSelectStrict('other14', $this->ssnObj->items['OTHER14'], array(), $this->otherDetails[14]);
+                            } else {
+                                echo $this->formText('other14', $this->ssnObj->items['OTHER14'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(15, $this->otherNames) || array_key_exists(16, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(15, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other15_date', $this->otherNames[15]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[15]) {
+                                echo $this->formSelectStrict('other15_date', $this->ssnObj->items['OTHER15_DATE'], array(), $this->otherDetails[15]);
+                            } else {
+                                echo $this->formText('other15_date', $this->ssnObj->items['OTHER15_DATE'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(16, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other16_date', $this->otherNames[16]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[16]) {
+                                echo $this->formSelectStrict('other16_date', $this->ssnObj->items['OTHER16_DATE'], array(), $this->otherDetails[16]);
+                            } else {
+                                echo $this->formText('other16_date', $this->ssnObj->items['OTHER16_DATE'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(17, $this->otherNames) || array_key_exists(18, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(17, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other17_qty', $this->otherNames[17]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[17]) {
+                                echo $this->formSelectStrict('other17_qty', $this->ssnObj->items['OTHER17_QTY'], array(), $this->otherDetails[17]);
+                            } else {
+                                echo $this->formText('other17_qty', $this->ssnObj->items['OTHER17_QTY'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(18, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other18_qty', $this->otherNames[18]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[18]) {
+                                echo $this->formSelectStrict('other18_qty', $this->ssnObj->items['OTHER18_QTY'], array(), $this->otherDetails[18]);
+                            } else {
+                                echo $this->formText('other18_qty', $this->ssnObj->items['OTHER18_QTY'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <?php if (array_key_exists(19, $this->otherNames) || array_key_exists(20, $this->otherNames)) { ?>
+                <tr>
+                    <?php if (array_key_exists(19, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other19', $this->otherNames[19]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[19]) {
+                                echo $this->formSelectStrict('other19', $this->ssnObj->items['OTHER19'], array(), $this->otherDetails[19]);
+                            } else {
+                                echo $this->formText('other19', $this->ssnObj->items['OTHER19'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                    <?php if (array_key_exists(20, $this->otherNames)) { ?>
+                        <th><?php echo $this->formNote('other20', $this->otherNames[20]);?>:</th>
+                        <td><?php
+                            if ($this->otherType[20]) {
+                                echo $this->formSelectStrict('other20', $this->ssnObj->items['OTHER20'], array(), $this->otherDetails[20]);
+                            } else {
+                                echo $this->formText('other20', $this->ssnObj->items['OTHER20'], array());
+                            }
+                            ?>
+                        </td>
+                    <?php } else { ?>
+                        <th></th>
+                        <td></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+            <tr>
+                <th>Label Location:</th>
+                <td>
+                    <?php //echo $this->formText('label_locn', $this->ssnObj->items['LABEL_LOCN'], array(), $this->locationList);
+                    echo $this->formSelectStrict('label_locn', $this->ssnObj->items['LABEL_LOCN'], array(), $this->labelLocationList); ?>
+                </td>
+                <th>Home Location:</th>
+                <td>
+                    <?php echo $this->formText('home_locn_id', $this->ssnObj->items['HOME_LOCN_ID'], $attributes, $this->locationList);
+                    //echo $this->formSelectStrict('home_locn_id', $this->ssnObj->items['HOME_LOCN_ID'], array(), $this->locationList); ?>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+    <div id="misc_tab">
+        <table class="summary">
+            <tr>
+                <th>
+                    <b>Lease Details:</b>
+                </th>
+                <td style="text-align: right;">
+                    Leased: <?php
+                    $value = 'T';
+                    if ($this->ssnObj->items['LEASED']) {
+                        $checked = $this->ssnObj->items['LEASED'];
+                    } else {
+                        $checked = 'F';
+                    }
+                    echo $this->formHidden('leased', 'F', array('id' => 'store_leased'));
+                    echo $this->formCheckbox('leased', $value, array('onchange' => 'updateLeased()',
+                        'checked' => ($checked == 'T' ? $checked: '')));
+                    ?>
+                </td>
+                <th>
+                </th>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>Leased From:</th>
+                <td>
+                    <?php echo $this->formSelectStrict('leasor', $this->ssnObj->items['LEASOR'], array('disabled' => 'true'), $this->leasorList); ?>
+                </td>
+                <th>Lease Expiry Date</th>
+                <td>
+                    <?php echo $this->formText('lease_expiry_date', $this->ssnObj->items['LEASE_EXPIRY_DATE'], array('disabled' => 'true')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <b>Miscellaneous Details:</b>
+                </th>
+                <td>
+                </td>
+                <th>
+                </th>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>Licence No.:</th>
+                <td>
+                    <?php echo $this->formText('licence_number', $this->ssnObj->items['LICENCE_NUMBER'], array()); ?>
+                </td>
+                <th>IP Address:</th>
+                <td>
+                    <?php echo $this->formText('ip_address', $this->ssnObj->items['IP_ADDRESS'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Version No.:</th>
+                <td>
+                    <?php echo $this->formText('version', $this->ssnObj->items['VERSION'], array()); ?>
+                </td>
+                <th>Warranty Expiry Date:</th>
+                <td>
+                    <?php echo $this->formText('warranty_expiry_date', $this->ssnObj->items['WARRANTY_EXPIRY_DATE'], array()); ?>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    <b>Disposal Details:</b>
+                </th>
+                <td style="text-align:right;">
+                    Disposed: <?php
+                    $value   = 'T';
+                    if ($this->ssnObj->items['DISPOSED']) {
+                        $checked = $this->ssnObj->items['DISPOSED'];
+                    } else {
+                        $checked = 'F';
+                    }
+                    echo $this->formHidden('disposed', 'F', array('id' => 'store_disposed'));
+                    echo $this->formCheckbox('disposed', $value, array('onclick' => 'updateDisposed()',
+                        'checked' => ($checked == 'T' ? $checked: '')));
+                    ?>
+                </td>
+                <th>Disposed Date:</th>
+                <td>
+                    <?php echo $this->formText('disposal_date', $this->ssnObj->items['DISPOSAL_DATE'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Disposal Cost:</th>
+                <td>
+                    <?php echo $this->formText('disposal_cost', $this->ssnObj->items['DISPOSAL_COST'], array()); ?>
+                </td>
+                <th>Disposal Income:</th>
+                <td>
+                    <?php echo $this->formText('disposal_price', $this->ssnObj->items['DISPOSAL_PRICE'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Disposal Notes:</th>
+                <td colspan=3>
+                    <?php echo $this->formTextarea('disposal_notes', $this->ssnObj->items['DISPOSAL_NOTES'], array()); ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var cacheValue = 50;
+    $(document).ready( function() {
+        $.ajaxSetup({async: false,
+            complete: onAjaxSuccess,
+            error: onAjaxError,
+            beforeSend: onAjaxBeforeSend});
+        $("#table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+        $("#search_tabs > ul").tabs();
+        $("#lease_expiry_date").datepicker({dateFormat: 'yy/mm/dd'});
+        $("#loan_last_safety_check_date").datepicker({dateFormat: 'yy/mm/dd'});
+        $("#loan_last_calibrate_check_date").datepicker({dateFormat: 'yy/mm/dd'});
+        $("#disposal_date").datepicker({dateFormat: 'yy/mm/dd'});
+        $("#use_by_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#best_before_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#limit_company").get(0).disabled = true;
+        $("#limit_warehouse").get(0).disabled = true;
+
+        $("#tabs #select_complete").bind("click", selectWholeTable);
+        $("#ssn_id").change(checkSsn);
+        $("#wh_id").change(updateLocation);
+        //if ($("#table #select_all").get(0)) {
+        showSelected($("#table #select_all").get(0), "init");
+        //}
+
+        Minder.Helper.SsnTypeSelect.init({
+            $ssnType: $('#ssn_type'),
+            $generic: $('#generic'),
+            $ssnSubType: $('#ssn_sub_type'),
+            ssnSubTypes: new Mdr.OptionsDataSource(<?php echo json_encode($this->ssnSubTypes);?>),
+            ssnType: '<?php echo $this->ssnObj->items['SSN_TYPE']; ?>',
+            generic: '<?php echo $this->ssnObj->items['GENERIC']; ?>',
+            ssnSubType: '<?php echo $this->ssnObj->items['SSN_SUB_TYPE']; ?>'
+        });
+
+        updateDisposed();
+        updateLeased();
+
+<?php
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'ssn',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('[name="$key"]').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+
+        $('[name="home_locn_id"]').change(function(evt) {
+            $('[name="home_locn_id"]').val($(evt.target).val());
+        }).result(function(evt, selectedOption, selectedVal) {
+            $('[name="home_locn_id"]').val(selectedVal);
+        });
+    });
+
+    function checkSsn()
+    {
+        var element = this;
+        $.getJSON('<?php echo $this->url(array('action' => 'exist-ssn', 'controller' => 'ssn', 'module' => 'warehouse')); ?>',
+            {value: this.value},
+            function(json) {
+                if (json) {
+                    if (confirm('Do you want to edit existing SSN ' + json + ' ?')) {
+                        window.location = '<?php echo $this->url(array('action' => 'edit', 'controller' => 'ssn', 'module' => 'warehouse')); ?>/edit_ssn_ssn_id/' + json;
+                    } else {
+                        element.value="";
+                    }
+                } else {
+
+                }
+            });
+
+    }
+
+    function selectWholeTable()
+    {
+        var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+        var checkOnOff = this.checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+        calcOther(this, $($(this).parent().parent()[0]));
+        return true;
+    }
+
+    function calcOther(element, method)
+    {
+        var countEl = 0;
+        if ('auto' == method) {
+            var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+            var method = element.checked;
+        } else if ('init' == method) {
+            var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+            var method = 'init';
+        } else {
+            var container_id = '#' + $(method)[0].id;
+            var method = element.checked;
+        }
+        $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'ssn', 'module' => 'warehouse')); ?>',
+            { field: 'QTY',
+                inAction: '<?php echo 'edit'; ?>',
+                activeTab: container_id,
+                method: method,
+                id: element.id,
+                value: element.value }, function(json) {
+                var answer = eval(json);
+                $("#selected_num", container_id).text(answer.selected_num);
+            });
+    }
+
+
+    function formatItemWithoutDesc(ele)
+    {
+        return ele[1];
+    }
+    function formatItemWithDesc(ele)
+    {
+        return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+    }
+
+    function updateLeased()
+    {
+        var state = $("#leased").get(0).checked;
+        $("#lease_expiry_date").get(0).disabled = !state;
+        $("#leasor").get(0).disabled            = !state;
+    }
+
+    function updateLoanSafetyCheck()
+    {
+        var state = $("#loan_safety_check").get(0).checked;
+        $("#loan_safety_period_no").get(0).disabled       = !state;
+        $("#loan_last_safety_check_date").get(0).disabled = !state;
+        $("#loan_safety_period").get(0).disabled          = !state;
+    }
+
+    function updateLoanCalibrateCheck()
+    {
+        var state = $("#loan_calibrate_check").get(0).checked;
+        $("#loan_calibrate_period_no").get(0).disabled       = !state;
+        $("#loan_last_calibrate_check_date").get(0).disabled = !state;
+        $("#loan_calibrate_period").get(0).disabled          = !state;
+    }
+
+    function updateDisposed()
+    {
+        var state = $("#disposed").get(0).checked;
+        $("#disposal_cost").get(0).disabled  = !state;
+        $("#disposal_date").get(0).disabled  = !state;
+        $("#disposal_price").get(0).disabled = !state;
+        $("#disposal_notes").get(0).disabled = !state;
+    }
+
+    <?php
+    $url = $this->url(array('module'     => 'warehouse',
+                            'controller' => 'ssn',
+                            'action'     => 'seek'));
+    ?>
+
+
+    function updateLocation()
+    {
+        $.ajax(
+            {
+                type: "GET",
+                url: "<?php echo $url; ?>",
+                cache: false,
+                data: {
+                    field: "wh_id",
+                    wh_id: $("#wh_id").get(0).value
+                },
+                success: function (data) {
+                    $("#locn_id").get(0).length = 0;
+                    var options = eval('(' + data + ')');
+                    var i = 0;
+                    //$("#locn_id").get(0).options[i] = new Option('', '');
+                    for (var key in options) {
+                        var newOpt = new Option(options[key], key);
+                        $("#locn_id").get(0).options[i] = newOpt;
+                        i++;
+                    }
+                },
+                error: function () {
+                    alert("Try again");
+                }
+            }
+        );
+    }
+
+
+    function updateSsnTypeII()
+    {
+        $.ajax(
+            {
+                type: "POST",
+                url: "<?php echo $url; ?>",
+                cache: false,
+                data: {
+                    field:     "generic",
+                    ssn_type: $("#ssn_type").get(0).value
+                },
+                success: function (data) {
+                    $("#generic").get(0).length = 0;
+                    var options = eval('(' + data + ')');
+                    var i = 0;
+                    $("#generic").get(0).options[i] = new Option('', '');
+                    for (var key in options) {
+                        i++;
+                        var newOpt = new Option(options[key], key);
+                        $("#generic").get(0).options[i] = newOpt;
+                    }
+                },
+                error: function () {
+                    alert("Try again");
+                }
+            }
+        );
+    }
+
+    function updateSsnTypeIII()
+    {
+        $.ajax(
+            {
+                type: "POST",
+                url: "<?php echo $url; ?>",
+                cache: false,
+                data: {
+                    field:     "ssn_sub_type",
+                    ssn_type: $("#ssn_type").get(0).value,
+                    generic:  $("#generic").get(0).value
+                },
+                success: function (data) {
+                    $("#ssn_sub_type").get(0).length = 0;
+                    var options = eval('(' + data + ')');
+                    var i = 0;
+                    $("#ssn_sub_type").get(0).options[i] = new Option('', '');
+                    for (var key in options) {
+                        i++;
+                        var newOpt = new Option(options[key], key);
+                        $("#ssn_sub_type").get(0).options[i] = newOpt;
+                    }
+                },
+                error: function () {
+                    alert("Try again");
+                }
+            }
+        );
+    }
+
+    function goDelete()
+    {
+        var selectedNum = parseInt($('#selected_num').text());
+        if (selectedNum) {
+            if (confirm('You are trying to dispose ' + selectedNum + ' record(s). Are you sure?')) {
+                $('#disposed')[0].checked = true;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+</script>
+

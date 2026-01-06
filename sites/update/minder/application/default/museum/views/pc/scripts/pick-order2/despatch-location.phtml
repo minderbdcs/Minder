@@ -1,0 +1,11 @@
+<?php
+
+echo '[';
+$first = true;
+foreach ($this->data as $key => $val) {
+    if (!$first) {
+        echo ',';
+    }
+    echo json_encode(array('key' => $key, 'val' => $val)) . ',';
+}
+echo ']';

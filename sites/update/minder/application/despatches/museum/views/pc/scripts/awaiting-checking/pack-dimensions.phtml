@@ -1,0 +1,71 @@
+<div id="pack_dimentions">
+    <?php echo $this->packDimensions($this->dim_sysScreenName, 'Pack Dimensions', $this->dim_fieldList, $this->dim_actions, $this->palletOwnerList); ?>
+</div>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    minderNamespace('Minder.Despatches.AwaitingChecking.PackDetails', function() {
+        var _$container;
+
+        this.init = function($container, uoms, ssccTotals) {
+            _$container = $container;
+            _$container.minderPackDimensions(uoms);
+
+            if (ssccTotals.PACKS.TOTAL > 0) {
+                _$container.minderPackDimensions('addRow', false, {"WT": ssccTotals.WT});
+            } else {
+                _$container.minderPackDimensions('addRow');
+            }
+            _$container.minderPackDimensions('commit');
+            _$container.minderPackDimensions('addRow', true);
+            _$container.minderPackDimensions('addRowChangedListener', 'pack-details', $.proxy(this.onRowChanged, this));
+        };
+
+        this.setDimensionalFactor = function(dimensionalFactor) {
+            _$container.minderPackDimensions('setDimensionalFactor', dimensionalFactor);
+        };
+
+        this.onRowChanged = function(event) {
+            if (event.rowData.isNew) {
+                _$container.minderPackDimensions('commit');
+                _$container.minderPackDimensions('addRow', true);
+            }
+        };
+
+        this.getTotalWeight = function() {
+            return _$container.minderPackDimensions('getTotals').WT;
+        };
+
+        this.getAllRows = function() {
+            return _$container.minderPackDimensions('getAllRows').filter(function(rowData){return !rowData.isNew;});
+        }
+    });
+
+
+    //--------------------- DOM ready -------------------------//
+    function packDimensionsGetTotalWeight() {
+        return Minder.Despatches.AwaitingChecking.PackDetails.getTotalWeight();
+    }
+
+    function getPakIdDimensions() {
+        var result = [];
+
+        Minder.Despatches.AwaitingChecking.PackDetails.getAllRows().forEach(function(rowData){
+            rowData.TOTAL_WT = rowData.CALCULATED.TOTAL_WT;
+            rowData.VOL = rowData.CALCULATED.VOL;
+            rowData.TOTAL_VOL = rowData.CALCULATED.TOTAL_VOL;
+
+            rowData.DIMENSION_UOM = rowData.UOM.DT;
+            rowData.PACK_WEIGHT_UOM = rowData.UOM.WT;
+            rowData.VOLUME_UOM = rowData.UOM.VT;
+            rowData.TOTAL_PACK_WEIGHT_UOM = rowData.UOM.TOTAL_WT;
+            rowData.TOTAL_VOLUME_UOM = rowData.UOM.TOTAL_VT;
+
+            result.push(rowData);
+        });
+        return result;
+    }
+
+    /* ]]> */
+</script>

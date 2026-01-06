@@ -1,0 +1,9 @@
+OPTIONS:
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|1, DESCRIPTION: 'Scan BLOCK### or ORDER # ...', COMMENTS: 'Used with Awaiting Checking Screen - Step 1.', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:34:14' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|2, DESCRIPTION: 'Select & Print SSCC ...', COMMENTS: 'Used with Awaiting Checking Screen and an EDI Order', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:35:58' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|3, DESCRIPTION: 'Scan next SSCC Barcode ...', COMMENTS: 'Used with Awaiting Checking Screen and EDI Orders ', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:37:03' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|4, DESCRIPTION: 'Scan PRODUCT Barcode ...', COMMENTS: 'Used with Awaiting Checking Screen - both EDI and non-EDI Orders', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:38:24' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|5, DESCRIPTION: 'Attach SSCC Label, Scan SSCC to complete ...', COMMENTS: 'Used with Awaiting Checking of EDI Orders.', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:41:15' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|6, DESCRIPTION: 'Complete Connote details, scan ACCEPT ...', COMMENTS: 'Used with Awaiting Checking Screen - Final step.', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:41:00' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|21, DESCRIPTION: 'Scan Serial Number %left% of %total%', COMMENTS: 'Used with Awaiting Checking Screen - Final step.', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:41:00' }
+    - { GROUP_CODE: PROMPTS, CODE: ORDERCHECK|29, DESCRIPTION: 'Suspend Serail No. Scanning? ACCEPT or CANCEL', COMMENTS: 'Used with Awaiting Checking Screen - Final step.', DESCRIPTION2: '', LAST_UPDATE_DATE: '2014-05-19 09:41:00' }

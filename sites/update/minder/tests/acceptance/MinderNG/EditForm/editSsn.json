@@ -1,0 +1,240 @@
+{
+  "EDIT_SSN": {
+    "SM_MENU_ID" : "WAREHOUSE",
+    "SM_TITLE" : "Edit SSN",
+    "SM_SEQUENCE" : 100,
+      "screens EDIT_SSN" : {
+        "variance" : {
+          "" : {
+            "dataSource" : {
+              "ISSN" : {},
+              "SSN" : {
+                "SST_JOIN" : "LEFT JOIN",
+                "SST_VIA" : "ON ISSN.ORIGINAL_SSN = SSN.SSN_ID"
+              }
+            },
+
+            "searchForm" : {
+              "SSF_TITLE": "Search SSN",
+              "tabs" : {
+                  "* fields": [
+                    {
+                      "SSV_NAME": "SSN_ID",
+                      "SSV_TABLE": "ISSN",
+                      "SSV_INPUT_METHOD": "IN"
+                    },
+                    {
+                      "SSV_NAME": "SSN_ID",
+                      "SSV_TABLE": "ISSN",
+                      "SSV_INPUT_METHOD": "GI",
+                      "SSV_EXPRESSION": "SSN_CODE"
+                    },
+                    {
+                      "SSV_ALIAS": "NOT_ZERO_QTY",
+                      "SSV_INPUT_METHOD": "NONE",
+                      "SSV_EXPRESSION": "ISSN.CURRENT_QTY > 0"
+                    },
+                    {
+                      "SSV_ALIAS": "AVAILABLE_STOCK",
+                      "SSV_INPUT_METHOD": "NONE",
+                      "SSV_EXPRESSION": "ISSN.COMPANY_ID = '%COMPANY_LIMIT%' OR ISSN.COMPANY_ID = '' OR '%COMPANY_FILTER_STRING%' CONTAINING ISSN.COMPANY_ID"
+                    }
+                  ],
+                "GENERAL" : {
+                  "SST_TITLE": "General"
+                }
+              }
+            },
+
+            "editForms" : {
+              "editRow" : {
+                "SSF_TITLE": "Edit SSN",
+                "SSF_COLUMNS": 2,
+                "tabs" : {
+                    "* fields" : [
+                      {
+                        "SSV_NAME": "SSN_ID",
+                        "SSV_TABLE": "ISSN",
+                        "SSV_INPUT_METHOD": "RO",
+                        "SSV_PRIMARY_ID" : "T",
+                        "SSV_TITLE": "SSN #"
+                      },
+                      {
+                        "SSV_ALIAS" : "COMPANY",
+                        "SSV_EXPRESSION" : "COALESCE(SSN.COMPANY_ID, ISSN.COMPANY_ID)",
+                        "SSV_INPUT_METHOD": {
+                          "METHOD": "DD",
+                          "EXTENSION" : {"empty-option": {
+                            "LABEL": "Select company"
+                          }}
+                        },
+                        "SSV_INPUT_METHOD_NEW" : "DD",
+                        "SSV_TITLE": "Company ID:",
+                        "SSV_DROPDOWN_SQL" : "SELECT COMPANY_ID, COMPANY_ID FROM COMPANY ORDER BY 2"
+                      },
+                      {
+                        "SSV_NAME": "SUPPLIER_ID",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_INPUT_METHOD_NEW" : "IN",
+                        "SSV_TITLE": "Supplier ID:"
+                      },
+                      {
+                        "SSV_NAME": "PO_ORDER",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Order No:"
+                      },
+                      {
+                        "SSV_NAME": "GRN",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "RO",
+                        "SSV_TITLE": "GRN:"
+                      },
+                      {
+                        "SSV_NAME": "PO_LINE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Order Line No:"
+                      },
+                      {
+                        "SSV_NAME": "ORIGINAL_QTY",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Original Quantity:"
+                      },
+                      {
+                        "SSV_NAME": "LOT_BATCH_NO",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Batch Lot No:"
+                      },
+                      {
+                        "SSV_NAME": "USE_BY_DATE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "DP",
+                        "SSV_TITLE": "Use By Date:"
+                      },
+                      {
+                        "SSV_NAME": "BEST_BEFORE_DATE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "DP",
+                        "SSV_TITLE": "Best By Date:"
+                      },
+                      {
+                        "SSV_NAME": "SSN_TYPE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Type I Description:"
+                      },
+                      {
+                        "SSV_NAME": "GENERIC",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Type II Description:"
+                      },
+                      {
+                        "SSV_NAME": "SSN_SUB_TYPE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Type III Description:"
+                      },
+                      {
+                        "SSV_NAME": "BRAND",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Brand:"
+                      },
+                      {
+                        "SSV_NAME": "MODEL",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Model:"
+                      },
+                      {
+                        "SSV_NAME": "ALT_NAME",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Alternate Name:"
+                      },
+                      {
+                        "SSV_NAME": "PROD_ID",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Product ID:"
+                      },
+                      {
+                        "SSV_NAME": "NOTES",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "IN",
+                        "SSV_TITLE": "Notes:"
+                      },
+                      {
+                        "SSV_NAME": "CREATED_BY",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "RO",
+                        "SSV_TITLE": "Created By:"
+                      },
+                      {
+                        "SSV_NAME": "CREATE_DATE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "RO",
+                        "SSV_TITLE": "Create Date:"
+                      },
+                      {
+                        "SSV_NAME": "LAST_UPDATE_BY",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "RO",
+                        "SSV_TITLE": "Last Updated By:"
+                      },
+                      {
+                        "SSV_NAME": "LAST_UPDATE_DATE",
+                        "SSV_TABLE": "SSN",
+                        "SSV_INPUT_METHOD": "RO",
+                        "SSV_TITLE": "Last Update Date:"
+                      }
+                    ],
+                  "GENERAL" : {
+                    "SST_TITLE": "General"
+                  },
+                  "TEST": {
+                    "SST_TITLE": "Test"
+                  }
+                },
+                "buttons" : {
+                  "TEST" : {
+
+                  }
+                }
+              }
+            },
+
+            "transactions" : {
+              "ER" : {
+                "UPDATE" : {
+                  "UIST A" : {
+                    "UPDATE REFERENCE" : "ISSN.ISSN_STATUS",
+                    "KEY" : {
+                      "WH_ID" : ".LOCATION WH_PART",
+                      "LOCN_ID" : ".LOCATION LOCN_PART",
+                      "OBJECT" : "ISSN.SSN_ID",
+                      "QTY" : "ISSN.CURRENT_QTY"
+                    }
+                  }
+                },
+                "ADD" : {
+                  "AUOB C" : {
+                    "UPDATE" : {
+                      "WH_ID" : ".LOCATION WH_PART",
+                      "LOCN_ID" : ".LOCATION LOCN_PART"
+                    },
+                    "RESULT ISSN.SSN_ID" : "ERROR_TEXT SUB_FIELD0"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+}

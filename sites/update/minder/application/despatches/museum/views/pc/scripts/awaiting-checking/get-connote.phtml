@@ -1,0 +1,462 @@
+<input type="hidden" name="order-ship-via" value="<?php echo $this->shipVia;?>">
+
+<div style="clear: both;">
+</div>
+
+<?php if (!empty($this->d_fieldList)) { ?>
+<div id="DELIVER_TO_CONTAINER" style="float: left; margin-top: 20px;">
+    <?php echo $this->render('awaiting-checking/despatch-to-list.phtml')?>
+</div>
+<?php }?>
+
+<?php if (!empty($this->i_fieldList)) { ?>
+<div style="float: left; margin-top: 20px;">
+    <span style="margin-right: 10px;">&nbsp;</span>
+</div>
+
+<div id="INSTRUCTIONS_CONTAINER" style="float: left; margin-top: 20px;">
+    <?php echo $this->render('awaiting-checking/instructions-list.phtml')?>
+</div>
+<?php }?>
+
+<ul style="clear: both;">
+    <li style="display: inline;">&nbsp;</li>
+</ul>
+
+<div id="DIMENSIONS_CONTAINER">
+    <?php echo $this->render('awaiting-checking/pack-dimensions.phtml')?>
+</div>
+
+<div id="CONNOTE_RESPONSE_CONTAINER" class="hidden" style="display: none;"></div>
+
+<div id="MAIN_CONNOTE_FORM" style="clear: both;">
+<?php echo $this->FormHidden('first_selected_order', $this->firstSelectedOrder);?>
+<table class="tablesorter" style="width: 100%; background-color: white; margin-top: 0px; margin-bottom: 0px;">
+    <tr>
+        <td style="width: 80px;"><label>Consignment #:</label></td>
+        <td colspan="3"><?php echo $this->formText('consignment', $this->ssccDespatchId, array())?></td>
+    </tr> 
+    
+    <tr>
+        <td>Ship Via:</td>
+        <td><?php echo $this->FormFilteredDD('ship_via', $this->shipVia, array('value_column' => 'CARRIER_ID', 'label_column' => 'CARRIER_ID'), $this->carriersList);?></td>
+        <td>Service Type:</td>
+        <td><?php echo $this->FormFilteredDD('service_type_record_id', '', array('value_column' => 'RECORD_ID', 'label_column' => 'DESCRIPTION'), $this->carrierServiceTypes);?></td>
+    </tr> 
+
+    <tr>
+        <td colspan="4" style="padding: 0px;">
+            <table style="width: 100%;">
+                <tr>
+                    <td>
+                        Signature Required  
+                    </td>
+                    <td>
+                        Multipart Consignment
+                    </td>
+                    <td>
+                        Partial Delivery  
+                    </td>
+                    <td>
+                        Cash to Collect
+                    </td>
+                    <td>
+                        Transit Cover Required
+                    </td>
+                    <td>
+                        Transit Cover Amount
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <?php echo $this->formRadio('service_signature_reqd', 'T', array('disabled' => 'disabled'), array('T' => 'T', 'F' => 'F'), '<span style="margin-left:50px;">&nbsp;</span>');?>
+                    </td>
+                    <td>
+                    <?php echo $this->formRadio('service_multipart_consignment', 'T', array('disabled' => 'disabled'), array('T' => 'T', 'F' => 'F'), '<span style="margin-left:50px;">&nbsp;</span>');?>
+                    </td>
+                    <td>
+                    <?php echo $this->formRadio('service_partial_delivery', 'F', array('disabled' => 'disabled'), array('T' => 'T', 'F' => 'F'), '<span style="margin-left:50px;">&nbsp;</span>');?>
+                    </td>
+                    <td>
+                    <?php echo $this->formRadio('service_cash_to_collect', 'F', array('disabled' => 'disabled'), array('T' => 'T', 'F' => 'F'), '<span style="margin-left:50px;">&nbsp;</span>');?>
+                    </td>
+                    <td>
+                    <?php echo $this->formRadio('service_transit_cover_reqd', 'F', array('disabled' => 'disabled'), array('T' => 'T', 'F' => 'F'), '<span style="margin-left:50px;">&nbsp;</span>');?>
+                    </td>
+                    <td>
+                    <?php echo $this->formText('service_transit_cover_amount', '', array('readonly' => 'readonly', 'style' => 'width: 10ex;'), '<span style="margin-left:50px;">&nbsp;</span>');?>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</div>
+
+<div style="clear: both; padding-left: 10px;">
+    <ul class="toolbar">
+        <li><input type="submit" name="accept_btn" class="mdr-tool-button" value="ACCEPT" onclick="return false;" /></li>
+        <li><input type="submit" name="cancel_btn" class="mdr-tool-button" value="CANCEL" onclick="return false;" /></li>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    volumeRequired = <?php echo $this->volumeRequired ? 'true' : 'false';?>;
+    weightRequired = <?php echo $this->weightRequired ? 'true' : 'false';?>;
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        <?php if (count($this->errors) > 0) {?>
+            showErrors(<?php echo json_encode($this->errors);?>);
+        <?php }?>
+        
+        <?php if (count($this->warnings) > 0) {?>
+            showWarnings(<?php echo json_encode($this->warnings);?>);
+        <?php }?>
+        
+        $('#pack_dimentions').unbind('totals-updated.connote-form').bind('totals-updated.connote-form', filterCarrierServiceList);
+
+//        getConfirmSettings().carriersList = <?php //echo json_encode($this->deviceCarriersList);?>//;
+//        window.orderShipVia = "<?php //echo $this->shipVia;?>//";
+        skipLabelPrinting = false;
+//        if (isAllLinesChecked()) {
+//            showPrompt(6);
+//        } else {
+//            showPrompt(4);
+//        }
+    });
+    
+    function filterCarrierServiceList() {
+        var
+            $serviceTypeSelect = $('#service_type_record_id'),
+            $selectedCarrier = $('#ship_via').find('option:selected'),
+            totalWeight = packDimensionsGetTotalWeight(),
+            selectedCarrier = function(option) {return option.CARRIER_ID == $selectedCarrier.val()},
+            emptyDepot = function(option) {return !option.DEPOT_ID},
+            underWeight = function(option) {return parseFloat(option.MIN_WEIGHT) > totalWeight},
+            overWeight = function(option) {return parseFloat(option.MAX_WEIGHT) < totalWeight},
+            validWeight = Mdr.notOr(underWeight, overWeight),
+            filterHelper = Mdr.and(selectedCarrier, Mdr.or(emptyDepot, validWeight));
+
+        $serviceTypeSelect.minderFilteredDDSetFilter(filterHelper).done(function(){
+            var
+                defaultServiceTypeId = $selectedCarrier.attr('default_service_type'),
+                tmpArr,
+                validWeightServiceTypeId,
+                emptyDepotServiceTypeId;
+            if (defaultServiceTypeId) {
+                $('#service_type_record_id').val(defaultServiceTypeId);
+            } else {
+                tmpArr = $serviceTypeSelect.minderFilteredDDGetFiltered(Mdr.and(selectedCarrier, Mdr.not(emptyDepot) , validWeight));
+                validWeightServiceTypeId = tmpArr.length > 0 ? tmpArr.shift().RECORD_ID : null;
+
+                if (validWeightServiceTypeId) {
+                    $('#service_type_record_id').val(validWeightServiceTypeId);
+                } else {
+                    tmpArr = $serviceTypeSelect.minderFilteredDDGetFiltered(Mdr.and(selectedCarrier, emptyDepot));
+                    emptyDepotServiceTypeId = tmpArr.length > 0 ? tmpArr.shift().RECORD_ID : null;
+
+                    if (validWeightServiceTypeId) {
+                        $('#service_type_record_id').val(emptyDepotServiceTypeId);
+                    }
+                }
+            }
+
+            updateRadioButtonsState();
+        });
+    }
+
+    function updateRadioButtonsState() {
+        var $_serviceType = $('#service_type_record_id');
+        if ($_serviceType.length < 1)
+            return;
+            
+        var $_selectedOption = $_serviceType.find('option:selected');
+        
+        $('input:radio[name="service_signature_reqd"]').removeAttr('checked');
+        $('input:radio[name="service_signature_reqd"][value="' + $_selectedOption.attr('service_signature_reqd') + '"]').attr('checked', 'checked');
+        
+        $('input:radio[name="service_multipart_consignment"]').removeAttr('checked');
+        $('input:radio[name="service_multipart_consignment"][value="' + $_selectedOption.attr('service_multipart_consignment') + '"]').attr('checked', 'checked');
+        
+        $('input:radio[name="service_partial_delivery"]').removeAttr('checked');
+        $('input:radio[name="service_partial_delivery"][value="' + $_selectedOption.attr('service_partial_delivery') + '"]').attr('checked', 'checked');
+        
+        $('input:radio[name="service_cash_to_collect"]').removeAttr('checked');
+        $('input:radio[name="service_cash_to_collect"][value="' + $_selectedOption.attr('service_cash_to_collect') + '"]').attr('checked', 'checked');
+        
+        $('input:radio[name="service_transit_cover_reqd"]').removeAttr('checked');
+        $('input:radio[name="service_transit_cover_reqd"][value="' + $_selectedOption.attr('service_transit_cover_reqd') + '"]').attr('checked', 'checked');
+
+        $('input:text[name="service_transit_cover_amount"]').val('').val($_selectedOption.attr('service_transit_cover_amount'));
+    }
+    
+//    function grabConnoteFormData() {
+//        var data = {};
+//        data.dimentions     = getPakIdDimensions();
+//
+//        data.carrier        = $('#ship_via').val();
+//        data.carrier        = (data.carrier === null) || (typeof data.carrier === 'undefined') ? '' : data.carrier;
+//
+//        data.carrierService = $('#service_type_record_id').val();
+//        data.carrierService = (data.carrierService === null) || (typeof data.carrierService === 'undefined') ? '' : data.carrierService;
+//
+//        data.consignment    = $('#consignment').val();
+//        data.consignment    = (data.consignment === null) || (typeof data.consignment === 'undefined') ? '' : data.consignment;
+//
+//        data.skipLabelPrinting = skipLabelPrinting || false;
+//
+//        data.isEdiOrder         = isEdiOrder;
+//        data.ssccTotals         = Minder.Despatches.AwaitingChecking.SsccPackDetails.getTotals();
+//        data.packTotalWeight    = Minder.Despatches.AwaitingChecking.PackDetails.getTotalWeight();
+//
+//        return data;
+//    }
+
+//    function initAndShowConfirmCarrierDialog(selectedCarrier, confirmStatus) {
+////        confirmCarrierDialogOnContinue(continueAccept, 'main_connote_form');
+////        confirmCarrierDialogOnClose(onConfirmDialogClose, 'main_connote_form');
+////        fillConfirmCarrierDialog(selectedCarrier, window.orderShipVia, getConfirmSettings().carriersList, confirmStatus.notInList, confirmStatus.notSameAsOrder);
+////        showConfirmCarrierDialog();
+//        getConfirmSettings().waitingConfirmation = true;
+//    }
+
+//    function validateAcceptConnoteData(data, result) {
+//        var hasZeroWeight = false, hasZeroVolume = false;
+//        result = result || new Mdr.ProcessResult();
+//
+//        if (data.isEdiOrder) {
+//            if (data.packTotalWeight < data.ssccTotals.WT) {
+//                result.addErrors(['Total weight should be ' + data.ssccTotals.WT + ' or greater']);
+//            }
+//        }
+//
+//        if (data.dimentions.length < 1) {
+//            result.addErrors(['Please fill Pack Dimensions.']);
+//        } else {
+//            data.dimentions.forEach(function(dimension){
+//                if (dimension.TOTAL_WT.toFixed(4) < 0.0001) {
+//                    hasZeroWeight = true;
+//                }
+//
+//                if (dimension.TOTAL_VOL.toFixed(4) < 0.0001) {
+//                    hasZeroVolume = true;
+//                }
+//            });
+//
+//            if (weightRequired && hasZeroWeight) {
+//                result.addErrors(['Please fill weight information.']);
+//            }
+//
+//            if (volumeRequired && hasZeroVolume) {
+//                result.addErrors(['Please fill volume information.']);
+//            }
+//        }
+//        return result;
+//    }
+
+//    function doAcceptConnote() {
+//        var data = grabConnoteFormData(),
+//            confirmStatus = needToConfirmCarrier(data.carrier, window.orderShipVia),
+//            validateResult;
+//
+//        validateResult = validateAcceptConnoteData(data);
+//
+//        showResponseMessages(validateResult);
+//
+//        if (validateResult.hasErrors()) {
+//            return;
+//        }
+//
+//        if (confirmStatus.needToConfirm) {
+//            initAndShowConfirmCarrierDialog(data.carrier, confirmStatus);
+//            return;
+//        }
+//
+//        getConfirmSettings().waitingConfirmation = false;
+//        getConfirmSettings().confirmed = false;
+//        $('#CONNOTE_RESPONSE_CONTAINER').load(
+//            '<?php //echo $this->url(array('module' => 'despatches', 'controller' => 'awaiting-checking', 'action' => 'accept'), null, false);?>//',
+//            data,
+//            function(text) {
+//                var response = $.parseJSON(text);
+//                $('#CONNOTE_RESPONSE_CONTAINER').html('');
+//
+//                if (response.messages && response.messages.length > 0) {
+//                    showMessage(response.messages);
+//                }
+//
+//                if (response.warnings && response.warnings.length > 0) {
+//                    showWarnings(response.warnings);
+//                }
+//
+//                if (response.errors && response.errors.length > 0) {
+//                    showErrors(response.errors);
+//                    return;
+//                }
+//
+//                if (response.success) {
+//                    acceptConnote = null;
+//                    Minder.Despatches.AwaitingChecking.SsccPackDetails.reset();
+//
+//                    if (hasSearchParams()) {
+//                        executeSearch(getSearchParams());
+//                    } else {
+//                        if (typeof loadOrders == 'function')
+//                            loadOrders();
+//                    }
+//                }
+//
+//                $('#barcode').focus();
+//            }
+//        );
+//    }
+
+//    function acceptConnote() {
+//        if (!isAllLinesChecked()) {
+//            showWarnings(['Not all lines is checked.']);
+//            return;
+//        }
+//
+//        if (getConfirmSettings().waitingConfirmation) {
+//            if (getConfirmSettings().previousCode == 'ACCEPT') {
+////                closeConfirmCarrierDialog();
+//                getConfirmSettings().confirmed = true;
+//                doAcceptConnote();
+//            }
+//        } else {
+//            getConfirmSettings().previousCode = 'ACCEPT';
+//            doAcceptConnote();
+//        }
+//    }
+
+//    function fillConnoteCarrierService(carrierServiceId, doneCallback) {
+//        var
+//            $serviceType = $('#service_type_record_id'),
+//            matchCarrier,
+//            totalWeight = packDimensionsGetTotalWeight(),
+//            matchRecordId = function(option) {return option.RECORD_ID == carrierServiceId},
+//            emptyDepot = function(option) {return !option.DEPOT_ID},
+//            underWeight = function(option) {return parseFloat(option.MIN_WEIGHT) > totalWeight},
+//            overWeight = function(option) {return parseFloat(option.MAX_WEIGHT) < totalWeight},
+//            validWeight = Mdr.notOr(underWeight, overWeight),
+//            carrierService;
+//
+//        carrierService = $serviceType.minderFilteredDDGetFiltered(Mdr.and(matchRecordId, Mdr.or(emptyDepot, validWeight)));
+//
+//        if (carrierService.length < 1) {
+//            return;
+//        }
+//
+//        carrierService = carrierService.shift();
+//        $('#ship_via').val(carrierService.CARRIER_ID);
+//        matchCarrier = function(option) {return option.CARRIER_ID == carrierService.CARRIER_ID};
+//        $serviceType.minderFilteredDDSetFilter(Mdr.and(matchCarrier, Mdr.or(emptyDepot, validWeight))).done(function(){
+//            $serviceType.val(carrierServiceId);
+//
+//            doneCallback();
+//        });
+//    }
+
+//    function selectServiceAndAccept(carrierServiceId) {
+//        if (!isAllLinesChecked()) {
+//            showWarnings(['Not all lines is checked.']);
+//            return;
+//        }
+//
+//        if (getConfirmSettings().waitingConfirmation) {
+//            if (getConfirmSettings().previousCode == carrierServiceId) {
+////                closeConfirmCarrierDialog();
+//                getConfirmSettings().confirmed = true;
+//                doAcceptConnote();
+//            }
+//        } else {
+//            fillConnoteCarrierService(carrierServiceId, function(){
+//                getConfirmSettings().previousCode = carrierServiceId;
+//                updateRadioButtonsState();
+//                doAcceptConnote();
+//            });
+//        }
+//    }
+
+//    function cancelConnote() {
+//        $('#CONNOTE_SCREEN_CONTAINER').empty();
+//        acceptConnote = null;
+////        selectServiceAndAccept = null;
+//        $('#barcode').focus();
+//    }
+
+//    function continueAccept() {
+//        getConfirmSettings().confirmed = true;
+//        doAcceptConnote();
+//    }
+
+//    function onConfirmDialogClose() {
+//        getConfirmSettings().waitingConfirmation = false;
+//    }
+
+//    function getConfirmSettings() {
+//        if (!window.confirmCarrier) {
+//            window.confirmCarrier = {
+//                confirmed: false,
+//                carriersList: [],
+//                waitingConfirmation: false,
+//                previousCode: null
+//            }
+//        }
+//
+//        return window.confirmCarrier;
+//    }
+
+//    function needToConfirmCarrier(carrierId, orderCarrierId) {
+//        var
+//            settings = getConfirmSettings(),
+//            result = {
+//                needToConfirm: false,
+//                notInList: false,
+//                notSameAsOrder: false
+//            };
+//
+//        result.notInList        = (settings.carriersList.length > 0) && (settings.carriersList.indexOf(carrierId) < 0);
+//        result.notSameAsOrder   = carrierId.length && orderCarrierId.length && carrierId != orderCarrierId;
+//        result.needToConfirm    = !settings.confirmed && (result.notInList || result.notSameAsOrder);
+//
+//        return result;
+//    }
+
+//    function getDefaultCarrierServiceTypesByConnoteLabel(dataIdentifier) {
+//        var
+//            matchDataIdentifier = function () {return $(this).attr('connote_param_id') === dataIdentifier;},
+//            matchedCarrierOptions = $('#ship_via').find('option').filter(matchDataIdentifier),
+//            carriers = matchedCarrierOptions.map(Mdr.jqAttr('carrier_id')).get(),
+//            defaultServiceTypes = matchedCarrierOptions.map(Mdr.jqAttr('default_service_type')).get().filter(function(item){return !!item;}),
+//            matchCarriers = function(option) {return carriers.indexOf(option.CARRIER_ID) >= 0},
+//            matchDefaultServiceTypes = function(option) {return defaultServiceTypes.indexOf(option.RECORD_ID) >= 0},
+//            totalWeight = packDimensionsGetTotalWeight(),
+//            emptyDepot = function(option) {return !option.DEPOT_ID},
+//            underWeight = function(option) {return parseFloat(option.MIN_WEIGHT) > totalWeight},
+//            overWeight = function(option) {return parseFloat(option.MAX_WEIGHT) < totalWeight},
+//            notEmptyDepotAndValidWeight = Mdr.and(Mdr.not(emptyDepot), Mdr.notOr(underWeight, overWeight)),
+//            matchedCarrierServiceTypes = $('#service_type_record_id').minderFilteredDDGetFiltered(matchCarriers),
+//            matchedDefaultServiceTypes = matchedCarrierServiceTypes.filter(matchDefaultServiceTypes),
+//            result = matchedDefaultServiceTypes.filter(notEmptyDepotAndValidWeight);
+//
+//        if (result.length < 1) {
+//            result = matchedCarrierServiceTypes.filter(notEmptyDepotAndValidWeight);
+//        }
+//
+//        if (result.length < 1) {
+//            result = matchedDefaultServiceTypes.filter(emptyDepot);
+//        }
+//
+//        if (result.length < 1) {
+//            result = matchedCarrierServiceTypes.filter(emptyDepot);
+//        }
+//
+//
+//        return result.map(function(option){ return option.RECORD_ID;});
+//    }
+    /* ]]> */
+</script>

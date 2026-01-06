@@ -1,0 +1,47 @@
+<?php echo $this->crudForm; ?>
+
+<script type="text/javascript">
+
+    function onCrudFormCancelBtnClick(evt) {
+        evt.preventDefault();
+        $('#<?php echo $this->crudForm->getId();?>').remove();
+    }
+
+    function crudFormNavigate(navigateAction) {
+        $('#<?php echo $this->crudForm->getId();?>')
+                .attr('action', '<?php echo $this->url(array('action' => 'crud-form-navigate'))?>')
+                .append($('<input type="hidden" />').attr('name', 'navigate').val(navigateAction))
+                .submit();
+    }
+
+    function onCrudFormFirstBtnClick(evt) {
+        evt.preventDefault();
+        crudFormNavigate('FIRST');
+    }
+
+    function onCrudFormPrevBtnClick(evt) {
+        evt.preventDefault();
+        crudFormNavigate('PREV');
+    }
+
+    function onCrudFormNextBtnClick(evt) {
+        evt.preventDefault();
+        crudFormNavigate('NEXT');
+    }
+
+    function onCrudFormLastBtnClick(evt) {
+        evt.preventDefault();
+        crudFormNavigate('LAST');
+    }
+
+    $(document).ready(function() {
+
+        var crudForm = $('#<?php echo $this->crudForm->getId();?>');
+
+        crudForm.find('input[name="cancel_btn"]').click(onCrudFormCancelBtnClick);
+        crudForm.find('input[name="first_btn"]').click(onCrudFormFirstBtnClick);
+        crudForm.find('input[name="prev_btn"]').click(onCrudFormPrevBtnClick);
+        crudForm.find('input[name="next_btn"]').click(onCrudFormNextBtnClick);
+        crudForm.find('input[name="last_btn"]').click(onCrudFormLastBtnClick);
+    })
+</script>

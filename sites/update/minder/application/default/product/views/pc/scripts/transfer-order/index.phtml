@@ -1,0 +1,550 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all() ?>
+<ul id="validateErrors" style="display:none" class="errors"></ul>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <div style="width:99%;">
+        <table style="width: 80%" id="table1">
+            <tr>
+                <th>
+                    <b>SEARCH TRANSFER ORDER:</b>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <b>Pick Mode:</b>
+                </th>
+                <td>
+                    <?php echo $this->formSelectExt('pick_mode', $this->pick_mode, null , $this->listPickModes, "<br />\n" , array('onclick' => 'pickModeChange(this)')); ?>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="6">
+                        ------------------------------------------------ OR ------------------------------------------------
+                </td>
+            </tr>
+            <tr>
+                <th>Order #:</th>
+                <td><?php echo $this->formText('pick_order', $this->pickOrder, null); ?></td>
+                <th>Destination:</th>
+                <td><?php echo $this->formText('person_id', $this->dPersonId, null); ?></td>
+            </tr>
+            <tr>
+                <th>Reference #:</th>
+                <td><?php echo $this->formText('customer_po_wo', $this->customerPoWo, null); ?></td>
+                <th>&nbsp;</th>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <th>Loan Start From:</th>
+                <td><?php echo $this->formText('pick_from_due_date', $this->pickFromDueDate, null); ?></td>
+                <th>Loan Start To:</th>
+                <td><?php echo $this->formText('pick_to_due_date', $this->pickToDueDate, null); ?></td>
+            </tr>
+            <tr>
+                <th>Loan Return From:</th>
+                <td><?php echo $this->formText('return_from_date', $this->returnFromDate, null); ?></td>
+                <th>Loan Return To:</th>
+                <td><?php echo $this->formText('return_to_date', $this->returnToDate, null); ?></td>
+            </tr>
+        </table>
+    </div>
+    <ul class="toolbar">
+        <input type="submit" class="green-button" name="action" value="Submit Search" />
+        <input type="button" class="green-button" id="clear" value="Clear" />
+        <input type="button" name="action" value="New Order" class="green-button" id="new_button" />
+    </ul>
+    <script type="text/javascript">
+        $('#clear').click(function() {
+            $('#table1 input').val('');
+            
+            $('#table1 select').attr('selectedIndex', 0);
+        });
+    </script>
+    <hr>
+    <div id="order-list">
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">Orders List</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(5  => 5,
+                                               10 => 10,
+                                               15 => 15,
+                                               20 => 20,
+                                               30 => 30,
+                                               40 => 40,
+                                               50 => 50,
+                                               100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span id="orders_selected">0</span></li>
+    </ul>
+    <table id="pick_orders" class="withborder tablesorter" style="margin-bottom: 0;">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_orders" onclick="selectAll(this)" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+<?php
+
+//date update
+
+    if($this->minder->isNewDateCalculation() == false){
+        $session = new Zend_Session_Namespace();
+        $tz_to=$session->BrowserTimeZone;
+        $key_array=array_keys($this->pickOrders);
+
+            foreach($this->pickOrders as $key=>$val){
+
+                foreach($val as $key1=>$val1){
+
+                    if(DateTime::createFromFormat('Y-m-d H:i:s', $val1)!== FALSE  || DateTime::createFromFormat('Y-m-d',$val1)!==FALSE) {
+
+                        $dt = new DateTime($val1, new DateTimeZone('UTC'));
+                        $tz = new DateTimeZone($tz_to); 
+                        $dt->setTimezone($tz);
+                        $val1=$dt->format('Y-m-d H:i:s');
+                        $this->pickOrders[$key][$key1]=$val1;
+
+                    } 
+                }
+            }
+    }
+            
+
+//date update
+
+
+
+
+    foreach ($this->pickOrders as $pickOrder => $order) {
+        echo '<tr>';
+        echo '<th>';
+        echo $this->formCheckbox($pickOrder, $pickOrder, array('checked' => array_key_exists($pickOrder, $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'showSelected(this)'));
+        echo '</th>';
+        foreach ($this->headers as $key => $value) {
+            if ($key == 'PICK_STATUS') {
+                if (array_key_exists($order[$key], $this->pickStatusDescription)) {
+                    $tooltip = $this->pickStatusDescription[$order[$key]];
+                } else {
+                    $tooltip = 'No description';
+                }
+                echo '<td><a title="' . $tooltip . '" href="' . $this->url(array('controller' => 'transfer-order', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">'. $this->escape($order[$key]) . '</a></td>';
+            } else {
+                echo '<td><a href="' . $this->url(array('controller' => 'transfer-order', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">'. $this->escape($order[$key]) . '</a></td>';
+            }
+        }
+        echo "</tr>\n";
+    }
+
+
+?>
+<?php if (!count($this->pickOrders)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) : ?>
+                <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" width="100%">
+        <tr>
+            <td style="white-space: nowrap; text-align: right;" colspan="2">Total Selected Value $<span class="total_selected">0</span></td>
+        </tr>
+        <tr>
+            <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td style="white-space: nowrap; text-align: right;" width="20%">Total Search Value: $<span class="total_displayed">0</span></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="Confirm" /></li>
+        <!--<li><input type="submit" name="action" class="order-button" value="Reserve" /></li>-->
+        <li><input type="submit" name="action" class="order-button" value="Approve Pick" /></li>
+        <!--<li><input type="submit" name="action" class="order-button" value="Allocate Orders" /></li>-->
+        <!--<li><input type="submit" name="action" class="order-button" value="Allocate Products" /></li>-->
+        <li><input type="submit" name="action" class="order-button" value="Approve Despatch" /></li>
+        <li><input type="submit" name="action" class="order-button" value="Hold" /></li>
+        <li><input type="submit" name="action" class="order-button cancel_button" value="Cancel" /></li>
+    </ul>
+
+<!--    <input type="hidden" name="reason" id="reason" value="" />
+    <div id="x" class="flora">
+        This reason will be applied to all selected orders:<br /><textarea name="cancel_reason" id="cancel_reason"></textarea><br/><input type="submit" value="Cancel" id="real_cancel_button" />
+    </div>-->
+    <div class="flora" id="dialog-cancel" title="Reason for cancelling" style="display: none;">
+            This reason will be applied to all selected orders:<br />
+            <!--<textarea name="reason" id="cancel_reason"></textarea> -->
+            <?php echo $this->formSelect('reason', null, array('id' => 'cancel_reason'), $this->cancelReasons);?>
+    </div>
+</form>
+<?php echo $this->messenger()->all('lines') ?>
+<div id="lines-list" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999; border-bottom: 1px solid #999999;"></div>
+<div id="order-edit" class="section" style="display: none; padding-top: .5em;"></div>
+<div id="add_from_location_container" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999; border-bottom: 1px solid #999999;"></div>
+
+
+<?php
+
+$disabled_property = array('READONLY'=>'', 'style'=>'background-color: lightgrey;');
+
+foreach ($this->pickModes as $pickMode) {
+
+?>
+<div id="select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>" class="flora" title="Pick Mode" style="display: none;">
+    <form id="select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>" name="prompt" method="post" action="/minder/transfer-order/">
+    <input type="hidden" name="action" value="run_pick_mode" >
+    <input type="hidden" name="pick_proc" value="<?php echo $pickMode['PROCEDURE_NAME']; ?>" >
+    <input type="hidden" class="one_or_accept" name="one_or_accept" value="" >
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <td>
+                    Order Type:
+                </td>
+                <td>
+                    <?php
+						$_style = ($pickMode['PICK_PARAM_TYPE']=='F')?$disabled_property:array();
+                    	echo $this->formText('PICK_PARAM_TYPE', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Mode:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_MODE']=='F')?$disabled_property:array();
+                    	 echo $this->formText('PICK_PARAM_MODE', $pickMode['DESCRIPTION'], $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order No:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_ORDNO']=='F')?$disabled_property:array(); 
+                    	echo $this->formText('PICK_PARAM_ORDNO', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Status:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_STATUS']=='F')?$disabled_property:array(); 
+                    	echo $this->formText('PICK_PARAM_STATUS', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Priority:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_PRIORITY']=='F')?$disabled_property:array();
+                    	 echo $this->formText('PICK_PARAM_PRIORITY', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Input Required ID's:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_ID']=='F')?$disabled_property:array();
+                    	echo $this->formText('PICK_PARAM_ID', '', $_style); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+ 	$('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog({buttons: {
+ 			'CANCEL': function(){
+ 					//$('#pick_mode')[0].selectedIndex=0;
+					$('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog('close');
+        		}
+<?php if ($pickMode['PICK_PARAM_GETALLBTNVISIBLE']=='T') {?>
+			,        		
+ 			'GET ALL': function(){
+ 					$.each($('.one_or_accept'), function() {this.value = 'all'});
+ 					$('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();            
+        		}
+<?php } ?>
+<?php if ($pickMode['PICK_PARAM_ACCEPTBTNVISIBLE']=='T') {?>
+			,        		
+ 			'ACCEPT': function(){
+ 					$.each($('.one_or_accept'), function() {this.value = 'one'});
+ 					$('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();
+        		}
+<?php } ?> 
+        },
+        modal: true,
+        width: '500px',
+		height: '250px',       
+        resizable: false,
+		draggable: true,
+		position: 'center',
+        autoOpen: false,
+        close: function() { $('#pick_mode')[0].selectedIndex=0; },
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });                    
+});
+</script>
+<?php
+
+}
+
+?>
+
+
+
+
+<script src="<?php echo $this->baseUrl ?>scripts/jquery.scrollTo-min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    
+    window.orderList    =   new Array(); 
+    
+    $('#pick_from_due_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#pick_to_due_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#return_from_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#return_to_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#pick_orders').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,1],[2,0]], widgets: ['zebra']}).find('tbody a').click(function(e){
+        // e.target - link in the ORDER LIST table.
+        $('#order-edit').load(e.target.href, null, function(){
+            $(this).show();
+            $.scrollTo('#order-edit');
+            onAjaxSuccess();
+        });
+        return false;
+    });
+    $('#dialog-cancel').dialog({buttons: {OK: function(){
+            var reason = $('#cancel_reason')[0].value;
+            if (reason != '') {
+                $('#main').append('<input type="hidden" name="action" value="Cancel" /><input type="hidden" name="reason" value="' + reason + '" />').submit();
+            }
+            $('#dialog-cancel').dialog('close');
+        }},
+        autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+    $('.cancel_button').click(function(){
+        $('#dialog-cancel').dialog('open');
+        return false;
+    });
+
+    // Mark selected elements.
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer-order', 'module' => 'default')); ?>', {method: 'init', id: 'select_all'}, showLinesAndShowSelected);
+
+    $('#new_button').click(function(){
+        $('#order-edit').load('<?php echo $this->url(array('controller' => 'transfer-order', 'action' => 'new', 'pick_order_type' => 'TO'), null, true) ?>', null, function(){
+            $(this).show();
+            $.scrollTo('#order-edit');
+            onAjaxSuccess();
+        });
+        return false;
+    });
+
+     $('#dialog2').dialog({buttons: {GetOrder: sendOrder, Close: closeDialog},
+         width: '70ex',
+         height: '10em',
+         autoOpen: false,
+         open: function() {$('#dialog2').css('display', 'block');}
+     }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+     });
+     
+     var cacheValue = 1;
+     $('#pick_order').autocomplete('<?php echo $this->url(array('controller' => 'transfer-order',
+                                                                'action'     => 'search')); ?>/',
+                                    {matchSubset: 1,
+                                     matchContains: 1,
+                                     cacheLength: cacheValue,
+                                     formatItem: formatItemWithoutDesc,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'pick_order'}});
+
+     $('#person_id').autocomplete('<?php echo $this->url(array('controller' => 'transfer-order',
+                                                                 'action'     => 'search')); ?>/',
+                                    {matchSubset: 1,
+                                     matchContains: 1,
+                                     cacheLength: cacheValue,
+                                     formatItem: formatItemWithDesc,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'd_person_id'}});
+
+ 	$('#select_mode_popup').dialog({buttons: {OK: function(){
+            $('#select_mode_popup-cancel').dialog('close');
+        }},
+        modal: true,
+        width: '500px',
+		height: '250px',       
+        resizable: false,
+		draggable: false,
+		position: 'center',
+        autoOpen: false,
+        close: function() { $('#pick_mode')[0].selectedIndex=0; },
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+});
+
+
+function pickModeChange(node){
+	mode = node.value;
+	if (mode!=' ') {
+		num = $('#pick_mode')[0].options[$('#pick_mode')[0].selectedIndex].value;
+		$('#select_mode_popup_'+num).dialog('open');
+	} else {
+        $('#main').append('<input type="hidden" name="action" value="run_pick_mode" />');
+        $('#main').append('<input type="hidden" name="pick_proc" value="reset" />');
+        
+        frmSubmit();
+    }
+}
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+// The handler the one element selection.
+function showSelected(target) {
+    // Select the first link in the current tr.
+    var link = $(target).parent().next().find('a');
+    if (link.length) {
+        link = link.get(0).href.replace(/\/edit\//, '/lines/');
+        $('#lines-list').load(link, {method: target.checked, id: target.value, value: target.value}, showLinesAndShowSelected);
+    }
+}
+function showLinesAndShowSelected() {
+    if ($('#json').length) {
+        var json = eval('(' + $('#json').html() + ')');
+        
+        $('#orders_selected').text(json.orders_selected);
+        $('#json').remove();
+        
+        if (!json.orders_selected) {
+            $('#lines-list').hide('normal');
+            //$('.order-button').attr('disabled', true).css('background', '#eee');
+        } else {
+            $('#lines-list').show('normal');
+            //$('.order-button').removeAttr('disabled').css('background', '#fff');
+        }
+        
+    }
+    $('#select_all_pick_orders')[0].checked = checkSelected('#pick_orders', '.pick-order-selector');
+
+    if ($('#total_displayed').length) {
+        $('.total_displayed').text($('#total_displayed').text());
+    }
+    if ($('#total_selected').length) {
+        $('.total_selected').text($('#total_selected').text());
+    }
+
+    onAjaxSuccess();
+}
+function selectAll(target) {
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer-order', 'module' => 'default')); ?>', {method: target.checked, id: 'select_all'}, function(){
+        $('.pick-order-selector').attr('checked', target.checked);
+        showLinesAndShowSelected();
+    });
+}
+function checkSelected(tableId, checkBoxesClass) {
+    var checkBoxes = $(tableId).find(checkBoxesClass);
+    return checkBoxes.length == checkBoxes.filter(':checked').length;
+}
+</script>
+
+<script type="text/javascript">
+<!--
+
+function addFromLocationShow()
+{
+	$('#add_from_location_container').load('<?php echo $this->url(array('action' => 'add-from-location', 'controller' => 'transfer-order', 'module' => 'default')); ?>');
+	$('#add_from_location_container').show();
+}
+
+function sendOrder()
+{
+    if($('#to_number')[0].value == '') {
+        alert('Please, enter TO number');
+        return false;
+    }
+
+    var data = $('#prompt').serialize();
+
+    $('#dialog2').dialog("close");
+
+    $.ajax({url: '<?php echo $this->url(array('controller' => 'transfer-order')); ?>',
+           data:  data,
+           beforeSend: onAjaxBeforeSend,
+           complete: onAjaxSuccess,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        if(answer.status == false) {
+                            alert(answer.message);
+                        //    $('#dialog').dialog("close");
+                            return false;
+                        }
+                         // get url for redirect from server
+                         url = answer.data.url;
+                         window.location = url;
+
+                       // $('#dialog').dialog("close");
+                        },
+           method: 'get'
+           });
+
+    return false;
+}
+
+function newPrompt()
+{
+    document.prompt.reset();
+    $("#dialog2").dialog("open");
+    return false;
+}
+
+function closeDialog()
+{
+    $('#dialog2').dialog("close");
+    return false;
+}
+
+//-->
+</script>
+
+
+<?php echo $this->render('footer.phtml'); ?>

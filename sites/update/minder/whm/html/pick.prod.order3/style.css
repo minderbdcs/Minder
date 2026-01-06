@@ -1,0 +1,43 @@
+html {
+    font-size: 13px;
+    font-family: sans-serif;
+}
+body, form {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+body {
+    padding: 1em 1ex;
+}
+table, tr, th, td {
+    font-size: 100%;
+    border: 0;
+}
+#pick-item th, #pick-item td {
+    text-align: right;
+}
+#pick-item input {
+    text-align: right;
+    width: 10ex;
+}
+.number {
+    text-align: right;
+}
+table.with-border, table.with-border tr, table.with-border td, table.with-border th {
+    border: 1px solid #999999;
+    border-collapse: collapse;
+}
+#message {
+    border: 3px solid #ff0000;
+    padding: 13px;
+}
+#tab_back {
+    display: none;
+}
+#nostock_qty {
+    display: none;
+}
+#nostock_reason {
+    display: none;
+}

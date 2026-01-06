@@ -1,0 +1,477 @@
+<?php echo $this->render('header.phtml'); ?>
+
+    <?php echo $this->messenger()->all() ?> 
+<ul id="validateErrors" style="display:none" class="errors"></ul>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <table style="width: 40%">
+        <tr>
+            <td>
+                <b>CREATE MAPPING:</b> 
+            </td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <th>Import Type:</th>
+            <td><?php echo $this->formSelect('import_type', $this->importType, array('onchange' =>  'loadTableName();', 'style' => 'width:36ex'), $this->importTypeList); ?></td>
+        </tr>
+        <tr>
+            <th>Import File Name:</th>
+            <td><?php echo $this->formText('import_file_name', $this->importFileName, array('style' => 'width:36ex')); ?></td>
+        </tr>
+        <tr>
+            <th>Worksheet Name:</th>
+            <td><?php echo $this->formText('workshet_name', $this->worksheetName, array('style' => 'width:36ex')); ?></td>
+        </tr>
+        <tr>
+            <th>Minder Table Name:</th>
+            <td>
+            <?php if($this->tableNameReadOnly){  
+                    echo $this->formText('minder_table_name', $this->minderTableName, array('readonly' => 'readonly', 'style' => 'width:36ex'));
+                  } else {
+                    echo $this->formText('minder_table_name', $this->minderTableName, array('style' => 'width:36ex'));
+                  }
+            ?>
+            </td>
+        </tr>
+    </table>
+    
+    <br />
+        <input type="submit" class="green-button" name="action" value="SEARCH" />
+        <input type="button" class="green-button" name="action" value="CLEAR" id="clear" onclick="return frmClear();"/>
+    <br /><br />
+    
+    <div id="container" style="height:100%">
+        <div id="headers"></div>
+    </div>
+    
+    <div style="clear:both;">
+        <input type="submit" class="green-button" name="action" value="SAVE MAP" />
+        <input type="button" class="green-button" name="action" value="ADD IGNORE" id="add igmore" onclick="addIgnoredBlock();" />
+    </div>
+    
+    <br />
+    <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <table style="width:99%">
+        <tr>
+            <td>
+                <div style="float:left; font-weight: bold;">
+                    Selected: <span  id="selected_num"><?php echo $this->totalSelected ?></span>
+                </div>
+            </td>
+        </tr>
+    </table>
+    </div>
+    <div style="display:inline">
+        <label for='show_by'>View By : </label>
+        <?php echo $this->formSelect('show_by',
+                                     $this->navigation['show_by'],
+                                     array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                     array(  5 => 5,
+                                            10 => 10,
+                                            15 => 15,
+                                            20 => 20,
+                                            30 => 30,
+                                            40 => 40,
+                                            50 => 50,
+                                           100 => 100));?>
+        <label for='page'>Page : </label>
+        <?php echo $this->formSelect('pageselector',
+                                           $this->navigation['pageselector'],
+                                           array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                           $this->pages); ?>
+    </div>
+        <table id="lines" class="withborder tablesorter">
+            <thead>
+            <tr>
+                <th>
+                    <?php echo $this->formCheckbox('select_all_lines', null , array('checked' => $this->upperChekbox, 'onclick' => 'selectAllLines(this)')); ?>
+                </th>
+        <?php
+            foreach ($this->headers as $header) {
+                echo '<th>'. $this->escape($header) . '</th>';
+            }
+        ?>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        if(count($this->data)>0) {
+            foreach ($this->data as $command) {
+                echo '<tr>';
+                echo '<th>';
+                echo $this->formCheckbox($command['RECORD_ID'], $command['RECORD_ID'], array('checked' => array_key_exists($command['RECORD_ID'], $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'selectOneLine(this)'));
+                echo '</th>';
+                foreach ($this->headers as $key => $value) {
+                    echo '<td><a href=' . $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'edit-mapping', 'id' => $command['RECORD_ID'])) .'>' . $this->escape($command[$key]) . '</td>';
+                }
+                echo "</tr>\n";
+            }
+        } else {
+            echo "<tr><th/>";
+            foreach($this->headers as $propertyName => $v) {
+                echo '<td/>';
+            }
+            echo "</tr>\n";
+        }
+        ?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+    </ul>
+    
+    <ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="ADD" onClick="return newPrompt('add');" /></li>
+        <li><input type="submit" name="action" class="order-button" value="DELETE" onClick="return goDelete();" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: XLS" /></li>
+    </ul>
+</form>
+
+<div id="dialog_add" class="flora" title="Add Map Record" style="display: none;">
+    <form id="prompt_add" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="add" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    MAP_TYPE:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_type', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMPORT_FILENAME:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_import_filename', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMPORT_SHEET:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_import_sheet', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMPORT_COL:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_import_col', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_TABLE:
+                </th>
+                <td>
+                    <?php echo $this->formText('map_ims_table', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_FIELDNAME:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_fieldname', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_FIELDTYPE:
+                </th>
+                <td>
+                     <?php echo $this->formText('add_map_ims_fieldtype', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_FORMAT:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_format', '', array('class' => 'mandatory')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_SUFFIX:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_suffix', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_PREFIX:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_prefix', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_FIND:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_find', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_REPLACE:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_replace', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    MAP_IMS_DEFAULT:
+                </th>
+                <td>
+                    <?php echo $this->formText('add_map_ims_default', '', array('')); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+
+<script type="text/javascript">
+<!--
+
+$().ready(function(){
+    
+    // load table headers
+    loadTableHeaderList();
+    
+    var selectedType    =   $('#import_type :selected').val();
+   
+    if(selectedType != '') {
+        loadTableName();
+        // load table headers
+        loadTableHeaderList();
+    }
+    
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+    $('#add_map_ims_format').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#add_created_date').datepicker({dateFormat: 'yy-mm-dd'});
+     
+    $('#dialog_add').dialog({buttons: {Add: addNewMap, Close: closeDialog},
+         width: '80ex',
+         height: '34em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+})
+
+
+function frmClear(){
+    
+    $("form#main input:text").each(function() {
+        this.value = "";
+    });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+    });
+    
+    $.each($('#sourcelist .fields :input'), function(){
+        $(this).remove();
+    })
+    $.each($('#importlist .fields :input'), function(){
+        $(this).remove();
+    })
+    $.each($('#columnList .fields :input'), function(){
+        $(this).remove();
+    })
+
+    return false;
+}
+
+function loadTableName(){
+    
+    $.getJSON('<?php echo $this->url(array('controller'=> 'admin', 'action' => 'seek', 'module' => 'default'));  ?>', {
+        
+        field:    'import_code',
+        q:        $('#import_type :selected').val()     
+            
+    }, function(json){
+        
+        $('#minder_table_name').val(json.table_name);
+        // load table headers
+        loadTableHeaderList();
+            
+    })
+}
+
+function loadTableHeaderList(){
+    
+    $('#headers').load('<?php echo $this->url(array('controller'=> 'admin', 'action' => 'mapping-fieldlist', 'module' => 'default')); ?>', {
+    
+        refresh: true, 
+        table: $('#minder_table_name').val()
+    
+    }, function(){
+        
+    });    
+}
+
+function selectOneLine(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'markmappinglines', 'controller' => 'admin', 'module' => 'default')); ?>', 
+    {
+        method: target.checked, 
+        id: target.value, 
+        value: target.value
+    }, function(json) {
+         $("#selected_num").get(0).innerHTML = json.selected_num;    
+    });
+}
+
+function selectAllLines(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'markmappinglines', 'controller' => 'admin', 'module' => 'default')); ?>', 
+    {
+     method: target.checked, 
+     id: 'select_all', 
+     value: '',
+    },
+     function(json) {
+        
+        $("#selected_num").get(0).innerHTML = json.selected_num;
+        
+        var chk = $("#lines input:checkbox");
+        var checkOnOff = $("#select_all_lines").get(0).checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+    });
+}
+
+function goDelete() {
+    
+    var selectedNum = parseInt($('#selected_num').text());
+    if (selectedNum) {
+         if (confirm('You are trying to delete ' + selectedNum + ' record(s). Are you sure?')) {
+             return true;
+         } else {
+            return false;
+         }
+    } else {
+      //  alert('Please select row(s) to delete.');
+	$('#validateErrors').html('<li>Please select row(s) to delete.</li>');
+	$('#validateErrors').show();
+        return false;
+    } 
+}
+
+function newPrompt(id){
+     
+     $("#dialog_" + id).dialog("open");
+     
+     $('#add_map_type').focus();
+     
+     return false;
+    
+}
+
+function addNewMap(){
+    
+    
+    if($('#add_map_type')[0].value == '') {
+        $('#add_map_type').addClass('mandatory');
+        $('#add_map_type').focus();
+        return false;    
+    } else {
+         $('#add_map_type').removeClass('mandatory'); 
+    }
+    
+    if($('#add_map_import_filename')[0].value == '') {
+        $('#add_map_import_filename').addClass('mandatory');
+        $('#add_map_import_filename').focus();
+        return false;    
+    } else {
+         $('#add_map_import_filename').removeClass('mandatory'); 
+    }
+    
+    if($('#add_map_import_sheet')[0].value == '') {
+        $('#add_map_import_sheet').addClass('mandatory');
+        $('#add_map_import_sheet').focus();
+        return false;    
+    } else {
+         $('#add_map_import_sheet').removeClass('mandatory'); 
+    }
+    
+    if($('#add_map_import_col')[0].value == '') {
+        $('#add_map_import_col').addClass('mandatory');
+        $('#add_map_import_col').focus();
+        return false;    
+    } else {
+         $('#add_map_import_col').removeClass('mandatory'); 
+    }
+    
+    if($('#map_ims_table')[0].value == '') {
+        $('#map_ims_table').addClass('mandatory');
+        $('#map_ims_table').focus();
+        return false;    
+    } else {
+         $('#map_ims_table').removeClass('mandatory'); 
+    }
+    
+    if($('#add_map_ims_fieldname')[0].value == '') {
+        $('#add_map_ims_fieldname').addClass('mandatory');
+        $('#add_map_ims_fieldname').focus();
+        return false;    
+    } else {
+         $('#add_map_ims_fieldname').removeClass('mandatory'); 
+    }
+    
+    if($('#add_map_ims_format')[0].value == '') {
+        $('#add_map_ims_format').addClass('mandatory');
+        $('#add_map_ims_format').focus();
+        return false;    
+    } else {
+         $('#add_map_ims_format').removeClass('mandatory'); 
+    }
+    
+    $('#prompt_add').submit();
+    
+}
+
+function closeDialog(){
+    
+    $('#dialog_add').dialog("close");
+    
+    return false;    
+}
+
+function closeDialog() {
+
+     $('#dialog_add').dialog("close");
+     $('#dialog_edit').dialog("close");
+     
+     return false;
+} 
+
+//-->
+</script>
+<?php echo $this->render('footer.phtml'); ?>

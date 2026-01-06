@@ -1,0 +1,212 @@
+<?php echo $this->render('otc/dialogs/confirm-location-edit.phtml'); ?>
+
+<div id="add_location_dialog" class="flora otc-add-location-dialog" title="Add Location" style="display: none;"
+     xmlns="http://www.w3.org/1999/html">
+<form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+<table class="summary" style="width:99%">
+        <tr>
+            <td>
+                LOCATION ID (Max 8):
+            </td>
+            <td>
+                <?php echo $this->formText('locationnew_id', '', array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                LOCATION NAME (Max 50):
+            </td>
+            <td>
+                <?php echo $this->formText('location_name', '', array()); ?>
+            </td>
+        </tr>
+        <tr>
+	    <td>
+		<label>
+                   Location Is On-Site <input type="radio" name="move_stat" value="ST" checked="checked" />
+                </label>
+	    </td><td>
+                <label>
+                    <input type="radio" name="move_stat" value="OS" />Or Is Off-Site
+                </label>		
+	    </td>
+      </tr>      
+</table>
+</form>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var
+            $addLocationDlg = $('#add_location_dialog');
+
+        // dialog add location
+        $addLocationDlg.dialog({
+             buttons: {SAVE: saveLocation, HTML:true, CANCEL: closeLocationDialog},
+             width: "750px",
+             height: "350px",
+             autoOpen: false,
+             position: [0, 65],
+             buttonStyle: 'otc-dialog-button',
+             insertHtml:  '<label for="print_label">Print Label</label>&nbsp;<input type="checkbox" id="print_label_location" name="print_label_location" value=""><br /><label>Label Qty:&nbsp;<select id="location_label_qty" name="location_label_qty" style="width: 5em"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select></label>'
+        }).bind('dialogclose', function(event, ui) {
+            $('#barcode').focus();
+            $addLocationDlg.removeAttr('active');
+        }).bind('dialogopen', function(event, ui) {
+            var
+                $locationLabelQty = $('#location_label_qty'),
+                $printLabelFlag = $('#print_label_location'),
+                defaultLabelQty = parseInt('<?php echo $this->defaultBorrowerLabelQty; ?>') || 0;
+
+            $locationLabelQty.unbind('change').change(function(){
+                var
+                    labelQty = parseInt($(this).val()) || 0;
+                if (labelQty < 1) {
+                    $printLabelFlag.removeAttr('checked');
+                } else {
+                    $printLabelFlag.attr('checked', true);
+                }
+            });
+
+            $printLabelFlag.unbind('change').change(function(){
+                if ($(this).attr('checked')) {
+                    $locationLabelQty.val(defaultLabelQty || 1);
+                } else {
+                    $locationLabelQty.val(0);
+                }
+            });
+
+            $locationLabelQty.val(defaultLabelQty).change();
+            $addLocationDlg.attr('active', true);
+
+            $(this).show();
+        });
+
+    });
+
+    // add Location
+    function openLocationDialog(){
+        $("#add_location_dialog").dialog("open");
+        $('#barcode').focus();
+
+        return false;
+    }
+
+    function closeLocationDialog(){
+        $('#add_location_dialog').dialog("close");
+
+        return false;
+    }
+
+    function isAddLocationDialogActive() {
+        return !!$("#add_location_dialog").attr('active');
+    }
+
+    function _getAddLocationDialogData() {
+        return {
+	    wh_id: $('#limit_warehouse').val(),
+            locationnew_id: $("#locationnew_id").val(),
+            location_name: $("#location_name").val(),
+            move_stat: $("input:checked[type='radio'][name='move_stat']").val(),
+            print_label: $("#print_label_location")[0].checked,
+            label_qty: $('#location_label_qty').val()
+        };
+    }
+
+    function _addLocationDialogValidateLocationId(data) {
+	var letterNumber = /^[0-9A-Z]+$/; 
+        if (data.locationnew_id.length < 1) {
+            showErrors(['Location Id is empty.']);
+            return false;
+        }
+        if (data.locationnew_id.length > 8) {
+            showErrors(['Location Id is too big.']);
+            return false;
+        }
+	if(!(data.locationnew_id.match(letterNumber) && data.locationnew_id.length<9))  {
+	    showErrors(['Enter valid Location Id']);
+            return false;
+	}
+	/*else {
+	    var check_locid = $.ajax({
+				data: {field1: data.locationnew_id,field2: data.wh_id},
+				type: 'GET',
+				url: '<?php echo $this->url(array('action' => 'get-location','controller' => 'otc', 'module' => 'default')); ?>',
+ 				async:false
+			               });
+
+				var loc_status = check_locid.responseText;
+				alert('ajax:'+loc_status);
+	}*/
+        return true ;
+    }
+
+    function _addLocationDialogValidateLocationName(data) {
+        if (data.location_name.length < 1) {
+            showErrors(['Location Name is empty.']);
+            return false;
+        }
+
+        if (data.location_name.length > 50) {
+            showErrors(['Location Name is too big.']);
+            return false;
+        }
+
+        return true;
+    }
+
+    function _addLocationDialogValidateData(data) {
+        var result = $.Deferred();
+        $.when(
+            _addLocationDialogValidateLocationId(data),
+            _addLocationDialogValidateLocationName(data)
+        ).then(
+            function(locationIdIsValid, locationNameIsValid) {
+                if (locationIdIsValid && locationNameIsValid) {
+                    result.resolve(data);
+                } else {
+                    result.reject();
+                }
+            }
+        );
+
+        return result.promise();
+    }
+
+    function _addLocationDialogConfirmEdit(newLocation, existedLocation) {
+       confirmLocationEditDialogConfirm(newLocation, existedLocation);
+	return;
+    }
+
+    function _addLocationDialogDoSave(data) {
+        $.post(
+            "/minder/otc/add-location-ajax",
+            data,
+            function (response)
+            { 
+                if(response.messages && response.messages.length > 0)
+                    showMessage(response.messages);
+
+                if(response.warnings && response.warnings.length > 0)
+                    showWarnings(response.warnings);
+
+                if(response.errors && response.errors.length > 0)
+                    showErrors(response.errors);
+
+                if (!!response.confirmEdit) {
+                    _addLocationDialogConfirmEdit(data, response.location);
+                }
+            },
+            'json'
+        );
+        closeLocationDialog();
+    }
+
+    function _addLocationDialogValidateAndSave(data) {
+        $.when(_addLocationDialogValidateData(data)).then(_addLocationDialogDoSave);
+    }
+
+    function saveLocation(){
+        _addLocationDialogValidateAndSave(_getAddLocationDialogData());
+    }
+</script>

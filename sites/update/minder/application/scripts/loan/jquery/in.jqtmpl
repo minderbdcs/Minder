@@ -1,0 +1,1 @@
+<input type="text" name="{{= $item.data.getName()}}" value="{{= $item.data.getValue()}}"/>

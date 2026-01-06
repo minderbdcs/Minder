@@ -1,0 +1,146 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php
+if (false && $this->loginSuccess == false) {?>
+<h2><?php echo $this->minderVariant('TOOL*Minder'); ?>&trade; SOAP Login to NetSuite</h2>
+<?php } else { ?>
+<h2><?php echo $this->minderVariant('TOOL*Minder'); ?>&trade; SOAP Interface to NetSuite</h2>
+<?php }
+
+// 'onchange' => 'document.forms.nav.submit();'
+?>
+<form name="main" action="" method="post">
+    <ul class="toolbar">
+        <li>
+            <label for="type">Select Type</label>
+            <?php echo $this->formSelect('type', $this->selectedType, array(),
+                    array('salesOrder'    => 'salesOrder',
+                          'purchaseOrder' => 'purchaseOrder',
+                          'vendor'        => 'Vendor',
+                          'customer'      => 'customer',
+                          'itemFulfillment' => 'itemFulfillment',
+                          'inventoryAdjustment' => 'InventoryAdjustment')); ?>
+        </li>
+    </ul>
+    <ul class="toolbar">
+        <li>
+            <?php //echo $this->formHidden('type', $this->selectedType); ?>
+            <label for="account">Internal ID</label>
+            <?php echo $this->formText('internalId', $this->internalId, array()); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'GET INFO', array('onclick' => 'frmSubmit();')); ?>
+        </li>
+<?php
+    if ($this->internalId != '') {
+?>
+        <li>
+            <?php echo $this->formSubmit('action', 'ADD TO MINDER', array('onclick' => 'frmSubmit();')); ?>
+        </li>
+<?php
+    }
+?>
+    </ul>
+</form>
+            <?php
+if ($this->data) {
+    //echo '<h2>internal ID: ' . $this->data->items['PO_LEGACY_INTERNAL_ID'] . '</h2>';
+    echo '<table class="summary">';
+    if (!is_a($this->data, 'PickOrder')) {
+        foreach ($this->data->items as $key => $val) {
+            if ($key !== 'itemList') {
+               if (array_key_exists($key, $this->headers)) {
+                  $hdr = $this->headers[$key];
+               } else {
+                    $hdr = $key;
+               }
+                echo '<tr><th>' . $hdr . '</th><td>' . ($val===false? 'false': html_entity_decode($val))  . '</td></tr>';
+            }
+        }
+        $itemList = $this->data->items['itemList'];
+    } else {
+        foreach ($this->data as $key => $val) {
+            if ($key !== 'itemList' && $key != 'items') {
+                if ($val !== '') {
+                    if (array_key_exists($key, $this->headers)) {
+                        $hdr = $this->headers[$key];
+                    } else {
+                        $hdr = $key;
+                    }
+                    echo '<tr><th>' . $hdr . '</th><td>' . ($val===false? 'false': html_entity_decode($val))  . '</td></tr>';
+                }
+            }
+        }
+        $itemList = $this->data->items;
+    }
+    echo '</table>';
+
+?>
+<h2>Item List</h2>
+<?php
+
+//    if ($this->data->items['itemList'] && ($cnt = count($this->data->items['itemList']))) {
+    if ($itemList && ($cnt = count($itemList))) {
+        if ($cnt > 0) {
+            echo '<table id="items" class="withborder tablesorter">';
+            echo '<thead><tr>';
+            if (!is_a($this->data, 'PickOrder')) {
+                foreach ($this->data->items['itemList'][0]->items as $key => $val) {
+                //foreach ($itemList[0]->items as $key => $val) {
+                    echo '<th>' . strtoupper($key) . '</th>';
+                }
+                echo '</tr></thead>';
+                echo '<tbody>';
+                foreach ($this->data->items['itemList'] as $key => $row) {
+                //foreach ($itemList as $key => $row) {
+                    echo '<tr>';
+                    foreach ($row->items as $key => $col) {
+                       echo '<td>' . html_entity_decode($col) . '</td>';
+                    }
+                    echo '</tr>';
+                }
+            } else {
+                if ($itemList[0] instanceof ModelCollection) {
+                    $header = $itemList[0]->items;
+                } else {
+                    $header = $itemList[0];
+                }
+                foreach ($header as $key => $val) {
+                    echo '<th>' . strtoupper($key) . '</th>';
+                }
+                echo '</tr></thead>';
+                echo '<tbody>';
+                foreach ($itemList as $key => $row) {
+                    echo '<tr>';
+                    if ($row instanceof ModelCollection) {
+                        $row = $row->items;
+                    }
+                    foreach ($row as $key => $col) {
+                        if (!is_object($col)) {
+                            echo '<td>' . html_entity_decode($col) . '</td>';
+                        } else {
+                            if (array_key_exists('name', $col) && trim($col->name) != '') {
+                                echo '<td>' . $col->name . '</td>';
+                            } else {
+                                echo '<td>' . $col->internalId . '</td>';
+                            }
+                        }
+                    }
+
+                    echo '</tr>';
+                }
+            }
+            echo '</table>';
+        }
+    }
+
+}
+?>
+<script type="text/javascript">
+<!--
+$().ready(function() {
+    $('#items').tablesorter({widgets: ['zebra']});
+});
+//-->
+</script>
+<?php echo $this->render('footer.phtml'); ?>

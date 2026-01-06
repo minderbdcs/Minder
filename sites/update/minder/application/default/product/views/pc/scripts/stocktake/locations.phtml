@@ -1,0 +1,128 @@
+<?php echo $this->messenger()->all(); ?>
+<form name="locations-form" id="locations-form" action="<?php echo $this->url(array('module'=>'default', 'controller'=>'stocktake', 'action'=>'load-stocktake-locations')) . '?table=locations&method=post' ; ?>" method="post">
+    <div id="tabs3">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left;">
+                            <b>
+                                Selected: <span  id="selected_num">0</span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', '', array()); ?>
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => '$("#locations-form").trigger("submit"); return true; '),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelect('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => '$("#locations-form").trigger("submit"); return true; '),
+                                               $this->pages); ?>
+        </div>
+        <table id="<?php echo $this->escape($this->tableId) ?>" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           'any_value',
+                                           array('onclick' => 'selectAll(this)'));?>
+            </th>
+            <?php
+                foreach ($this->headers as $key => $header) {
+                    echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+                }
+            ?>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+                foreach ($this->data as $line) {
+            ?>
+                <tr>
+                    <th>
+                        <?php
+                            echo $this->formCheckbox('locns[' . $this->escape($line->id) . ']',
+                                                     $this->escape($line->id),
+                                                     array('class' => 'location_checkbox',
+                                                           'id' => $this->escape($line->id),
+                                                           'checked' => selectFilterValue($this->escape($line->id), $this->conditions['locns']),
+                                                           'onclick' => 'showSelected(this)'));
+
+                        ?>
+                    </th>
+                    <?php
+                        foreach ($this->headers as $key => $val) {
+                            echo '<td>' . $this->escape($line->items[$key]) . '</td>';
+                        }
+                    ?>
+                </tr>
+             <?php
+                }
+            ?>
+            </tbody>
+        </table>
+    </div>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: CSV', array('disabled' => 'disabled')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'RELEASE LOCATION', array('onclick' => 'return releaseLocation();')); ?>
+        </li>
+        <li>
+            <?php echo $this->formButton('action', 'CANCEL', array('onclick' => 'return cancelLocations();')); ?>
+        </li>
+    </ul>
+</form>
+<script type="text/javascript">
+<!--
+$(document).ready( function (){
+var options = {
+        beforeSubmit: function() {
+            $('.messages').remove();
+            $('.errors').remove();
+            $('.warnings').remove();
+        },
+        target:     '#locations-form',
+        url:        '<?php echo $this->url(array('module'=>'default', 'controller'=>'stocktake', 'action'=>'load-stocktake-locations')) . '?table=locations&method=post' ; ?>',
+        success:    function() {
+        }
+    };
+    $('#locations-form').ajaxForm(options);
+});
+
+function cancelLocations()
+{
+    $('#locations-container').empty();
+    return false;
+}
+function releaseLocation()
+{
+    $('#count-issn-container').empty();
+    $('#locations-form').ajaxSubmit({
+            success: function(response) {
+                $('#locations-container').html(response);
+            }
+        });
+    return false;
+}
+
+//-->
+</script>
+

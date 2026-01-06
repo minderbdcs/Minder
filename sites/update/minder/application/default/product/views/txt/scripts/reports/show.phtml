@@ -1,0 +1,30 @@
+<?php
+$groups = array();
+foreach ($this->headers as $key => $val) {
+    if (substr($val, 0, 5) == 'GROUP' && substr($val, -2) == '__') {
+        $groups[] = $val;
+    }
+}
+sort($groups);
+
+$columns = array();
+foreach ($this->data as $key => $row) {
+    $index = '';
+    foreach($groups as $val) {
+        $index .= $row[$val];
+    }
+    $keysIndexed[$index][]= $key;
+    $indexes[] = $index;
+}
+$indexes = array_unique($indexes);
+
+sort($indexes);
+
+foreach ($indexes as $index) {
+    foreach ($keysIndexed[$index] as $key) {
+        foreach($this->data[$key] as $field => $value) {
+            echo $value . chr(9);
+        }
+        echo "\n";
+    }
+}

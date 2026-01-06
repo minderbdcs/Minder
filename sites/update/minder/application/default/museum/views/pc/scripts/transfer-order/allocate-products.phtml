@@ -1,0 +1,185 @@
+<?php echo $this->render('header.phtml'); ?>
+<form action="<?php echo $this->url(); ?>" method="post">
+    <div>
+        <b>PRODUCTS ALLOCATION:</b>
+        <br />
+        <br />
+        <table>
+            <tr>
+                <td>Product ID:</td>
+                <td><?php echo $this->formText('product_id', $this->productId, null, null); ?></td>
+                <td>Due Date:</td>
+                <td><?php echo $this->formText('due_date', $this->dueDate); ?></td>
+                <td><b>Pick Mode:</b></td>
+                <td><b><?php echo $this->pick_mode; ?></b></td>
+            </tr>
+        </table>
+        <?php if($this->pick_mode == 'none') { ?>
+            <input type="submit" name="action" value="Submit Search" class="order-button" />
+        <?php } ?>
+    </div>
+    <br />
+    <b>ALLOCATE MAXIMUMS:</b>
+    <div>
+        <table>
+            <tr>
+                <td>User ID:</td>
+                <td><?php echo $this->formSelect('user_id', $this->minder->userId, null,  $this->usersList); ?></td>
+                <td>TERMINAL ID:</td>
+                <td><?php echo $this->formSelect('terminal_id', $this->minder->deviceId, array('onchange' => 'getTerminalDesc()'), $this->terminals); ?></td>
+                <td><span id="terminal_desc"></span></td>    
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>PICK TO DEVICE ID:</td>
+                <td><?php echo $this->formSelect('device_id', null, array('onchange' => 'getDeviceDesc()'), $this->devices); ?></td>
+                <td><span id="device_desc"></span></td>    
+            </tr>
+            <tr>
+                <td>Max. Orders</td>
+                <td><?php echo $this->formText('max_orders', $this->maxOrders); ?></td>
+                <td>Max. Products:</td>
+                <td><?php echo $this->formText('max_products', $this->maxProducts); ?></td>
+                <td>&nbsp;</td>    
+            </tr>
+        </table>
+    </div>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Allocate Picks" class="order-button" /></li>
+        <li><input type="submit" name="action" value="Return" onclick="javascript:window.location='<?php echo $this->url(array('controller' => 'pick-order'), '', true); ?>'; return false;" class="order-button" /></li>
+    </ul>
+
+<hr>
+        <div>
+            <div style="text-transform: uppercase; font-weight: bold; float:left">Lines Awaiting Allocation List</div>
+            <div style="position:relative; left:10ex; font-weight: none;text-transform: none;">
+            <label for="results_per_page">View By:</label>
+     <?php echo $this->formSelect('show_by',
+                                  $this->navigation['show_by'],
+                                  array('onchange' => 'this.form.submit()'),
+                                  array(5  => 5,
+                                        10 => 10,
+                                        15 => 15,
+                                        20 => 20,
+                                        30 => 30,
+                                        40 => 40,
+                                        50 => 50,
+                                        100 => 100)) ?>
+     <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'this.form.submit()'),
+                                               $this->pages); ?>
+            </div>
+        </div>
+
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected <span class="selected_count">0</span></li>
+    </ul>
+    <table id="pick_items" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_items" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+<?php if (!count($this->pickItems)) { ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) { ?>
+                <td/>
+<?php } ?>
+        </tr>
+<?php
+} else {
+        foreach ($this->pickItems as $pickItem) {
+            $dueDate = substr($pickItem['PICK_DUE_DATE'], 2, 2) . '0' . substr($pickItem['PICK_DUE_DATE'], 8, 2);
+            echo '<tr>';
+            echo '<th><input type="checkbox" id="pick_item_' . $this->escape($pickItem['PICK_LABEL_NO']) . '" class="order_checkbox" name="allocate[]" value="p|' . $this->escape($pickItem['PICK_LABEL_NO']) . '|' . $this->escape($pickItem['PROD_ID']) . '|' . $dueDate . '"/></th>';
+            foreach ($this->headers as $key => $value) {
+                echo '<td>'. $this->escape($pickItem[$key]) . '</td>';
+            }
+            echo "</tr>\n";
+        }
+}
+?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <li style="display: inline;">
+            Total <?php echo $this->numRecords; ?> records. 
+            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno);?>
+        </li>
+    </ul>
+
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Allocate Picks" class="order-button" /></li>
+        <li><input type="submit" name="action" value="Return" onclick="javascript:window.location='<?php echo $this->url(array('controller' => 'pick-order'), '', true); ?>'; return false;" class="order-button" /></li>
+    </ul>
+
+</form>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    var cacheValue      = 1;
+    var numPressEnter   = 0;
+    
+    $('#pick_items').tablesorter({headers:{0:{sorter:false}}, sortList:[], widgets: ['zebra']});
+    $('#select_all_pick_items').click(function () { $('.order_checkbox').each(function () { this.checked = $('#select_all_pick_items')[0].checked; }); $('.selected_count').text($('.order_checkbox:checked').length); });
+    $('#due_date').datepicker({dateFormat: 'yy-mm-dd'});
+    
+    $('#product_id').autocomplete('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'search')); ?>/',
+                                    {
+                                     matchSubset: 0,
+                                     matchContains: 0,
+                                     cacheLength: cacheValue,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'product_id'},
+                                    }
+                              );
+})
+
+
+function getDeviceDesc() {
+    var device_id    = $('#device_id')[0].value;
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'lookup'), '', false); ?>', 
+               {
+                   q: device_id, field: 'device_id'}, 
+                   function(json){
+                       if(json.field_description == null) {
+                            $('#device_desc').text(' ');
+                       } else {
+                            $('#device_desc').text(json.field_description);
+                       }
+                            
+               }
+    );    
+
+}
+
+function getTerminalDesc() {
+    var terminal_id    = $('#terminal_id')[0].value;
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'lookup'), '', false); ?>', 
+               {
+                   q: terminal_id, field: 'terminal_id'}, 
+                   function(json){
+                       if(json.field_description == null) {
+                            $('#terminal_desc').text(' ');
+                       } else {
+                            $('#terminal_desc').text(json.field_description);
+                       }     
+               }
+    );
+
+}
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

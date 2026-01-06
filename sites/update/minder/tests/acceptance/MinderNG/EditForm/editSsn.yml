@@ -1,0 +1,475 @@
+SYS_SCREEN_TABLE:
+    -
+        RECORD_ID: 99999998
+        SST_TABLE: ISSN
+        SS_NAME: EDIT_SSN
+        SST_SEQUENCE: 1
+        SST_TABLE_STATUS: OK
+    -
+        RECORD_ID: 99999997
+        SST_TABLE: SSN
+        SS_NAME: EDIT_SSN
+        SST_SEQUENCE: 2
+        SST_TABLE_STATUS: OK
+        SST_JOIN: 'LEFT JOIN'
+        SST_VIA: 'ON ISSN.ORIGINAL_SSN = SSN.SSN_ID'
+SYS_SCREEN_VAR:
+    -
+        RECORD_ID: 99999998
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: searchForm
+        SSV_FIELD_TYPE: SE
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: SSN_ID
+        SSV_TABLE: ISSN
+        SSV_INPUT_METHOD: IN
+    -
+        RECORD_ID: 99999997
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: searchForm
+        SSV_FIELD_TYPE: SE
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: SSN_ID
+        SSV_TABLE: ISSN
+        SSV_INPUT_METHOD: GI
+        SSV_EXPRESSION: SSN_CODE
+    -
+        RECORD_ID: 99999996
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: searchForm
+        SSV_FIELD_TYPE: SE
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: null
+        SSV_TABLE: null
+        SSV_INPUT_METHOD: NONE
+        SSV_ALIAS: NOT_ZERO_QTY
+        SSV_EXPRESSION: 'ISSN.CURRENT_QTY > 0'
+    -
+        RECORD_ID: 99999995
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: searchForm
+        SSV_FIELD_TYPE: SE
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: null
+        SSV_TABLE: null
+        SSV_INPUT_METHOD: NONE
+        SSV_ALIAS: AVAILABLE_STOCK
+        SSV_EXPRESSION: 'ISSN.COMPANY_ID = ''%COMPANY_LIMIT%'' OR ISSN.COMPANY_ID = '''' OR ''%COMPANY_FILTER_STRING%'' CONTAINING ISSN.COMPANY_ID'
+    -
+        RECORD_ID: 99999994
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: SSN_ID
+        SSV_TABLE: ISSN
+        SSV_INPUT_METHOD: RO
+        SSV_PRIMARY_ID: T
+        SSV_TITLE: 'SSN #'
+    -
+        RECORD_ID: 99999993
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: null
+        SSV_TABLE: null
+        SSV_INPUT_METHOD: '{"METHOD":"DD","EXTENSION":{"empty-option":{"LABEL":"Select company"}}}'
+        SSV_ALIAS: COMPANY
+        SSV_EXPRESSION: 'COALESCE(SSN.COMPANY_ID, ISSN.COMPANY_ID)'
+        SSV_INPUT_METHOD_NEW: DD
+        SSV_TITLE: 'Company ID:'
+        SSV_DROPDOWN_SQL: 'SELECT COMPANY_ID, COMPANY_ID FROM COMPANY ORDER BY 2'
+    -
+        RECORD_ID: 99999992
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: SUPPLIER_ID
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_INPUT_METHOD_NEW: IN
+        SSV_TITLE: 'Supplier ID:'
+    -
+        RECORD_ID: 99999991
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: PO_ORDER
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Order No:'
+    -
+        RECORD_ID: 99999990
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: GRN
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: RO
+        SSV_TITLE: 'GRN:'
+    -
+        RECORD_ID: 99999989
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: PO_LINE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Order Line No:'
+    -
+        RECORD_ID: 99999988
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: ORIGINAL_QTY
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Original Quantity:'
+    -
+        RECORD_ID: 99999987
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: LOT_BATCH_NO
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Batch Lot No:'
+    -
+        RECORD_ID: 99999986
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: USE_BY_DATE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: DP
+        SSV_TITLE: 'Use By Date:'
+    -
+        RECORD_ID: 99999985
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: BEST_BEFORE_DATE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: DP
+        SSV_TITLE: 'Best By Date:'
+    -
+        RECORD_ID: 99999984
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: SSN_TYPE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Type I Description:'
+    -
+        RECORD_ID: 99999983
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: GENERIC
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Type II Description:'
+    -
+        RECORD_ID: 99999982
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: SSN_SUB_TYPE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Type III Description:'
+    -
+        RECORD_ID: 99999981
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: BRAND
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Brand:'
+    -
+        RECORD_ID: 99999980
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: MODEL
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Model:'
+    -
+        RECORD_ID: 99999979
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: ALT_NAME
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Alternate Name:'
+    -
+        RECORD_ID: 99999978
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: PROD_ID
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Product ID:'
+    -
+        RECORD_ID: 99999977
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: NOTES
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: IN
+        SSV_TITLE: 'Notes:'
+    -
+        RECORD_ID: 99999976
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: CREATED_BY
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: RO
+        SSV_TITLE: 'Created By:'
+    -
+        RECORD_ID: 99999975
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: CREATE_DATE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: RO
+        SSV_TITLE: 'Create Date:'
+    -
+        RECORD_ID: 99999974
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: LAST_UPDATE_BY
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: RO
+        SSV_TITLE: 'Last Updated By:'
+    -
+        RECORD_ID: 99999973
+        SS_NAME: EDIT_SSN
+        SSV_TAB: ''
+        SSF_NAME: editRow
+        SSV_FIELD_TYPE: ER
+        SSV_FIELD_STATUS: OK
+        SSV_NAME: LAST_UPDATE_DATE
+        SSV_TABLE: SSN
+        SSV_INPUT_METHOD: RO
+        SSV_TITLE: 'Last Update Date:'
+SYS_SCREEN_TAB:
+    -
+        RECORD_ID: 99999997
+        SS_NAME: EDIT_SSN
+        SST_TAB_NAME: GENERAL
+        SSF_NAME: searchForm
+        SST_FIELD_TYPE: SE
+        SST_TAB_STATUS: OK
+        SST_TITLE: General
+    -
+        RECORD_ID: 99999995
+        SS_NAME: EDIT_SSN
+        SST_TAB_NAME: GENERAL
+        SSF_NAME: editRow
+        SST_FIELD_TYPE: ER
+        SST_TAB_STATUS: OK
+        SST_TITLE: General
+    -
+        RECORD_ID: 99999994
+        SS_NAME: EDIT_SSN
+        SST_TAB_NAME: TEST
+        SSF_NAME: editRow
+        SST_FIELD_TYPE: ER
+        SST_TAB_STATUS: OK
+        SST_TITLE: Test
+SYS_SCREEN_FORM:
+    -
+        SSF_TYPE: SE
+        RECORD_ID: 99999998
+        SSF_NAME: searchForm
+        SS_NAME: EDIT_SSN
+        SSF_STATUS: OK
+        SSF_TITLE: 'Search SSN'
+    -
+        SSF_TYPE: ER
+        RECORD_ID: 99999997
+        SSF_NAME: editRow
+        SS_NAME: EDIT_SSN
+        SSF_STATUS: OK
+        SSF_TITLE: 'Edit SSN'
+        SSF_COLUMNS: 2
+SYS_SCREEN_BUTTON:
+    -
+        RECORD_ID: 99999998
+        SS_NAME: EDIT_SSN
+        SSF_NAME: editRow
+        SSB_BUTTON_TYPE: ER
+        SSB_TAB_STATUS: OK
+        SSB_BUTTON_NAME: TEST
+SYS_SCREEN_TRANSACTION:
+    -
+        RECORD_ID: 99999998
+        SST_SEQUENCE: 1
+        SST_TRN_TYPE: UIST
+        SST_TRN_CLASS: A
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: UPDATE
+        SST_TRN_FIELD: REFERENCE
+        SST_FIELD_ROLE: UPDATE
+        SST_TABLE: ISSN
+        SST_COLUMN: ISSN_STATUS
+    -
+        RECORD_ID: 99999997
+        SST_SEQUENCE: 2
+        SST_TRN_TYPE: UIST
+        SST_TRN_CLASS: A
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: UPDATE
+        SST_TRN_FIELD: WH_ID
+        SST_FIELD_ROLE: KEY
+        SST_TABLE: ''
+        SST_COLUMN: LOCATION
+        SST_COLUMN_EXPRESSION: '{"trim":[],"substring":[0,2]}'
+    -
+        RECORD_ID: 99999996
+        SST_SEQUENCE: 3
+        SST_TRN_TYPE: UIST
+        SST_TRN_CLASS: A
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: UPDATE
+        SST_TRN_FIELD: LOCN_ID
+        SST_FIELD_ROLE: KEY
+        SST_TABLE: ''
+        SST_COLUMN: LOCATION
+        SST_COLUMN_EXPRESSION: '{"trim":[],"substring":[2]}'
+    -
+        RECORD_ID: 99999995
+        SST_SEQUENCE: 4
+        SST_TRN_TYPE: UIST
+        SST_TRN_CLASS: A
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: UPDATE
+        SST_TRN_FIELD: OBJECT
+        SST_FIELD_ROLE: KEY
+        SST_TABLE: ISSN
+        SST_COLUMN: SSN_ID
+    -
+        RECORD_ID: 99999994
+        SST_SEQUENCE: 5
+        SST_TRN_TYPE: UIST
+        SST_TRN_CLASS: A
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: UPDATE
+        SST_TRN_FIELD: QTY
+        SST_FIELD_ROLE: KEY
+        SST_TABLE: ISSN
+        SST_COLUMN: CURRENT_QTY
+    -
+        RECORD_ID: 99999993
+        SST_SEQUENCE: 6
+        SST_TRN_TYPE: AUOB
+        SST_TRN_CLASS: C
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: ADD
+        SST_TRN_FIELD: WH_ID
+        SST_FIELD_ROLE: UPDATE
+        SST_TABLE: ''
+        SST_COLUMN: LOCATION
+        SST_COLUMN_EXPRESSION: '{"trim":[],"substring":[0,2]}'
+    -
+        RECORD_ID: 99999992
+        SST_SEQUENCE: 7
+        SST_TRN_TYPE: AUOB
+        SST_TRN_CLASS: C
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: ADD
+        SST_TRN_FIELD: LOCN_ID
+        SST_FIELD_ROLE: UPDATE
+        SST_TABLE: ''
+        SST_COLUMN: LOCATION
+        SST_COLUMN_EXPRESSION: '{"trim":[],"substring":[2]}'
+    -
+        RECORD_ID: 99999991
+        SST_SEQUENCE: 8
+        SST_TRN_TYPE: AUOB
+        SST_TRN_CLASS: C
+        SS_NAME: EDIT_SSN
+        SST_SCREEN_TYPE: ER
+        SST_ACTION: ADD
+        SST_TRN_FIELD: ERROR_TEXT
+        SST_FIELD_ROLE: RESULT
+        SST_TABLE: ISSN
+        SST_COLUMN: SSN_ID
+        SST_TRN_FIELD_EXPRESSION: '{"trim":[],"sub_field":[0]}'
+SYS_SCREEN:
+    -
+        RECORD_ID: 99999998
+        SS_NAME: EDIT_SSN
+        SS_MENU_ID: EDIT_SSN
+SYS_MENU:
+    -
+        RECORD_ID: 99999998
+        SM_SUBMENU_ID: EDIT_SSN
+        SM_MENU_TYPE: LEFT
+        SM_MENU_STATUS: OK
+        SM_MENU_ACTION: /pages/WAREHOUSE-EDIT_SSN
+        SM_MENU_ID: WAREHOUSE
+        SM_TITLE: 'Edit SSN'
+        SM_SEQUENCE: 100

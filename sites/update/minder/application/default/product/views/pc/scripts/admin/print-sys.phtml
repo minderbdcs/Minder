@@ -1,0 +1,946 @@
+<?php echo $this->render('header.phtml'); ?>
+<div id="flash_error">
+    <?php echo $this->messenger()->all() ?> 
+</div>
+<form name="main" id="main_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'print-sys'), null, true); ?>" method="post">
+<h2><?php echo $this->pageTitle; ?></h2>
+<div id="update_form" style="width:99%;">
+        <table>
+            <tr>
+                <th>
+                    <b>LABELS Search:</b>
+                </th>
+            </tr>
+            <tr>
+                <th style="align:right">Label Name:</th>
+                <td>
+                	<?php echo $this->formText('sys_label_name', $this->labelName); ?>
+                	<div id="error_name"><?php echo $this->errorLabelName; ?></div>
+                </td>
+                <th style="align:right">Printer Brand:</th>
+                <td><?php echo $this->formText('sys_label_brand', $this->labelBrand); ?></td>
+            </tr>
+            <tr>
+                <th style="align:right">Printer Model:</th>
+                <td><?php echo $this->formText('sys_label_model', $this->labelModel); ?></td>
+                <th style="align:right">Printer Firmware:</th>
+                <td><?php echo $this->formText('sys_label_firmware', $this->labelFirmware); ?></td>
+            </tr>
+            <tr>
+                <th style="align:right">Label Format:</th>
+                <td><?php echo $this->formSelect('labelFormt', $this->labelFormat, null , $this->labelFormats); ?></td>
+         
+            </tr>
+        </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SEARCH', null); ?></li>
+        <li><?php echo $this->formButton('action', 'CLEAR', array('onClick' => ' frmClear();')); ?></li>
+    </ul>
+</div>
+<div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <table style="width:99%">
+        <tr>
+            <td>
+                <div style="float:left; font-weight: bold;">
+                    Selected: <span  id="selected_num"><?php echo $this->totalSelected ?></span>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+<div style="display:inline">
+    Select All Rows on all pages
+    <?php echo $this->formCheckbox('select_complete', '', array('checked' => $this->checkAll)); ?>
+    <label for='show_by'>View By : </label>
+    <?php echo $this->formSelect('show_by',
+                                 $this->navigation['show_by'],
+                                 array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                 array(  5 => 5,
+                                        10 => 10,
+                                        15 => 15,
+                                        20 => 20,
+                                        30 => 30,
+                                        40 => 40,
+                                        50 => 50,
+                                       100 => 100,
+                                       200 => 200));?>
+    <label for='page'>Page : </label>
+    <?php echo $this->formSelect('pageselector',
+                                       $this->navigation['pageselector'],
+                                       array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                       $this->pages); ?>
+</div>
+<table id="lines" class="withborder tablesorter">
+    <thead>
+    <tr>
+        <th>
+            <?php echo $this->formCheckbox('select_all_lines', null , array('checked' => $this->upperChekbox, 'onclick' => 'selectAllLines(this)')); ?>
+        </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        if(count($this->data)>0) {
+            foreach ($this->data as $command) {
+                echo '<tr>';
+                echo '<th>';
+                echo $this->formCheckbox($command['SL_NAME'], $command['RECORD_ID'], array('checked' => array_key_exists($command['RECORD_ID'], $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'selectOneLine(this)'));
+                echo '</th>';
+                foreach ($this->headers as $key => $value) {
+                    echo '<td><a href=' . $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'editprint', 'rec_id' => $command['RECORD_ID'])) .'>' . $this->escape($command[$key]) . '</td>';
+                }
+                echo "</tr>\n";
+            }
+        } else {
+            echo "<tr><th/>";
+            foreach($this->headers as $propertyName => $v) {
+                echo '<td/>';
+            }
+            echo "</tr>\n";
+        }
+        ?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+    </ul>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="ADD" onClick="return newPrompt('add');" /></li>
+        <li><input type="submit" name="action" class="order-button" value="COPY" onClick="return newPrompt('copy');"  /></li>
+        <li><input type="submit" name="action" class="order-button" value="DELETE" onClick="return goDelete();" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REFRESH" /></li>
+        <li><input type="submit" name="action" class="order-button" value="IMPORT" onClick="return newPrompt('import');" /></li>
+        <li><input type="submit" name="action" class="order-button" value="TEST PRINT" onclick="return chekFields();" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" /></li>
+        <li><input type="submit" name="action" class="order-button" value="EXIT" /></li>
+    </ul>
+    <div id="sysLabelVarList" style="display:none"></div>
+</form>   
+<div id="dialog_add" class="flora" title="Add Printer Command" style="display: none;">
+    <form id="prompt_add" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="add" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Label Name:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_name', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Sequence:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_sequence', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Line:
+                </th>
+                <td>
+                    <?php echo $this->FormTextarea('sl_line', '', array('cols' => '50', 'rows' => '5', 'style' => 'height:15ex')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Notes:
+                </th>
+                <td>
+                    <?php echo $this->FormTextarea('sl_notes', '', array('cols' => '50', 'rows' => '5', 'style' => 'height:15ex')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Brand:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_brand', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Model:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_model', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Image:
+                </th>
+                <td>
+                     <?php echo $this->formHidden('MAX_FILE_SIZE', '600000'); echo $this->formFile('sl_image', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Firmware:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_firmware', '', array('')); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<div id="dialog_import" class="flora" title="Import Printer Commands File" style="display: none;">
+    <form id="prompt_import" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="import" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Label Name:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_name_import', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Brand:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_brand_import', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Model:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_model_import', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Firmware:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_firmware_import', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Notes:
+                </th>
+                <td>
+                    <?php echo $this->FormTextarea('sl_notes_import', '', array('cols' => '50', 'rows' => '5', 'style' => 'height:15ex')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Sequence start:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_sequnce_import', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Sequence step:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_sequnce_step_import', '5', array('style' => 'width:5ex')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    File:
+                </th>
+                <td>
+                     <?php echo $this->formHidden('MAX_FILE_SIZE', '600000'); echo $this->formFile('sl_file_import', '', array()); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<div id="dialog_copy" class="flora" title="Copy command" style="display: none;">
+    <form id="prompt_copy" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="copy" />
+    <input type="hidden" name="record_id" id="record_id"  value="" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Label Name:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_name_copy', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Sequence:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_sequence_copy', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Line:
+                </th>
+                <td>
+                    <?php echo $this->FormTextarea('sl_line_copy', '', array('cols' => '50', 'rows' => '5', 'style' => 'height:15ex')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Notes:
+                </th>
+                <td>
+                    <?php echo $this->FormTextarea('sl_notes_copy', '', array('cols' => '50', 'rows' => '5', 'style' => 'height:15ex')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Brand:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_brand_copy', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Model:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_model_copy', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Firmware:
+                </th>
+                <td>
+                    <?php echo $this->formText('sl_firmware_copy', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    New sequence:
+                </th>
+                <td>
+                     <?php echo $this->formText('new_sl_sequence_copy', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                   Many copies:
+                </th>
+                <td>
+                     <?php echo  $this->formCheckbox('many_copies', '', array('onClick' => 'enableFileds()')) ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                   Number copies:
+                </th>
+                <td>
+                     <?php echo  $this->formText('number_copies', '', array('disabled' => 'disabled')) ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                   Sequence step:
+                </th>
+                <td>
+                     <?php echo  $this->formText('sequence_step_copy', '', array('disabled' => 'disabled')) ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+<div id="dialog_var_edit" class="flora" title="Edit SYS_LABEL_VAR" style="display: none;">
+    <form id="prompt_var_edit" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    RECORD_ID:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_record_id', '', array('disabled' => 'disabled')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_NAME:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_name', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_DEFAULT:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_default', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_EXPRESSION:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_expression', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    LAST_UPDATE_DATE:
+                </th>
+                <td>
+                    <?php echo $this->formText('last_update_date', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    LAST_UPDATE_BY:
+                </th>
+                <td>
+                    <?php echo $this->formText('last_update_by', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SL_NAME:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_sl_name', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_SEQUENCE:
+                </th>
+                <td>
+                     <?php echo $this->formText('slv_sequence', '', array('')); ?> 
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+<div id="dialog_var_add" class="flora" title="Add SYS_LABEL_VAR" style="display: none;">
+    <form id="prompt_var_edit" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    SLV_NAME:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_name_add', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_DEFAULT:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_default_add', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_EXPRESSION:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_expression_add', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    LAST_UPDATE_DATE:
+                </th>
+                <td>
+                    <?php echo $this->formText('last_update_date_add', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    LAST_UPDATE_BY:
+                </th>
+                <td>
+                    <?php echo $this->formText('last_update_by_add', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SL_NAME:
+                </th>
+                <td>
+                    <?php echo $this->formText('slv_sl_name_add', '', array('')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SLV_SEQUENCE:
+                </th>
+                <td>
+                     <?php echo $this->formText('slv_sequence_add', '', array('')); ?> 
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+<script type="text/javascript">
+<!--
+    var cacheValue = 50; 
+
+$(document).ready(function(){
+    
+    
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+    $('.cancel_button').click(function(){
+        frmSubmit();    
+    });
+    $('#dialog_add').dialog({buttons: {Add: addCommand, Close: closeDialog},
+         width: '80ex',
+         height: '33em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+    $('#dialog_import').dialog({buttons: {Import: runImport, Close: closeDialog},
+         width: '95ex',
+         height: '28em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+    $('#dialog_copy').dialog({buttons: {Copy: runCopy, Close: closeDialog},
+         width: '87ex',
+         height: '39em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+                    
+    $("#sl_name").autocomplete('<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'lookup'), null, true); ?>',
+                  {  matchSubset: 1,
+                     matchContains: 1,
+                     cacheLength: cacheValue,
+                     selectFirst: 1,
+                     extraParams: {field: 'label_name'}});
+    
+    $("#sl_name_import").autocomplete('<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'lookup'), null, true); ?>',
+                  {  matchSubset: 1,
+                     matchContains: 1,
+                     cacheLength: cacheValue,
+                     selectFirst: 1,
+                     extraParams: {field: 'label_name'}});
+    
+    
+    // bind section
+    
+    $("#select_complete").bind("click", selectAllRowsOnAllPages);
+    $('#limit_printer').change(function(){
+        $('#main_form').append($('<input type="hidden" name="limitPrinter" value="' + $(this).val() + '" />'));
+        frmSubmit();
+    });
+});
+
+function frmClear()
+{
+    $("form#main_form input:text").each(function() {
+        this.value = "";
+    });
+
+    $('div[id^=error_]').hide();
+       
+    return false;
+}
+
+function addCommand() {
+    if($('#sl_name')[0].value == '') {
+        $('#sl_name').addClass('mandatory');
+        $('#sl_name').focus();
+        return false;    
+    } else {
+         $('#sl_name').removeClass('mandatory'); 
+    }
+    if($('#sl_sequence')[0].value == '') {
+        $('#sl_sequence').addClass('mandatory');
+        $('#sl_sequence').focus();
+        return false;    
+    } else {
+         $('#sl_sequence').removeClass('mandatory'); 
+    }
+    
+     if($('#sl_line')[0].value.length > 254) {
+        alert('Filed length > 255 characters');
+        $('#sl_line').focus();
+        return false;
+    }
+    
+    $('#prompt_add').submit();
+    
+}
+
+function runImport() {
+    
+    if($('#sl_name_import')[0].value == '') {
+        $('#sl_name_import').addClass('mandatory');
+        $('#sl_name_import').focus();
+        return false;    
+    } else {
+         $('#sl_name_import').removeClass('mandatory'); 
+    }
+    if($('#sl_brand_import')[0].value == '') {
+        $('#sl_brand_import').addClass('mandatory');
+        $('#sl_brand_import').focus();
+        return false;    
+    } else {
+         $('#sl_brand_import').removeClass('mandatory'); 
+    }
+    if($('#sl_model_import')[0].value == '') {
+        $('#sl_model_import').addClass('mandatory');
+        $('#sl_model_import').focus();
+        return false;    
+    } else {
+         $('#sl_model_import').removeClass('mandatory'); 
+    }
+    if($('#sl_firmware_import')[0].value == '') {
+        $('#sl_firmware_import').addClass('mandatory');
+        $('#sl_firmware_import').focus();
+        return false;    
+    } else {
+         $('#sl_firmware_import').removeClass('mandatory'); 
+    }
+    if($('#sl_sequnce_import')[0].value == '') {
+        $('#sl_sequnce_import').addClass('mandatory');
+        $('#sl_sequnce_import').focus();
+        return false;    
+    } else {
+         $('#sl_sequnce_import').removeClass('mandatory'); 
+    }
+    if($('#sl_sequnce_step_import')[0].value == '') {
+        $('#sl_sequnce_step_import').addClass('mandatory');
+        $('#sl_sequnce_step_import').focus();
+        return false;    
+    } else {
+         $('#sl_sequnce_step_import').removeClass('mandatory'); 
+    }
+    
+    $('#prompt_import').submit();
+
+}
+
+function runCopy() {
+    
+    if($('#sl_name_copy')[0].value == '') {
+        $('#sl_name_copy').addClass('mandatory');
+        $('#sl_name_copy').focus();
+        return false;    
+    } else {
+         $('#sl_name_copy').removeClass('mandatory'); 
+    }
+    if($('#sl_line_copy')[0].value == '') {
+        $('#sl_line_copy').addClass('mandatory');
+        $('#sl_line_copy').focus();
+        return false;    
+    } else {
+         $('#sl_line_copy').removeClass('mandatory'); 
+    }
+    if($('#sl_brand_copy')[0].value == '') {
+        $('#sl_brand_copy').addClass('mandatory');
+        $('#sl_brand_copy').focus();
+        return false;    
+    } else {
+         $('#sl_brand_copy').removeClass('mandatory'); 
+    }
+    if($('#sl_model_copy')[0].value == '') {
+        $('#sl_model_copy').addClass('mandatory');
+        $('#sl_model_copy').focus();
+        return false;    
+    } else {
+         $('#sl_model_copy').removeClass('mandatory'); 
+    }
+    if($('#sl_firmware_copy')[0].value == '') {
+        $('#sl_firmware_copy').addClass('mandatory');
+        $('#sl_firmware_copy').focus();
+        return false;    
+    } else {
+         $('#sl_firmware_copy').removeClass('mandatory'); 
+    }
+    if($('#new_sl_sequence_copy')[0].value == '') {
+        $('#new_sl_sequence_copy').addClass('mandatory');
+        $('#new_sl_sequence_copy').focus();
+        return false;    
+    } else {
+         $('#new_sl_sequence_copy').removeClass('mandatory'); 
+    }
+    
+    var state = $('#many_copies')[0].checked;
+    if(state) {
+        if($('#number_copies')[0].value == '') {
+            $('#number_copies').addClass('mandatory');
+            $('#number_copies').focus();
+            return false;    
+        } else {
+             $('#new_sl_sequence_copy').removeClass('mandatory'); 
+        }
+        if($('#sequence_step_copy')[0].value == '') {
+            $('#sequence_step_copy').addClass('mandatory');
+            $('#sequence_step_copy').focus();
+            return false;    
+        } else {
+             $('#sequence_step_copy').removeClass('mandatory'); 
+        }
+    }
+    
+    if($('#sl_line_copy')[0].value.length > 254) {
+        alert('Filed length > 255 characters');
+        $('#sl_line_copy').focus();
+        return false;
+    }
+    
+     $('#prompt_copy').submit();
+}
+
+function getSysLabelVar(id) {
+
+   $('#sysLabelVarList ').empty(); 
+    
+   $('#sysLabelVarList').load('<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'syslabelvar'), '', false); ?>', {
+    
+      slName:   id        
+       
+   }, function(){}).show();
+
+}
+
+function newPrompt(id)
+{   
+    $("#dialog_" + id).dialog("open");
+    
+    if(id == 'copy') {
+        
+        $('#record_id')[0].value            = '';
+        $('#sl_name_copy')[0].value         = '';     
+        $('#sl_sequence_copy')[0].value     = '';     
+        $('#sl_line_copy')[0].value         = '';     
+        $('#sl_brand_copy')[0].value        = '';     
+        $('#sl_model_copy')[0].value        = '';     
+        $('#sl_firmware_copy')[0].value     = '';
+        $('#number_copies')[0].value        = '';
+        $('#sequence_step_copy')[0].value   = '';
+        $('#sl_notes_copy')[0].value        = '';
+        
+        var chk     = $("#lines input:checkbox");
+        enabled = 0;
+        for (i=0; i < chk.length; i++) {
+            if(chk[i].checked) {
+                enabled++;
+            }
+        }
+        if($("#select_all_lines")[0].checked) {
+            enabled--;
+        }
+        
+        if(enabled > 1){
+            alert('You must select one line. You selected ' + enabled + ' lines');
+            closeDialog();
+            return false;
+        }
+        if(enabled == 0) {
+            alert('Please, select one row.');
+            closeDialog();
+            return false;
+        }
+        
+        var chk     = $("#lines input:checkbox");
+        for (i=0; i < chk.length; i++) {
+            if(chk[i].checked) {
+                selected_line = chk[i].value; 
+            }
+        }
+        
+        $.getJSON('<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'seek'), '', false); ?>', 
+               {
+                   q: selected_line, field: 'record_id'}, 
+                   function(json){
+                       if(json) {
+                        $('#record_id')[0].value        = selected_line;  
+                        $('#sl_name_copy')[0].value     = json.SL_NAME;     
+                        $('#sl_sequence_copy')[0].value = json.SL_SEQUENCE;     
+                        $('#sl_line_copy')[0].value     = json.SL_LINE;     
+                        $('#sl_brand_copy')[0].value    = json.SL_BRAND;     
+                        $('#sl_model_copy')[0].value    = json.SL_MODEL;     
+                        $('#sl_firmware_copy')[0].value = json.SL_FIRMWARE;
+                        $('#sl_notes_copy')[0].value    = json.SL_NOTES;     
+                       } else {
+                            $('#record_id')[0].value        = '';
+                            $('#sl_name_copy')[0].value     = '';     
+                            $('#sl_sequence_copy')[0].value = '';     
+                            $('#sl_line_copy')[0].value     = '';     
+                            $('#sl_brand_copy')[0].value    = '';     
+                            $('#sl_model_copy')[0].value    = '';     
+                            $('#sl_firmware_copy')[0].value = '';
+                            $('#sl_notes_copy')[0].value        = '';
+                            $('#number_copies')[0].value        = '';
+                            $('#sequence_step_copy')[0].value   = '';     
+                       }
+                            
+               }
+        );
+        
+    }
+    
+    return false;
+}
+
+function closeDialog() {
+ $('#dialog_add').dialog("close");
+ 
+ $('#dialog_import').dialog("close");
+ 
+ $('#dialog_copy').dialog("close");
+ return false;
+}
+
+
+
+function selectAllLines(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'admin', 'module' => 'default')); ?>', 
+    {method: target.checked, 
+     id: 'select_all', 
+     sys_label_name: $('#sys_label_name')[0].value,
+     sys_label_brand: $('#sys_label_brand')[0].value,
+     sys_label_model: $('#sys_label_model')[0].value,
+     sys_label_firmware: $('#sys_label_firmware')[0].value,
+     value: '',
+     
+      
+    },
+     function(json) {
+        
+        $("#selected_num").get(0).innerHTML = json.selected_num;
+        
+        var chk = $("#lines input:checkbox");
+        var checkOnOff = $("#select_all_lines").get(0).checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+    });
+
+}
+
+function selectOneLine(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'admin', 'module' => 'default')); ?>', 
+    {
+        method: target.checked, 
+        id: target.value, 
+        value: target.value},
+    function(json) {
+         $("#selected_num").get(0).innerHTML = json.selected_num;    
+    });
+    
+    // show SYS_LABEL_VAR promt
+    if(target.checked) {
+        getSysLabelVar(target.id);
+    } else {
+        $('#sysLabelVarList').hide();
+    }
+    
+}
+
+function goDelete()
+{
+    var selectedNum = parseInt($('#selected_num').text());
+    if (selectedNum) {
+         if (confirm('You are trying to delete ' + selectedNum + ' record(s). Are you sure?')) {
+             return true;
+         } else {
+            return false;
+         }
+    } else {
+        alert('Please select row(s) to delete.');
+    } 
+}
+
+function enableFileds() {
+
+    var state = $('#many_copies')[0].checked;
+    
+    if(state) {
+        $('#number_copies').removeAttr('disabled');
+        $('#number_copies').removeAttr('style');
+        $('#sequence_step_copy').removeAttr('disabled'); 
+        $('#sequence_step_copy').removeAttr('style'); 
+    } else {
+        $('#number_copies').attr("disabled","disabled");
+        $('#number_copies').attr("style","background-color:#EEEEEE");
+        $('#sequence_step_copy').attr("disabled","disabled");
+        $('#sequence_step_copy').attr("style","background-color:#EEEEEE");
+    }
+}
+
+function selectAllRowsOnAllPages() {
+    
+    var onOff   = $('#select_complete').get(0).checked;
+    var chk     = $("#lines input:checkbox");
+    for (i=0; i < chk.length; i++) {
+            chk[i].checked = onOff;
+    }
+    
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'admin', 'module' => 'default')); ?>',
+             { 
+               method: onOff,
+               id: 'select_complete'
+             }, function(json) {
+                    $("#selected_num").get(0).innerHTML = json.selected_num;        
+               });
+
+}
+
+function chekFields() {
+
+    var selectedLabelFormt = $('#labelFormt :selected').val();
+    if(selectedLabelFormt == ' ') {
+        alert('Please, select Label Format');
+        $('#labelFormt').focus();
+        return false;
+    }
+    
+    return true;
+
+} 
+
+-->
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

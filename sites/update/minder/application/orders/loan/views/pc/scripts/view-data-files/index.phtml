@@ -1,0 +1,485 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<b><?php echo $this->title;?></b><br><br>
+
+<?php echo $this->messenger()->all(); ?>
+    
+<b>SEARCH FOLDERS</b><br><br>
+    
+<div id="search_form_container">
+    <?php echo $this->sysScreenSearchForm2($this->filesSsName, array('search_fields' => $this->searchFields));?>
+</div>
+
+
+<div id="filelist_container">
+</div>
+
+<div id="search-string-form" style="clear: both; float: left; padding-top: 10px; padding-bottom: 10px;">
+    <?php echo $this->searchStringForm; ?>
+</div><br><br>
+
+<div id="filecontents_container">
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.sysScreens['<?php echo $this->filesSsNamespace;?>']) {
+            $('#filelist_container').minderSearchResult(response.sysScreens['<?php echo $this->filesSsNamespace;?>']);
+            $('#filelist_container .data-table-<?php echo $this->filesSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+            setFolderDescription();
+
+            var selectedRows = getSelectedRows('<?php echo $this->filesSsNamespace;?>');
+
+            if(selectedRows > 0) {
+                showFileContents();
+                $('#search-string-form').show();
+                $('#filecontents_container').show();
+            }
+            else {
+                $('#search-string-form').hide();
+                $('#filecontents_container').hide();
+            }
+        }
+
+        if (response.sysScreens['<?php echo $this->contentsSsNamespace;?>']) {
+            $('#filecontents_container').minderSearchResult(response.sysScreens['<?php echo $this->contentsSsNamespace;?>']);
+            $('#filecontents_container .data-table-<?php echo $this->contentsSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        }
+
+        $(document).dequeue();
+    }
+
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->filesSsNamespace;?>':
+                paginator = $('#filelist_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+            'paginator' : paginator,
+            'rowId'     : evt.rowId,
+            'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#filelist_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+                     $('#filelist_container > div').unblock();
+                     $(this).dequeue();
+                 });
+    }
+
+    function setSelection(namespace, sysScreen)
+    {
+        $('.selected-container.' + namespace).html(sysScreen.selectedRowsTotal);
+
+        var rowsOnPage = 0;
+
+        switch (namespace) {
+            case '<?php echo $this->filesSsNamespace;?>':
+                rowsOnPage = $('#filelist_container .data-set:first tr').length;
+                break;
+
+            case '<?php echo $this->contentsSsNamespace;?>':
+                rowsOnPage = $('#filecontents_container .data-set:first tr').length;
+                break;
+
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        var totalRows  = parseInt($('.total-container.' + namespace).html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        (rowsOnPage == sysScreen.selectedRowsOnPage) ? $('.select_all_rows.' + namespace).attr('checked', true) :
+        $('.select_all_rows.' + namespace).removeAttr('checked');
+
+
+        (totalRows == sysScreen.selectedRowsTotal) ? $('.select_complete.' + namespace).attr('checked', true) :
+        $('.select_complete.' + namespace).removeAttr('checked');
+
+        $('.row_selector.' + namespace).each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (sysScreen.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $.each(response.sysScreens, setSelection);
+
+        // show file contents SysScreen
+        var selectedRows = getSelectedRows('<?php echo $this->filesSsNamespace;?>');
+
+        if(selectedRows > 0) {
+            $('#search-string-form').show();
+            $('#filecontents_container').show();
+        }
+        else {
+            $('#search-string-form').hide();
+            $('#filecontents_container').hide();
+        }
+
+        showFileContents();
+
+        $(document).dequeue();
+    }
+
+    function filesTabContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->filesSsNamespace;?>');
+    }
+
+    function filesTabContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->filesSsNamespace;?>');
+    }
+
+    function documentOnDoSearch(evt) {
+        // test
+
+        $('#search-string-form').hide();
+        $('#filecontents_container').hide();
+
+        var dataToSend = evt.searchParams;
+        dataToSend.action = 'search';
+
+        $('#barcode').val('').parent().block();
+        $(document).queue(function() {
+            $('#filelist_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search-files'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+                     $('#filelist_container > div').unblock();
+                     $('#barcode').parent().unblock();
+                     $(this).dequeue();
+                 });
+    }
+
+    function makeFileContentsReport() {
+        makeReport('REPORT: CSV', '<?php echo $this->contentsSsName;?>');
+    }
+
+    function makeReport(format, sysScreen) {
+        switch (sysScreen) {
+            case '<?php echo $this->filesSsName;?>' :
+                location.href = '<?php echo $this->url(array('action' => 'report'));?>';
+                break;
+            case '<?php echo $this->contentsSsName;?>' :
+                location.href = '<?php echo $this->url(array('action' => 'report-content'));?>';
+                break;
+            default:
+                throw 'Unknown Sys Screen: "' + sysScreen + '"';
+        }
+
+    }
+
+    function loadData(namespace) {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        var containerId = '';
+
+        switch (namespace) {
+            case '<?php echo $this->filesSsNamespace;?>':
+                containerId = 'filelist_container';
+                break;
+
+            case '<?php echo $this->contentsSsNamespace;?>':
+                containerId = 'filecontents_container';
+                break;
+
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        dataToSend.sysScreens[namespace] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+                     $('#' + containerId + ' > div').unblock();
+                     $(this).dequeue();
+                 });
+    }
+
+    function onFolderNameChanged(evt) {
+        $('.selected-folder').text($('#foldernames option:selected').attr('descr'));
+    }
+
+    function showFileContents() {
+        $(document).queue(function() {
+            $('#filecontents_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'show-file-contents'))?>',
+                {
+                    folder : $('#foldernames option:selected').text()
+                },
+                function(data) {
+                    $(document).dequeue();
+
+                    if(data.errors && data.errors.length > 0) {
+                        showErrors(data.errors);
+                        $('#search-string-form').hide();
+                        $('#filecontents_container').hide();
+                        return;
+                    }
+
+                    if (data && data.sysScreens['<?php echo $this->contentsSsNamespace;?>']) {
+                        $('#filecontents_container').minderSearchResult(data.tabDescr);
+                        $('#filecontents_container').minderSearchResult(data.sysScreens['<?php echo $this->contentsSsNamespace;?>']);
+                        $('#filecontents_container .data-table-<?php echo $this->contentsSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+                    }
+                    else {
+                        $('#search-string-form').hide();
+                        $('#filecontents_container').hide();
+                    }
+                },
+                'json'
+            );
+        }).queue(function() {
+            $('#filecontents_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function contentsTabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->contentsSsNamespace;?>':
+                paginator = $('#filecontents_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+            'paginator' : paginator,
+            'rowId'     : evt.rowId,
+            'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#filecontents_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                contentsTabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+                     $('#filecontents_container > div').unblock();
+                     $(this).dequeue();
+                 });
+    }
+
+    function contentsTabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $.each(response.sysScreens, setSelection);
+
+        $(document).dequeue();
+    }
+
+    function contentsTabContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->contentsSsNamespace;?>');
+    }
+
+    function contentsTabContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->contentsSsNamespace;?>');
+    }
+
+    function searchLineBtnOnClick(evt) {
+        var search_value = $('#search_string').val(); // empty search returns all results
+
+        $('#filecontents_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Searching. Please wait...');?>'));
+
+        $.post(
+            '<?php echo $this->url(array('action' => 'search-line'));?>',
+            {
+                line: search_value
+            },
+            onSearchLineCallback,
+            'json'
+        );
+    }
+
+    function onSearchLineCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.sysScreens['<?php echo $this->contentsSsNamespace;?>']) {
+            $('#filecontents_container').minderSearchResult(response.sysScreens['<?php echo $this->contentsSsNamespace;?>']);
+            $('#filecontents_container .data-table-<?php echo $this->contentsSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        }
+
+        $('#filecontents_container > div').unblock();
+    }
+
+    function getSelectedRows(namespace) {
+        var selectedRows = parseInt($('.selected-container.' + namespace).html());
+        return isNaN(selectedRows) ? 0 : selectedRows;
+    }
+
+    function setFolderDescription() {
+        $('#filelist_container .black-top-border').append('<div id="folder-descr">Selected Folder Description: <span class="selected-folder"></span></div>');
+        $('.selected-folder').text($('#foldernames option:selected').attr('descr'));
+    }
+
+    function clearBtnOnClick(evt) {
+        $('#search-string-form').hide();
+        $('#filecontents_container').hide();
+
+        // reset dropdowns
+        var folderOptions = $('#foldernames option');
+        $('#foldernames').val(folderOptions[0]);
+
+        var typeOptions = $('#filetypes option');
+        $('#filetypes').val(folderOptions[0]);
+
+        $('.selected-folder').text($('#foldernames option:selected').attr('descr'));
+
+        $(document).queue(function() {
+            $('#filelist_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search-files'));?>',
+                {
+                    path: $('#foldernames option:selected').text(),
+                    ext:  $('#filetypes option:selected').text()
+                },
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+                     $('#filelist_container > div').unblock();
+                     $(this).dequeue();
+                 });
+    }
+
+    $(document).ready(function() {
+        $('#filelist_container').minderSearchResult(<?php echo json_encode($this->filesJsSearchResults);?>);
+        $('#filelist_container').minderSearchResult(<?php echo json_encode($this->filesJsSearchResultsDataset);?>);
+        $('#filelist_container .data-table-<?php echo $this->filesSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        $('#filelist_container').bind('select-row', tabContainerOnSelectRow).bind('page-changed', filesTabContainerOnPageChanged).bind('show-by-changed', filesTabContainerOnShowByChanged);
+
+        $(document).bind('do-search', documentOnDoSearch);
+        $('#SEARCH_RESULTS_FORM_search_btn').bind('click', searchBtnOnClick);
+        $('#search').bind('click', searchLineBtnOnClick);
+        $('#clear').bind('click', clearBtnOnClick);
+
+        $('#foldernames').bind('change', onFolderNameChanged);
+
+        setFolderDescription();
+
+        // set zebra to filecontents screen
+        $('#filecontents_container .data-table-<?php echo $this->contentsSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        $('#filecontents_container').bind('select-row', contentsTabContainerOnSelectRow).bind('page-changed', contentsTabContainerOnPageChanged).bind('show-by-changed', contentsTabContainerOnShowByChanged);
+
+
+        var selectedRows = getSelectedRows('<?php echo $this->filesSsNamespace;?>');
+
+        if(selectedRows > 0) {
+            showFileContents();
+            $('#search-string-form').show();
+            $('#filecontents_container').show();
+        }
+        else {
+            $('#search-string-form').hide();
+            $('#filecontents_container').hide();
+        }
+    });
+/* ]]> */
+</script>
+
+<?php
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+        <ul class="toolbar">
+            {{each $item.data.buttons}}
+            <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+            {{/each}}
+        </ul>
+        {{/if}}
+    </div>
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

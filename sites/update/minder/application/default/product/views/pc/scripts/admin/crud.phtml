@@ -1,0 +1,412 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<script type="text/javascript">
+  $(document).ready( function (){
+      $('.withdatepicker').datepicker({dateFormat: 'yy/mm/dd'});
+  });
+</script>
+
+<?php echo $this->messenger()->all() ?>
+<ul id="validateErrors" style="display:none" class="errors"></ul>
+
+
+<h2><?php echo $this->escape($this->pageTitle); ?></h2>
+
+<?php
+if (!$this->noTable) {
+$fieldList = $this->fieldList;
+$cnt = count($fieldList);
+if ($cnt > 0) {
+?>
+<h2>SEARCH : </h2>
+<?php
+}
+?>
+<form id="<?php echo $this->formId; ?>" name="<?php echo $this->tableId; ?>" action="" method="post">
+    <div id="search_map">
+    <table>
+<?php
+for($i=0; $i < $cnt; $i++) {
+    $field = current($fieldList);
+    echo "<tr><th>" . $this->formLabel($field->name, $field->name) . "</th><td>" .
+        $this->formText($field->name,
+                        (array_key_exists(strtoupper($field->name), $this->conditions[$this->tableId]) ? $this->conditions[$this->tableId][strtoupper($field->name)] : ''),
+                        array('autocomplete' => 'off') + ($field->type == 'TIMESTAMP' ? array('class' => 'withdatepicker'): array()))
+        . "</td><td width=\"10px\"></td>";
+    $i++;
+    if ($i>= $cnt ) {
+        break;
+    }
+    $field = next($fieldList);
+    echo "<th>" . $this->formLabel($field->name, $field->name) . "</th><td>" .
+        $this->formText($field->name,
+                        (array_key_exists(strtoupper($field->name), $this->conditions[$this->tableId]) ? $this->conditions[$this->tableId][strtoupper($field->name)] : ''),
+                        array('autocomplete' => 'off') + ($field->type == 'TIMESTAMP' ? array('class' => 'withdatepicker'): array()))
+        . "</td>";
+    echo "</tr>";
+    $field = next($fieldList);
+}
+?>
+    </table>
+    </div>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formButton('action', 'SEARCH', array('onclick' => 'frmSubmit("' . $this->formId . '", "SEARCH");')); ?>
+        </li>
+        <li>
+            <?php echo $this->formButton('action', 'CLEAR', array('onclick' => 'frmClear("' . $this->formId . '", "CLEAR");')); ?>
+        </li>
+        <li>
+            <?php echo $this->formButton('action', 'ADD', array('onclick' => 'goAdd("' . $this->formId . '", "ADD");')); ?>
+        </li>
+        <li>
+            <?php echo $this->formButton('action', 'DELETE', array('onclick' => 'goDelete("' . $this->formId . '", "DELETE");')); ?>
+        </li>
+    </ul>
+    <?php if(!is_null($this->dataset)) { ?>
+    <div id="table-wrapper">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left; font-weight: bold;">
+                            Selected: <span  id="selected_num">0</span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            <!-- Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', '', array()); ?> -->
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation[$this->tableId]['show_by'],
+                                         array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100,
+                                               200 => 200,
+                                               300 => 300,
+                                               400 => 400,
+                                               500 => 500,
+                                               600 => 600,
+                                               700 => 700,
+                                               800 => 800,
+                                               900 => 900,
+                                               1000 => 1000,
+                                               5000 => 5000,
+                                               10000 => 10000,
+                                               15000 => 15000,
+                                               20000 => 20000));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelect('pageselector',
+                                               $this->navigation[$this->tableId]['pageselector'],
+                                               array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                               $this->pages); ?>
+        </div>
+        <table id="tab<?php echo $this->escape($this->tableId); ?>" class="withborder tablesorter">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           '',
+                                           array('onclick' => 'selectAll(this)')) ;?>
+            </th>
+<?php
+        foreach ($this->headers as $key => $header) {
+            echo '<th abbr="' . $this->escape($key) . '">' . (array_key_exists($key, $this->dataset->getUniqueConstraint()) ? ('<b>*' . $this->escape($header)) . '</b>': ($this->escape($header))) . '</th>';
+        }    
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+
+      $session = new Zend_Session_Namespace();
+      $tz_to=$session->BrowserTimeZone;
+
+    if ($this->dataset->count() > 0) {
+        foreach ($this->dataset as $id => $record) {
+            if ($this->rowNumber == $this->dataset->getRowNumberByRecordId($id)) {
+                echo '<tr class="rowselected">';
+            } else {
+                echo '<tr>';
+            }
+            
+            //$this->rowNumber--;
+            echo '<th>';
+            echo $this->formCheckbox('records[]',
+                                     $record->id,
+                                     array('class' => 'line_selector',
+                                           'onclick' => 'showSelected(this, \'auto\')'));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                $val = $record[$propertyName];
+
+        // Not Required
+	      /*if (DateTime::createFromFormat('Y-m-d H:i:s', $val) !== FALSE  || DateTime::createFromFormat('Y-m-d', $val) !== FALSE) {
+
+                                    $dt = new DateTime($val, new DateTimeZone('UTC'));
+                                    $tz = new DateTimeZone($tz_to); 
+                                    $dt->setTimezone($tz);
+                                    $val=$dt->format('Y-m-d H:i:s');                                 
+
+                }*/  
+
+  
+                $urlEdit = $this->url(array('module'      => 'warehouse',
+                                            'controller'  => 'ssn',
+                                            'action'      => 'edit'),
+                                            '',
+                                            true);
+                echo '<td><a id="' . $this->escape($record->id) . '" href="" onclick="return goEdit(this,' . "'" . addslashes($record->id) . "','" . $this->dataset->getRowNumberByRecordId($id) . "'" . ');">' .
+                        $this->escape($val) . '&nbsp</a></td>'."\n";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+
+?>
+            </tbody>
+        </table>
+        <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">Total
+            <?php echo $this->numRecords . " records. ";?>
+            <?php echo "Show from " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + $this->dataset->count());?>
+        </div>
+    </div>
+    <input id='action' name="action" type="hidden" value="">
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return confirmReport();')); ?>
+        </li>
+            <?php
+                switch($this->pageTitle) {
+                    case 'PROD_PROFILE':
+                                             echo '<li>' . $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return confirmReport();')) . '</li>';
+                                             echo '<li>' . $this->formSubmit('action', 'CLEAR SLOTTING', array('onclick' => 'return goClearSlotting("' . $this->formId . '", "CLEAR SLOTTING");')) . '</li>';
+                                             echo '<li>' . $this->formSubmit('print_product', 'PRINT PRODUCT', array('style' => 'padding: 0px;', 'class' => 'green-button', 'disabled' => 'disabled'), null) . '</li>';
+                                             break;
+                    case 'PACK_ID':
+                        echo '<li>' . $this->formSubmit('action', 'PRINT PACK LABEL', array(), 'PRINT PACK LABEL') . '</li>';
+                        break;
+                    case 'PACK_SSCC':
+                                             echo '<li>' . $this->formSubmit('action', 'PRINT SSCC', array(), 'PRINT SSCC') . '</li>';
+                                             break;
+                    case 'LOCATION':
+                                             echo '<li>' . $this->formSubmit('action', 'PRINT LOCATION', null, "PRINT LOCATION") . '</li>';
+					     echo '<li>' . $this->formSubmit('action', 'PRINT BORROWER', null, "PRINT BORROWER") . '</li>';
+                                             break;
+                    case 'SYS_USER':
+                                             echo '<li>' . $this->formSubmit('action', 'PRINT LOGON', null, "PRINT LOGON") . '</li>';
+                                             break;
+                    case 'PRINT_REQUESTS':   echo '<li>' . $this->formSubmit('action', 'REPRINT', null, "REPRINT") . '</li>';
+                                             break;
+                    case 'GRN':              echo '<li>' . $this->formSubmit('action', 'PRINT LABEL', null, "PRINT LABEL") . '</li>';
+                                             break;
+
+                    case 'POSTCODE_DEPOT':
+                                             echo '<li>' . $this->formSubmit('import_austpost_btn', 'Import AUSTPOST', array('style' => 'padding: 0px;', 'class' => 'green-button', 'onclick' => 'return false;')) . '</li>';
+                                             echo '<li>' . $this->formSubmit('import_carriers_codes_btn', 'Import Carrier Codes', array('style' => 'padding: 0px;', 'class' => 'green-button', 'onclick' => 'return false;')) . '</li>';
+                                             echo '<li>' . $this->formSubmit('delete_all_btn', 'Delete All', array('style' => 'padding: 0px;', 'class' => 'red-button', 'onclick' => 'return false;')) . '</li>';
+                                             break;
+
+                    case 'COST_CENTRE':
+                                             echo '<li>' . $this->formSubmit('action', 'PRINT COST CENTRE', null, "PRINT COST CENTRE") . '</li>';
+                                             break;
+                }
+         
+            ?>
+        </li>
+    </ul>
+</form>
+<div id="editcontainer" class="flora" title="" style="overflow:auto"></div>
+    <?php
+        switch ($this->pageTitle) {
+            case 'PROD_PROFILE':
+                echo $this->render('admin/crud/prod-profile.phtml');
+                break;
+            case 'POSTCODE_DEPOT':
+                echo $this->render('admin/crud/postcode-depot.phtml');
+                break;
+        }
+    ?>
+<?php } ?>
+
+<?php if ($this->loadEdit) {
+        echo $this->render('admin/ajaxform-crud-edit.phtml');
+    }
+?>
+
+<script type="text/javascript">
+var cacheValue = 50;
+$().ready(function() {
+    
+    $("table[id^=tab]").tablesorter({headers: {0: {sorter:false}},sortList:[[0,0]], widgets: ['zebra']});
+    
+    $('#select_complete').bind('click', selectComplete);
+
+    $('.withdatepicker').datepicker({dateFormat: 'yy/mm/dd'});
+
+<?php if ($this->loadEdit) { ?>
+    goEdit(document.getElementById('<?php echo $this->row->id; ?>'), '<?php echo $this->row->id; ?>','<?php echo $this->rowNumber; ?>');
+<?php } ?>
+
+<?php
+$url = $this->url(array('module'     => 'default',
+                        'controller' => 'admin',
+                        'action'     => 'crud-lookup',
+                        'table'      => $this->tableId));
+foreach ($fieldList as $key => $val) {
+    if ($val->type != 'TIMESTAMP') {
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithoutDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+    }
+}
+?>
+});
+
+function confirmReport()
+{   
+
+$('#validateErrors').hide();
+    var cnt = 0;
+    $('.line_selector').each(function() { if (this.checked) {cnt++};});
+    
+    return confirm('Do you want to export (' + cnt + ') records');
+}
+function goEdit(a, recordId, rowNumber)
+{
+    var cll
+    var id;
+    cll = a;
+    id = recordId;
+    $('#editcontainer').load('<?php echo $this->url(array('action' => 'crud', 'controller' => 'admin', 'module' => 'default')); ?>/',
+        {
+            'mode': 'edit',
+            'record_id': recordId,
+            'row_number': rowNumber
+        },
+        function() {
+            $('#tab<?php echo $this->escape($this->tableId); ?> tr').removeClass('rowselected');
+            //$(document.getElementById(id)).parent().parent().addClass('odd');
+            $(cll).parent().parent().addClass('rowselected');
+        }
+    );
+
+    return false;
+}
+
+function selectComplete()
+{
+    var checkOnOff = this.checked;
+    var ele = $('table input[type="checkbox"]', $('#table-wrapper', $(this).parent().parent().parent()));
+    for (i=0; i<ele.length; i++) {
+        ele[i].checked = checkOnOff;
+    }
+
+}
+
+function goAdd() {
+$('#validateErrors').hide();
+
+    $('#editcontainer').load('<?php echo $this->url(array('action' => 'crud', 'controller' => 'admin', 'module' => 'default')); ?>/?mode=add',
+                              function() {
+                                  $('#tab<?php echo $this->escape($this->tableId); ?> tr').removeClass('odd')
+                              });
+    return false;
+}
+
+function goDelete(id, action)
+{
+    var selectedNum = parseInt($('#selected_num').text());
+    if (selectedNum) {
+         if (confirm('You are trying to delete ' + selectedNum + ' record(s). Are you sure?')) {
+            frmSubmit(id, action);
+         } else {
+            return false;
+         }
+    } else {
+       // alert('Please select the items for removal.');
+
+	$('#validateErrors').html('<li>Please select the items for removal.</li>')
+        $('#validateErrors').show();
+	
+        return false;
+    }
+}
+
+function goClearSlotting(id, action)
+{
+    var selectedNum = parseInt($('#selected_num').text());
+    if (selectedNum) {
+         if (confirm('You are trying to clear ' + selectedNum + ' record(s). Are you sure?')) {
+            frmSubmit(id, action);
+         } else {
+            return false;
+         }
+    } else {
+        //alert('Please select the items for clearing.');
+	
+	$('#validateErrors').html('<li>Please select the items for clearing.</li>')
+        $('#validateErrors').show();
+	
+        return false;
+    }
+}
+
+function frmSubmit(id, action)
+{
+    $('#'+id+' > input#action')[0].value = action;
+    $('#'+id)[0].submit();
+    return false;
+}
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function frmClear(id)
+{
+
+$('#validateErrors').hide();
+    $("form#"+id+" input:text").each(function() {
+        this.value = "";
+        });
+    $("form#"+id+" select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+</script>
+<?php } ?>
+<?php echo $this->render('footer.phtml');

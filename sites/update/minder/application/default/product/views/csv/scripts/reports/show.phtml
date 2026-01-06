@@ -1,0 +1,31 @@
+<?php
+$groups = array();
+foreach ($this->headers as $key => $val) {
+    if (substr($val, 0, 5) == 'GROUP' && substr($val, -2) == '__') {
+        $groups[] = $val;
+    }
+}
+sort($groups);
+
+$columns = array();
+foreach ($this->data as $key => $row) {
+    $index = '';
+    foreach($groups as $val) {
+        $index .= $row[$val];
+    }
+    $keysIndexed[$index][]= $key;
+    $indexes[] = $index;
+}
+$indexes = array_unique($indexes);
+
+sort($indexes);
+
+$fp = fopen("php://temp/", 'r+');
+foreach ($indexes as $index) {
+    foreach ($keysIndexed[$index] as $key) {
+        fputcsv($fp, $this->data[$key], ';');
+    }
+}
+rewind($fp);
+echo stream_get_contents($fp);
+fclose($fp);

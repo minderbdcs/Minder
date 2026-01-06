@@ -1,0 +1,236 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<!-- flash messages -->
+<?php 
+    $messenger = $this->messenger();
+    $wasErrors = $messenger->getMessenger()->setNamespace('errors')->hasCurrentMessages();
+    echo $messenger->all(); 
+    if ($wasErrors) {
+        exit();
+    }
+?>
+<!-- flash messages -->
+ 
+<h2 title="<?php echo $this->personSysScreenName;?>"><?php echo $this->escape($this->pageTitle);?></h2>
+
+<!-- search form -->
+<?php 
+    if (count($this->searchFields) > 0) {
+        echo $this->sysScreenSearchForm(array('name' => 'person_search_form'), $this->searchFields, $this->searchActions);
+    }
+?>
+<!-- search form -->
+
+<!-- person search results -->
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+?>
+
+<div id="PERSON_LIST_CONTAINER">
+    <form id="person_results_form" name="person_results_form" action="<?php echo $this->url(); ?>" method="post">
+        <!-- tabs container start -->
+        <div id="person_tabs" class="ui-tabs-container">
+            <?php echo $resultsForm->renderTabsList(array()); ?>
+
+            <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+                <div class="sys-screen-title" title="<?php echo $this->personSysScreenName;?>">Person List<span class="modification_flag <?php echo $this->personSelNamespace;?>"></span></div>
+                <div class="paginator-container">
+                    <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                    <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalCount == $this->selectedCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->personSelNamespace));?>
+                    <label for="results_per_page">View By:</label>
+                    <?php echo $this->formSelect('show_by', 
+                                                $this->navigation['show_by'],
+                                                array(),
+                                                array(5  => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                      100 => 100)) ?>
+                    <label for="page">Page:</label>
+                    <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+                </div>
+             
+                <ul class="black-top-border" style="clear: both;">
+                    <li style="display: inline;">Selected: <span id="prods_selected" class="selected_count <?php echo $this->personSelNamespace;?>"><?php echo $this->selectedCount;?></span></li>
+                </ul>
+            </div>
+
+            <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+                <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <?php echo $resultsForm->renderTabContent(
+                                        $tabId, 
+                                        array(
+                                            'select_all_checked'    => (count($this->persons) == count($this->selectedPersons)), 
+                                            'selection_namespace'   => $this->personSelNamespace, 
+                                            'switch_selection_mode' => $this->selectMode,
+                                            'tab_content_class'     => 'withborder tablesorter person_list'
+                                        ), 
+                                        $this->persons, 
+                                        $this->selectedPersons
+                );?>
+                    <!-- totals info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->personSelNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <!-- totals info end -->
+
+                </div>    
+            <?php }?>
+            <div style="clear: both; padding-left: 10px;">
+                <ul class="toolbar">
+                    <?php
+                        foreach ($this->personButtons as $buttonDescription) {
+                            echo '<li>' . $this->sysScreenFormButton(array('class' => 'green-button'), $buttonDescription) . '</li>';
+                        }
+                    ?>
+                </ul>
+            </div>
+        </div>
+        <!-- tabs container end -->
+    </form>
+</div>
+
+<div id="ADDRESS_LIST_CONTAINER" ></div>
+
+<div id="TMP_PERSON_CONTENT" style="display: none;"></div>
+
+<!-- person search results -->
+<?php echo $this->render('footer.phtml'); ?>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#PERSON_LIST_CONTAINER #person_tabs > ul').tabs();
+        $('#PERSON_LIST_CONTAINER #pageselector, #PERSON_LIST_CONTAINER #show_by').change(function(){
+            $('#person_results_form').submit();
+        });
+        $('.person_list').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('#PERSON_LIST_CONTAINER .row_selector.<?php echo $this->personSelNamespace;?>, #PERSON_LIST_CONTAINER .select_all_rows.<?php echo $this->personSelNamespace;?>, #PERSON_LIST_CONTAINER .select_complete.<?php echo $this->personSelNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->personSelModule, 'controller' => $this->personSelController, 'action' => $this->personSelAction), null, true);?>',
+            {
+                'scopeSelector'       : '#PERSON_LIST_CONTAINER',
+                'selectionNamespace'  : '<?php echo $this->personSelNamespace?>',
+                'selectionAction'     : '<?php echo $this->personSelAction;?>',
+                'selectionController' : '<?php echo $this->personSelController;?>'
+            },
+            {
+                'onSuccess': getAddresses
+            }
+        );
+        
+        $('.person_list').minderEditResults(
+            '<?php echo $this->url(array('action' => 'save-changes', 'controller' => 'person', 'module' => 'despatches'), null, true);?>',
+            {
+                'modificationFlagSelector' : '#PERSON_LIST_CONTAINER .modification_flag',
+                'namespace'                : '<?php echo $this->personSelNamespace?>',
+                'addRowUrl'                : '<?php echo $this->url(array('action' => 'get-new-row', 'controller' => 'person', 'module' => 'despatches'), null, true);?>',
+                'tabDatasetSelector'       : '.data_set'
+            }
+        );
+
+        getAddresses();
+    });
+
+    function getSearchResultsContainer(sysScreen) {
+        switch (sysScreen) {
+            case '<?php echo $this->personSysScreenName;?>' :
+                return $('.person_list');
+            case '<?php echo $this->addressSysScreenName;?>' :
+                return $('.person_address_list');
+            default:
+                throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+        }
+    }
+
+    function saveChanges(sysScreen) {
+        var container = getSearchResultsContainer(sysScreen);
+        if (container.minderEditResults('isModified'))
+            container.minderEditResults('save');
+    }
+
+    function cancelChanges(sysScreen) {
+        var container = getSearchResultsContainer(sysScreen);
+        if (container.minderEditResults('isModified'))
+            container.minderEditResults('cancel');
+    }
+
+    function addRow(sysScreen) {
+        getSearchResultsContainer(sysScreen).minderEditResults('addRow');
+    }
+
+    function getReportUrl(sysScreen) {
+        switch (sysScreen) {
+            case '<?php echo $this->personSysScreenName;?>' :
+                return '<?php echo $this->url(
+                                array(
+                                    'module' => $this->reportModule,
+                                    'controller' => $this->reportController,
+                                    'action' => $this->reportAction,
+                                    'selection_namespace' => $this->personSelNamespace,
+                                    'selection_action' => $this->personSelAction,
+                                    'selection_controller' => $this->personSelController
+                                ),
+                                null,
+                                true
+                            );?>';
+            case '<?php echo $this->addressSysScreenName;?>' :
+                return '<?php echo $this->url(
+                                array(
+                                    'module' => $this->reportModule,
+                                    'controller' => $this->reportController,
+                                    'action' => $this->reportAction,
+                                    'selection_namespace' => $this->addressSelectionNamespace,
+                                    'selection_action' => $this->addressSelectionAction,
+                                    'selection_controller' => $this->addressSelectionController
+                                ),
+                                null,
+                                true
+                            );?>';
+            default:
+                throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+        }
+    }
+
+    function makeReport(format, sysScreen) {
+        location.href = getReportUrl(sysScreen) + '/report_format/' + escape(format);
+    }
+
+    function getAddresses() {
+        var data = {};
+        var showBy = parseInt($('#ADDRESS_LIST_CONTAINER #show_by').val());
+        var pageselector = parseInt($('#ADDRESS_LIST_CONTAINER #pageselector').val());
+        if (!(isNaN(showBy) || showBy === 0)) {
+            data.show_by = showBy;
+        }
+        
+        if (!isNaN(pageselector)) {
+            data.pageselector = pageselector;
+        }
+        
+        $('#ADDRESS_LIST_CONTAINER').hide().load(
+            '<?php echo $this->url(array('module' => 'despatches', 'controller' => 'person', 'action' => 'get-addresses'), null, true);?>',
+            data,
+            function() {
+                
+                var result = $.parseJSON($('#ADDRESS_LIST_CONTAINER #JSON').html());
+                
+                if (result.errors && result.errors.length > 0) {
+                    showErrors(result.errors);
+                    return;
+                }
+                
+                $('#ADDRESS_LIST_CONTAINER').show();
+            }
+        );
+    }
+
+</script>

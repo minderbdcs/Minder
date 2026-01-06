@@ -1,0 +1,110 @@
+<!-- confirm carriers dialog -->
+<div style="display: none;" id="change_depot_dialog" title="Sent From Depot" class="flora">
+    <form action="#" autocomplete="off">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <th>
+                    Carrier Service:
+                </th>
+                <td>
+                    <?php echo $this->minderDropDown('cdDlgCarrierDepot', null, array('valueField' => 'RECORD_ID', 'labelField' => 'CD_DEPOT_ID'), $this->depots);?>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- confirm carriers dialog -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        initChangeDepotDialog();
+    });
+
+    function initChangeDepotDialog() {
+        var $changeDialog = $('#change_depot_dialog'),
+            buttonPane;
+        $changeDialog.dialog(
+            {
+                buttons: {
+                    ACCEPT: function(evt){
+                        evt.preventDefault();
+                        changeDepotDialogAccept();
+                    },
+                    'HTML': true,
+                    CANCEL: function(evt){
+                        evt.preventDefault();
+                        $changeDialog.dialog('close');
+                    }},
+                buttonStyle: 'green-button',
+                insertHtml:  '&nbsp;',
+                autoOpen  : false,
+                width     : 400,
+                height    : 160,
+                resizable : true,
+                modal     : false
+            }
+        ).unbind('dialogopen').bind('dialogopen', function(event, ui) {
+                getChangeDepotDialogSettings().active = true;
+                $(this).show();
+                $('#barcode').focus();
+            }).unbind('dialogclose').bind('dialogclose', function(event, ui) {
+                getChangeDepotDialogSettings().active = false;
+            });
+
+        buttonPane = $changeDialog.parents('.ui-dialog').find('.ui-dialog-buttonpane');
+        buttonPane.find('::nth-child(2)').css('height', 'auto'); //workaround to remove unnecessary height property
+        buttonPane.find('::nth-child(3)').find('button').removeClass('green-button').addClass('yellow-button');
+
+    }
+
+    function changeDepotDialogGetDepotList() {
+        return <?php echo json_encode($this->depots);?>;
+    }
+
+    function changeDepotDialogFilterOptions(carrierId, state) {
+        var
+            depotFilter = function(option){return (option.CD_STATE === state) && option.CD_CARRIER_ID === carrierId;};
+
+        $('#cdDlgCarrierDepot').minderFilteredDDSetFilter(depotFilter);
+    }
+
+    function changeDepotDialogOnClose(callback, namespace) {
+        $('#change_depot_dialog').unbind('dialogclose.' + namespace).bind('dialogclose.' + namespace, callback);
+    }
+
+    function changeDepotDialogOnAccept(callback, namespace) {
+        $('#change_depot_dialog').unbind('accept.' + namespace).bind('accept.' + namespace, callback);
+    }
+
+    function showChangeDepotDialog(carrierId, state) {
+        changeDepotDialogFilterOptions(carrierId, state);
+        $('#change_depot_dialog').dialog('open');
+    }
+
+    function closeChangeDepotDialog() {
+        $('#change_depot_dialog').dialog('close');
+    }
+
+    function isChangeDepotDialogActive() {
+        return getChangeDepotDialogSettings().active;
+    }
+
+    function changeDepotDialogAccept() {
+        var $confirmDialog = $('#change_depot_dialog'),
+            acceptEvent = $.Event('accept');
+
+        acceptEvent.carrierDepotRecordId = $('#cdDlgCarrierDepot').val();
+
+        $confirmDialog.dialog('close');
+        $confirmDialog.trigger(acceptEvent);
+    }
+
+    function getChangeDepotDialogSettings() {
+        if (!window.changeDepotDialog) {
+            window.changeDepotDialog = {
+                active: false
+            }
+        }
+
+        return window.changeDepotDialog;
+    }
+</script>

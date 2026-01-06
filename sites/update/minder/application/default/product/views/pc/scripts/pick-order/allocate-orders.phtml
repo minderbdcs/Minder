@@ -1,0 +1,133 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $statusList = array('' => '');
+    foreach ($this->minder->getPickOrderStatusList() as $k => $v) {
+        $statusList[$k] = $v;
+    }
+    $shipViaList = array('' => '');
+    foreach ($this->minder->getShipViaList() as $k => $v) {
+        $shipViaList[$k] = $v;
+    }
+    $despatchLocationList = array('' => '');
+    foreach ($this->minder->getDespatchLocationList() as $k => $v) {
+        $despatchLocationList[$k] = $v;
+    }
+?>
+<form action="<?php echo $this->url(); ?>" method="post">
+    <div>
+        <table>
+            <tr>
+                <td>Due Date:</td>
+                <td><?php echo $this->formText('due_date', $this->dueDate); ?></td>
+                <td><b>Pick Mode:</b></td>
+                <td><b><?php echo $this->pick_mode; ?></b></td>
+            </tr>
+        </table>
+        <?php if($this->pick_mode == 'none') { ?>
+            <input type="submit" name="action" value="Submit Search" class="order-button" />
+        <?php } ?>
+    </div>
+
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Allocate Picks" class="order-button" /></li>
+        <li><input type="submit" name="action" value="Return" onclick="javascript:window.location='<?php echo $this->url(array('controller' => 'pick-order'), '', true); ?>'; return false;" class="order-button" /></li>
+    </ul>
+
+<hr>
+        <div>
+            <div style="text-transform: uppercase; font-weight: bold; float:left">Orders Awaiting Allocation List</div>
+            <div style="position:relative; left:10ex; font-weight: none;text-transform: none;">
+            <label for="results_per_page">View By:</label>
+
+    <?php echo $this->formSelect('show_by',
+                                  $this->navigation['show_by'],
+                                  array('onchange' => 'this.form.submit()'),
+                                  array(5  => 5,
+                                        10 => 10,
+                                        15 => 15,
+                                        20 => 20,
+                                        30 => 30,
+                                        40 => 40,
+                                        50 => 50,
+                                        100 => 100)) ?>
+
+            <label for="pageselector">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'this.form.submit()'),
+                                               $this->pages); ?>
+            
+            </div>
+        </div>
+
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected <span class="selected_count">0</span></li>
+    </ul>
+    <table id="pick_orders" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_orders" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+<?php if (!count($this->pickOrders)) { ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) { ?>
+                <td/>
+<?php } ?>
+        </tr>
+<?php
+} else {
+    foreach ($this->pickOrders as $pickOrder) {
+        echo '<tr>';
+        echo '<th><input type="checkbox" id="pick_order_' . $this->escape($pickOrder['PICK_ORDER']) . '" class="order_checkbox" name="allocate[]" value="o|' . $this->escape($pickOrder['PICK_ORDER']) . '" onClick="showSelected();"/></th>';
+        foreach ($this->headers as $key => $value) {
+            echo '<td>' . $pickOrder[$key] . '</td>';
+        }
+        echo "</tr>\n";
+    }
+}
+?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <li style="display: inline;">
+             Total <?php echo $this->numRecords; ?> records. 
+            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno);?>
+        </li>
+    </ul>
+
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Allocate Picks" class="order-button" /></li>
+        <li><input type="submit" name="action" value="Return" onclick="javascript:window.location='<?php echo $this->url(array('controller' => 'pick-order'), '', true); ?>'; return false;" class="order-button" /></li>
+    </ul>
+
+</form>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#pick_orders').tablesorter({headers:{0:{sorter:false}}, sortList:[], widgets: ['zebra']});
+    $('#select_all_pick_orders').click(function () { $('.order_checkbox').each(function () { this.checked = $('#select_all_pick_orders')[0].checked; }); $('.selected_count').text($('.order_checkbox:checked').length); });
+    $('#due_date').datepicker({dateFormat: 'YMD-'});
+})
+
+function showSelected() {
+    totalSelected = 0;
+    $('.order_checkbox').each(function () { 
+        if(this.checked) {
+            totalSelected++;    
+        }
+     })
+     $('.selected_count').text(totalSelected);
+}
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

@@ -1,0 +1,607 @@
+<div class="ui-tabs-container">
+<div id="add_tool_dialog" class="flora otc-add-tool-dialog" title="Add Tool" style="display: none;">
+<form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <div id="add_tool_dialog_add_tool" class="">
+        <table class="summary" style="width:99%">
+                <tr>
+                    <td>
+                        Tool ID (SSN):
+                    </td>
+                    <td>
+                        <?php echo $this->formText('ssn_id', '', array()); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Tool Type 1
+                    </td>
+                    <td>
+                        <?php echo $this->formSelect('type_1'); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Tool Type 2
+                    </td>
+                    <td>
+                        <?php echo $this->formSelect('type_2'); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Tool Type 3
+                    </td>
+                    <td>
+                        <?php echo $this->formSelect('type_3'); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alternate Name
+                    </td>
+                    <td>
+                        <?php echo $this->formText('alt_name', '', array()); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Brand:
+                    </td>
+                    <td>
+                        <?php echo $this->formSelect('brand', '', array(), $this->brands); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Model:
+                    </td>
+                    <td>
+                        <?php echo $this->formText('model', '', array()); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Serial Number
+                    </td>
+                    <td>
+                        <?php echo $this->formText('serial_number', '', array()); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Legacy ID:
+                    </td>
+                    <td>
+                        <?php echo $this->formText('legacy_id', '', array()); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Purchase Price ($99999.99):
+                    </td>
+                    <td>
+                        <?php echo $this->formText('ssn_purchase_price', $this->ssnPurchasePrice, array('data-number-format' => Minder2_Environment::getInstance()->getPriceNumberFormat())); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Purchase Order Number:
+                    </td>
+                    <td>
+                        <?php echo $this->formText('po_order', '', array()); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        COMPANY ID:
+                    </td>
+                    <td>
+                        <?php echo $this->companySelect('company_id_tool', ''); ?>
+                    </td>
+                </tr>
+        </table>
+    </div>
+    <div id="add_tool_dialog_safety_test" class="">
+        <table class="summary" style="width:99%">
+            <tr>
+                <td>
+                    Tool ID (SSN):
+                </td>
+                <td>
+                    <?php echo $this->formText('ssn_id', '', array('id' => '')); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Tool Type 1
+                </td>
+                <td>
+                    <?php echo $this->formSelect('type_1', '', array('id' => ''), $this->ssnTypes); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Safety Check:
+                </td>
+                <td>
+                    <?php echo $this->formCheckbox('loan_safety_check', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Last Safety Check Date:
+                </td>
+                <td>
+                    <?php echo $this->formText('loan_last_safety_check_date', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Safety Check Period No:
+                </td>
+                <td>
+                    <?php echo $this->formText('loan_safety_period_no', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Safety Check Period:
+                </td>
+                <td>
+                    <?php echo $this->formSelect('loan_safety_period', '', array(), $this->loanCheckPeriodList); ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="add_tool_dialog_calibration" class="">
+        <table class="summary" style="width:99%">
+            <tr>
+                <td>
+                    Tool ID (SSN):
+                </td>
+                <td>
+                    <?php echo $this->formText('ssn_id', '', array('id' => '')); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Tool Type 1
+                </td>
+                <td>
+                    <?php echo $this->formSelect('type_1', '', array('id' => ''), $this->ssnTypes); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Calibration Check:
+                </td>
+                <td>
+                    <?php echo $this->formCheckbox('loan_calibrate_check', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Last Calibration Date:
+                </td>
+                <td>
+                    <?php echo $this->formText('loan_last_calibrate_check_date', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Calibration Period No:
+                </td>
+                <td>
+                    <?php echo $this->formText('loan_calibrate_period_no', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Calibration Period:
+                </td>
+                <td>
+                    <?php echo $this->formSelect('loan_calibrate_period', '', array(), $this->loanCheckPeriodList); ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="add_tool_dialog_inspection" class="">
+        <table class="summary" style="width:99%">
+            <tr>
+                <td>
+                    Tool ID (SSN):
+                </td>
+                <td>
+                    <?php echo $this->formText('ssn_id', '', array('id' => '')); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Tool Type 1
+                </td>
+                <td>
+                    <?php echo $this->formSelect('type_1', '', array('id' => ''), $this->ssnTypes); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Inspection Check:
+                </td>
+                <td>
+                    <?php echo $this->formCheckbox('loan_inspect_check', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Last Inspection Date:
+                </td>
+                <td>
+                    <?php echo $this->formText('loan_last_inspect_check_date', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Inspection Period No:
+                </td>
+                <td>
+                    <?php echo $this->formText('loan_inspect_period_no', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Inspection Period:
+                </td>
+                <td>
+                    <?php echo $this->formSelect('loan_inspect_period', '', array(), $this->loanCheckPeriodList); ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
+</div>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        // dialog add tool
+        var
+            $dialog = $('#add_tool_dialog'),
+            dialogTitle,
+            $buttonPane;
+
+        $dialog.dialog({
+             buttons: {SAVE: saveTool, HTML:true, CANCEL: closeToolDialog},
+             width: '800px',
+             height: '570px',
+             autoOpen: false,
+             position: [0, 65],
+             buttonStyle: 'otc-dialog-button',
+             insertHtml:  '<div style="text-align:left;">LOCATION: <input type="text" name="location_id" id="location_id" value="<?php echo $this->defaultReturnLocation; ?>" id="" style="width:220px;" /></div><div style="text-align:left"><label for="print_label_tool">Print Label</label>&nbsp;<input type="checkbox" id="print_label_tool" name="print_label_tool" value="">&nbsp;SSN COPY:&nbsp;<input id="ssnCopyAmount" type="number" min="1" value="1" style="width:90px;" /></div>'
+        }).bind('dialogclose', function(event, ui) {
+            $('#barcode').focus();
+            $dialog.removeAttr('active');
+        }).bind('dialogopen', function(event, ui) {
+            $('#ssn_purchase_price').minderNumberFormat();
+            $('#type_1').val('').change();
+            $('#alt_name').val('');
+            $('#ssnCopyAmount').val(1);
+            $(this).show();
+            $dialog.attr('active', true);
+        });
+
+        $buttonPane = $('.ui-dialog-buttonpane', $dialog.parents('.ui-dialog'));
+        $buttonPane.children(':nth-child(1)').css('width', '200px');
+        $buttonPane.children(':nth-child(2)').css('width', '370px');
+        $buttonPane.children(':nth-child(3)').css('width', '200px');
+
+        dialogTitle = $('.ui-dialog-title', $dialog.parent());
+
+        dialogTitle.empty();
+        dialogTitle.append('<ul class="ui-tabs-nav ui-tabs-nav-add-tool otc-add-tool-dialog" style="display: inline-block">' +
+            '<li><a href="#add_tool_dialog_add_tool">Add Tool</a></li>' +
+            '<li><a href="#add_tool_dialog_safety_test">Safety Test</a></li>' +
+            '<li><a href="#add_tool_dialog_calibration">Calibration</a></li>' +
+            '<li><a href="#add_tool_dialog_inspection">Inspection</a></li>' +
+            '</ul>');
+        $('ul', dialogTitle).tabs({panelClass: ''});
+
+        renderGenericOptions();
+        renderSsnSubTypeOptions();
+        $('#loan_last_safety_check_date').datepicker({dateFormat: 'yy-mm-dd', beforeShow: pullUpDatePicker});
+        $('#loan_last_calibrate_check_date').datepicker({dateFormat: 'yy-mm-dd', beforeShow: pullUpDatePicker});
+        $('#loan_last_inspect_check_date').datepicker({dateFormat: 'yy-mm-dd', beforeShow: pullUpDatePicker});
+        $('#add_tool_dialog [name="ssn_id"]').change(onSsnIdChange);
+
+        Minder.Helper.SsnTypeSelect.init({
+            $ssnType: $dialog.find('[name="type_1"]'),
+            $generic: $('[name="type_2"]'),
+            $ssnSubType: $('[name="type_3"]'),
+            ssnSubTypes: new Mdr.OptionsDataSource(<?php echo json_encode($this->ssnSubTypes);?>)
+        });
+        Minder.Helper.SsnTypeSelect.addSsnTypeChangedListener('add-tool', onSsnTypeChange);
+
+        window.toolCheckDefaults = <?php echo json_encode($this->loanCheckDefaults);?>;
+    });
+
+    function getCalibrationCheckDefaults(type) {
+        return window.toolCheckDefaults['LOAN_CALIBRATE_CHECK'][type] ? window.toolCheckDefaults['LOAN_CALIBRATE_CHECK'][type] : window.toolCheckDefaults['LOAN_CALIBRATE_CHECK'][''];
+    }
+
+    function getSafetyCheckDefaults(type) {
+        return window.toolCheckDefaults['LOAN_SAFETY_CHECK'][type] ? window.toolCheckDefaults['LOAN_SAFETY_CHECK'][type] : window.toolCheckDefaults['LOAN_SAFETY_CHECK'][''];
+    }
+
+    function getInspectionCheckDefaults(type) {
+        return window.toolCheckDefaults['LOAN_INSPECT_CHECK'][type] ? window.toolCheckDefaults['LOAN_INSPECT_CHECK'][type] : window.toolCheckDefaults['LOAN_INSPECT_CHECK'][''];
+    }
+
+//  add Tool
+    function openToolDialog(){
+        $("#add_tool_dialog").dialog("open");
+        $('#barcode').focus();
+
+        return false;
+    }
+
+    function closeToolDialog(){
+        $('#add_tool_dialog').dialog("close");
+
+        return false;
+    }
+
+    function isAddToolDialogActive() {
+        return !!$('#add_tool_dialog').attr('active');
+    }
+
+    function saveTool(){
+        if ($("#type_1 :selected").val() == '') {
+            showErrors(['"Tool Type 1" is empty.']);
+            return;
+        }
+
+        if ($("#location_id").val() == '') {
+            showErrors(['"LOCATION" is empty.']);
+            return;
+        }
+
+        $.post(
+            "/minder/otc/add-tool-ajax",
+            {
+                ssn_id: $("#ssn_id").val(),
+                type_1: $("#type_1 :selected").val(),
+                type_2: $("#type_2 :selected").val(),
+                type_3: $("#type_3 :selected").val(),
+                brand: 	$("#brand :selected").val(),
+                model: $("#model").val(),
+                serial_number: $("#serial_number").val(),
+                legacy_id: $("#legacy_id").val(),
+                 company_id: $("#company_id_tool :selected").val(),
+                location_id: $("#location_id").val(),
+                alt_name: $("#alt_name").val(),
+                print_label: $("#print_label_tool")[0].checked,
+                ssnPurchasePrice: $('#ssn_purchase_price').minderNumberFormat('getValue'),
+                poOrder: $('#add_tool_dialog').find('[name="po_order"]').val(),
+                ssnCopyAmount: $('#ssnCopyAmount').val() || 1,
+
+                loanSafetyCheck: $('#loan_safety_check').attr('checked'),
+                loanLastSafetyCheckDate: $('#loan_last_safety_check_date').val(),
+                loanSafetyPeriodNo: $('#loan_safety_period_no').val(),
+                loanSafetyPeriod: $('#loan_safety_period').val(),
+
+                loanCalibrateCheck: $('#loan_calibrate_check').attr('checked'),
+                loanLastCalibrateCheckDate: $('#loan_last_calibrate_check_date').val(),
+                loanCalibratePeriodNo: $('#loan_calibrate_period_no').val(),
+                loanCalibratePeriod: $('#loan_calibrate_period').val(),
+
+                loanInspectCheck: $('#loan_inspect_check').attr('checked'),
+                loanLastInspectCheckDate: $('#loan_last_inspect_check_date').val(),
+                loanInspectPeriodNo: $('#loan_inspect_period_no').val(),
+                loanInspectPeriod: $('#loan_inspect_period').val()
+            },
+
+            function (response)
+            {
+                if (response.messages && response.messages.length > 0)
+                    showMessage(response.messages);
+
+                if (response.warnings && response.warnings.length > 0)
+                    showWarnings(response.warnings);
+
+                if (response.errors && response.errors.length > 0)
+                    showErrors(response.errors);
+
+                if (response.ssnCopyAmount < 1) {
+                    closeToolDialog();
+
+                    if (response.toolCreatedAmount > 0) {
+                        $('#add_tool_dialog').trigger('tool-created', {ssnId: response.ssnId});
+                    }
+
+                    return;
+                }
+
+                $('#ssnCopyAmount').val(response.ssnCopyAmount);
+                $("#ssn_id").val('');
+                $("#serial_number").val('');
+            },
+            'json'
+        );
+    }
+
+    function onSsnIdChange(evt) {
+        $('#add_tool_dialog [name="ssn_id"]').val($(evt.target).val());
+    }
+
+    function onSsnTypeChange(evt) {
+        var
+            toolType = $(evt.target).val();
+
+        updateSafetyCheckDefaults(getSafetyCheckDefaults(toolType));
+        updateCalibrationDefaults(getCalibrationCheckDefaults(toolType));
+        updateInspectionDefaults(getInspectionCheckDefaults(toolType));
+        console.log(toolType);
+    }
+
+    function updateInspectionDefaults(defaults) {
+        console.log(defaults);
+        $('#loan_inspect_check').attr('checked', defaults.CHECKED);
+        $('#loan_last_inspect_check_date').val(formatDate(defaults.CHECK_DATE));
+        $('#loan_inspect_period_no').val(defaults.PERIOD_NO);
+        $('#loan_inspect_period').val(defaults.PERIOD);
+    }
+
+    function updateCalibrationDefaults(defaults) {
+        console.log(defaults);
+        $('#loan_calibrate_check').attr('checked', defaults.CHECKED);
+        $('#loan_last_calibrate_check_date').val(formatDate(defaults.CHECK_DATE));
+        $('#loan_calibrate_period_no').val(defaults.PERIOD_NO);
+        $('#loan_calibrate_period').val(defaults.PERIOD);
+    }
+
+    function updateSafetyCheckDefaults(defaults) {
+        console.log(defaults);
+        $('#loan_safety_check').attr('checked', defaults.CHECKED);
+        $('#loan_last_safety_check_date').val(formatDate(defaults.CHECK_DATE));
+        $('#loan_safety_period_no').val(defaults.PERIOD_NO);
+        $('#loan_safety_period').val(defaults.PERIOD);
+    }
+
+    function formatDate(date) {
+        var
+            now = new Date();
+
+
+
+        switch (date.toUpperCase()) {
+            case 'NOW()':
+                return $.datepicker.formatDate('yy-mm-dd ', now) + now.getHours() + ':' + now.getMinutes();
+            case 'TODAY()':
+                return $.datepicker.formatDate('yy-mm-dd', now);
+            default :
+                return date;
+        }
+    }
+
+    function onGenericChange(evt) {
+        renderSsnSubTypeOptions();
+    }
+
+    function getSsnTypeSelected() {
+        return $('#type_1').val();
+    }
+
+    function getGenericSelected() {
+        return $('#type_2').val();
+    }
+
+    function renderGenericOptions() {
+        var selectedSsnType = getSsnTypeSelected();
+
+        function _getFilteredGeneric(ssnType) {
+            var generics = <?php echo json_encode($this->generics);?>;
+
+            var filterCallback = function(element, index, array){
+                return element.SSN_TYPE == ssnType;
+            };
+
+
+            if (generics == null) return [];
+
+            return generics.filter(filterCallback);
+        }
+
+        function _addEmptyGeneric(generics, ssnType) {
+            var filterCallback = function(element, index, array) {
+                return (element.CODE == '');
+            };
+
+            var emptyElements = generics.filter(filterCallback);
+
+            if (emptyElements.length < 1)
+                generics.push({
+                    'CODE': '',
+                    'DESCRIPTION': '',
+                    'SSN_TYPE': ssnType
+                });
+
+            return generics;
+        }
+
+        var sortCallback = function(a, b) {
+            if (a.DESCRIPTION > b.DESCRIPTION) return 1;
+            if (a.DESCRIPTION < b.DESCRIPTION) return -1;
+
+            return 0;
+        };
+
+        var filteredGenerics = _addEmptyGeneric(_getFilteredGeneric(selectedSsnType), selectedSsnType);
+        filteredGenerics.sort(sortCallback);
+        $('#type_2').empty().append($('#generic-options').tmpl({'options' : filteredGenerics})).val('');
+    }
+
+    function renderSsnSubTypeOptions() {
+        var selectedSsnType = getSsnTypeSelected();
+        var selectedGeneric = getGenericSelected();
+
+        function _getFilteredSsnSubType(ssnType, generic) {
+            var ssnSubTypes = <?php echo json_encode($this->ssnSubTypes);?>;
+
+            var filterCallback = function(element, index, array){
+                return (element.SSN_TYPE == ssnType) && (element.GENERIC == generic);
+            };
+
+            if (ssnSubTypes == null) return [];
+
+            return ssnSubTypes.filter(filterCallback);
+        }
+
+        function _addEmptySsnSubType(subTypes, ssnType, generic) {
+            var filterCallback = function(element, index, array) {
+                return (element.CODE == '');
+            };
+
+            var emptyElements = subTypes.filter(filterCallback);
+
+            if (emptyElements.length < 1) {
+                subTypes.push({
+                    'CODE'       : "",
+                    'DESCRIPTION': "",
+                    'GENERIC'    : generic,
+                    'SSN_TYPE'   : ssnType
+                });
+            }
+
+            return subTypes;
+        }
+
+        var sortCallback = function(a, b) {
+            if (a.DESCRIPTION > b.DESCRIPTION) return 1;
+            if (a.DESCRIPTION < b.DESCRIPTION) return -1;
+
+            return 0;
+        };
+
+        var filteredSubtypes = _addEmptySsnSubType(_getFilteredSsnSubType(selectedSsnType, selectedGeneric), selectedSsnType, selectedGeneric);
+        filteredSubtypes.sort(sortCallback);
+
+        $('#type_3').empty().append($('#ssn-sub-type-options').tmpl({'options' : filteredSubtypes})).val('');
+
+    }
+
+    function addToolDialogOnCreate(callback, namespace) {
+        $('#add_tool_dialog').unbind('tool-created.' + namespace).bind('tool-created.' + namespace, callback);
+    }
+
+</script>
+
+<script type="text/x-jquery-tmpl" id="generic-options">
+    {{each(index, generic) $item.data.options}}
+    <option label="{{= generic.DESCRIPTION}}" value="{{= generic.CODE}}">{{= generic.DESCRIPTION}}</option>
+    {{/each}}
+</script>
+
+<script type="text/x-jquery-tmpl" id="ssn-sub-type-options">
+    {{each(index, ssnSubType) $item.data.options}}
+    <option label="{{= ssnSubType.DESCRIPTION}}" value="{{= ssnSubType.CODE}}">{{= ssnSubType.DESCRIPTION}}</option>
+    {{/each}}
+</script>

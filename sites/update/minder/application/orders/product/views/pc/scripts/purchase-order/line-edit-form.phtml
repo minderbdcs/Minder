@@ -1,0 +1,223 @@
+<?php echo $this->render('header.phtml');
+      echo $this->messenger()->all();   
+
+      if(!$this->minder->isAdmin){
+        $params =   array('readonly' => 'readonly', 'class' => 'disabled');
+      } else {
+        $params =   array();
+      }
+    
+?>
+
+<form action="<?php echo $this->url(array('action' => 'save-line')); ?>" method="post">
+    <h1>PURCHASE ORDER: <?php echo $this->escape($this->purchaseOrderNo); ?></h1>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" /></li>
+        <li><input type="submit" name="cansel" value="CANCEL" onclick="return false;" /></li>
+    </ul>
+    <table class="summary"style="width:99%">
+        <tr>
+            <th>PUCRCHASE_ORDER</th>
+            <td><?php echo $this->formText('purchase_order', $this->purchaseOrderNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE</th>
+            <td><?php echo $this->formText('po_line', $this->purchaseOrderLineNo,  array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PROD_ID</th>
+            <td><?php echo $this->formSelect('prod_id', isset($this->purchaseOrderLine['PROD_ID']) ? $this->purchaseOrderLine['PROD_ID'] : '', array_merge($params, array('onchange' => 'loadProductShortDescription()')), $this->productList) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_DESCRIPTION</th>
+            <td><?php echo $this->formText('po_line_description', isset($this->purchaseOrderLine['PO_LINE_DESCRIPTION']) ? $this->purchaseOrderLine['PO_LINE_DESCRIPTION'] : '',  $params) ?></td>
+        </tr>
+        <tr>
+            <th>ORIGINAL_QTY</th>
+            <td><?php echo $this->formText('original_qty', isset($this->purchaseOrderLine['ORIGINAL_QTY']) ? $this->purchaseOrderLine['ORIGINAL_QTY'] : '', array_merge(array('onchange' => 'calculateTotal();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_QTY</th>
+            <td><?php echo $this->formText('po_line_qty', isset($this->purchaseOrderLine['PO_LINE_QTY']) ? $this->purchaseOrderLine['PO_LINE_QTY'] : '',  $params) ?></td>
+        </tr>
+        <tr>
+            <th>UNIT_PRICE</th>
+            <td><?php echo $this->formText('unit_price', isset($this->purchaseOrderLine['UNIT_PRICE']) ? $this->purchaseOrderLine['UNIT_PRICE'] : '', array_merge(array('onchange' => 'calculateTotal();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_DISCOUNT</th>
+            <td><?php echo $this->formText('po_line_discount', isset($this->purchaseOrderLine['PO_LINE_DISCOUNT']) ? $this->purchaseOrderLine['PO_LINE_DISCOUNT'] : '', array_merge(array('onchange' => 'calculateTotal();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_TOTAL</th>
+            <td><?php echo $this->formText('po_line_total', isset($this->purchaseOrderLine['PO_LINE_TOTAL']) ? $this->purchaseOrderLine['PO_LINE_TOTAL'] : '',  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_CURRENCY</th>
+            <td><?php echo $this->formSelect('po_currency', isset($this->purchaseOrderLine['PO_CURRENCY']) ? $this->purchaseOrderLine['PO_CURRENCY'] : '', $params, $this->currencyList) ?></td></td>
+        </tr>
+        <tr>
+            <th>GST_RATE</th>
+            <td><?php echo $this->formText('gst_rate', $this->gstRate,  array_merge(array('onchange' => 'calculateGst();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>GST_VALUE</th>
+            <td><?php echo $this->formText('gst_value', isset($this->purchaseOrderLine['GST_VALUE']) ? $this->purchaseOrderLine['GST_VALUE'] : '', $params) ?></td>
+        </tr>
+        <!--
+        <tr>
+            <th>GST_CODE</th>
+            <td><?php echo $this->formText('gst_code', isset($this->purchaseOrderLine['GST_CODE']) ? $this->purchaseOrderLine['GST_CODE'] : '',  $params) ?></td>
+        </tr>
+        -->
+        <tr>
+            <th>UOM_ORDER</th>
+            <td><?php echo $this->formSelect('uom_order', isset($this->purchaseOrderLine['UOM_ORDER']) ? $this->purchaseOrderLine['UOM_ORDER'] : '', $params, $this->uomOrderList) ?></td>
+        </tr>
+        <tr>
+            <th>EARLIEST_DATE</th>
+            <td><?php echo $this->formText('earliest_date', isset($this->purchaseOrderLine['EARLIEST_DATE']) ? $this->purchaseOrderLine['EARLIEST_DATE'] : '',  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_DUE_DATE</th>
+            <td><?php echo $this->formText('po_line_due_date', isset($this->purchaseOrderLine['PO_LINE_DUE_DATE']) ? $this->purchaseOrderLine['PO_LINE_DUE_DATE'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_STATUS</th>
+            <td><?php echo $this->formSelect('po_line_status', isset($this->purchaseOrderLine['PO_LINE_STATUS']) ? $this->purchaseOrderLine['PO_LINE_STATUS'] : '', $params, $this->poLineStatusList) ?></td>
+        </tr>
+        <tr>
+            <th>REQUISITION_NO</th>
+            <td><?php echo $this->formText('requisition_no', isset($this->purchaseOrderLine['REQUISITION_NO']) ? $this->purchaseOrderLine['REQUISITION_NO'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>COMMENTS</th>
+            <td><?php echo $this->formText('comments', isset($this->purchaseOrderLine['COMMENTS']) ? $this->purchaseOrderLine['COMMENTS'] : '',  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_EXTERNAL_NOTES</th>
+            <td><?php echo $this->formText('po_line_external_notes', isset($this->purchaseOrderLine['PO_LINE_EXTERNAL_NOTES']) ? $this->purchaseOrderLine['PO_LINE_EXTERNAL_NOTES'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_OPTIONS</th>
+            <td><?php echo $this->formText('po_line_options', isset($this->purchaseOrderLine['PO_LINE_OPTIONS']) ? $this->purchaseOrderLine['PO_LINE_OPTIONS'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_QTY_F</th>
+            <td><?php echo $this->formText('po_line_qty_f', isset($this->purchaseOrderLine['PO_LINE_QTY_F']) ? $this->purchaseOrderLine['PO_LINE_QTY_F'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_LOTNO_LIST</th>
+            <td><?php echo $this->formText('po_line_lotno_list', isset($this->purchaseOrderLine['PO_LINE_LOTNO_LIST']) ? $this->purchaseOrderLine['PO_LINE_LOTNO_LIST'] : '',  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_STATUS_TF</th>
+            <td><?php echo $this->formText('po_line_status_tf', isset($this->purchaseOrderLine['PO_LINE_STATUS_TF']) ? $this->purchaseOrderLine['PO_LINE_STATUS_TF'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_CUSTOMER_ID</th>
+            <td><?php echo $this->formText('po_line_customer_id', isset($this->purchaseOrderLine['PO_LINE_CUSTOMER_ID']) ? $this->purchaseOrderLine['PO_LINE_CUSTOMER_ID'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_CUSTOMER_NAME</th>
+            <td><?php echo $this->formText('po_line_customer_name', isset($this->purchaseOrderLine['PO_LINE_CUSTOMER_NAME']) ? $this->purchaseOrderLine['PO_LINE_CUSTOMER_NAME'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LEGACY_RECV_ID</th>
+            <td><?php echo $this->formText('po_legacy_recv_id', isset($this->purchaseOrderLine['PO_LEGACY_RECV_ID']) ? $this->purchaseOrderLine['PO_LEGACY_RECV_ID'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_REVISION_STATUS</th>
+            <td><?php echo $this->formText('po_revision_status', isset($this->purchaseOrderLine['PO_REVISION_STATUS']) ? $this->purchaseOrderLine['PO_REVISION_STATUS'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LEGACY_LINE</th>
+            <td><?php echo $this->formText('po_legacy_line', isset($this->purchaseOrderLine['PO_LEGACY_LINE']) ? $this->purchaseOrderLine['PO_LEGACY_LINE'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_DATE</th>
+            <td><?php echo $this->formText('last_update_date', isset($this->purchaseOrderLine['LAST_UPDATE_DATE']) ? $this->purchaseOrderLine['LAST_UPDATE_DATE'] : '', $params) ?></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_BY</th>
+            <td><?php echo $this->formText('last_update_by', isset($this->purchaseOrderLine['LAST_UPDATE_BY']) ? $this->purchaseOrderLine['LAST_UPDATE_BY'] : '' , $params) ?></td>
+        </tr>
+        
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" onclick = "calculateTotal();" /></li>
+        <li><input type="submit" name="cansel" value="CANCEL" onclick="return false;" /></li>
+    </ul>
+</form>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $('#earliest_date').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#po_line_due_date').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#last_update_date').datepicker({dateFormat: 'yy-mm-dd'});
+      
+        $('input[name=cansel]').click(cancelOnClick);
+    });
+    
+    function cancelOnClick(evt) {
+        evt.preventDefault();
+        location.href = '<?php echo $this->url(array('action' => 'index', 'controller' => 'purchase-order', 'module' => 'orders'), null, true);?>';
+    }
+    
+    function calculateTotal(){
+        
+        var originalQty =   parseFloat($('#original_qty').val());
+        var unitPrice   =   parseFloat($('#unit_price').val());
+        var lineDiscount=   parseFloat($('#po_line_discount').val());
+      
+        if(isNaN(originalQty)){
+           originalQty = 0;
+        }
+        if(isNaN(unitPrice)){
+           unitPrice   = 0; 
+        }
+        if(isNaN(lineDiscount)){
+           lineDiscount   = 0; 
+        }
+        var total       = originalQty * unitPrice * (1 - lineDiscount);
+        
+        $('#po_line_total').val(total);
+        
+        // calculate GST VALUE
+        calculateGst();
+    }
+    
+    function calculateGst(){
+        
+        var poLineTotal =   parseFloat($('#po_line_total').val());   
+        var gstRate     =   parseFloat($('#gst_rate').val());
+        
+        if(isNaN(poLineTotal)){
+            poLineTotal = 0;
+        }
+        if(isNaN(gstRate)){
+            gstRate = 0;
+        }
+        
+        var gstValue = poLineTotal * gstRate / 100 ;
+        
+        $('#gst_value').val(gstValue);    
+           
+    }
+    
+    function loadProductShortDescription(){
+        
+        var prodId  =   $('#prod_id').val();
+        
+        $.getJSON('<?php echo $this->url(array('action' => 'search', 'controller' => 'purchase-order', 'module' => 'default')); ?>',{
+            field_name:     'prod_id',
+            field_value:    prodId     
+        }, function(json){
+            $('#po_line_description').val(json.short_desc);
+        });    
+    }
+    
+    
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

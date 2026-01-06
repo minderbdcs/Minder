@@ -1,0 +1,43 @@
+#otc-image-capture-dialog {
+    .captured-image-container {
+        div {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    }
+
+    .dialog-messages, .camera  {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .camera {
+        margin-right: 10px;
+    }
+}
+
+.otc-query-dialog,
+.otc-add-product-dialog,
+.otc-add-borrower-dialog,
+.otc-confirm_borrower_prefix_dialog,
+.otc-confirm_borrower_rename_dialog,
+.otc-add_cost_centre_dialog,
+.otc-list_loans_dialog,
+.otc-history_dialog,
+.otc-dispose_tool_dialog,
+.otc-import_audit_dialog,
+.otc-image-capture-dialog,
+.otc-confirm_expiration_dialog,
+.otc-confirm_tool-transfer_dialog,
+.otc-add-tool-dialog
+{
+    input {
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+    }
+
+    &.flora.ui-dialog .ui-dialog-title {
+        top: 0;
+    }
+}

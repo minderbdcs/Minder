@@ -1,0 +1,33 @@
+<?php
+$xlsObject = new PHPExcel();
+
+$sheet = $xlsObject->setActiveSheetIndex(0);
+
+$headerStyle = array(
+    'font' =>array(
+        'bold' => true
+    )
+);
+
+// Append header.
+$column = 0;
+foreach ($this->headers as $value) {
+    $sheet->setCellValueByColumnAndRow($column, 2, $value, true);
+    $column++;
+}
+
+// Append data.
+$row = 3;
+foreach ($this->data as $dataRow) {
+    $column = 0;
+    foreach ($this->headers as $key => $val) {
+        $sheet->setCellValueByColumnAndRow($column++, $row, $dataRow[$key]);
+    }
+    $row++;
+}
+
+$xlsObject->setActiveSheetIndex(0);
+
+
+$objWriter = PHPExcel_IOFactory::createWriter($xlsObject, 'Excel2007');
+$objWriter->save('php://output');

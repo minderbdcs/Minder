@@ -1,0 +1,12 @@
+<div id='searchTab_{{= $item.data.getTabId()}}'>
+    <table class='withborder' width='100%'>
+        <tbody>
+            <tr>
+                {{each($index, $subView) $item.data.getSortedSubViews()}}
+                    <td>{{= $subView.getCaption()}}</td>
+                    <td><span class="minder-element {{= $subView.getName()}}">{{= $subView.getName()}}:Placement</span></td>
+                {{/each}}
+            </tr>
+        </tbody>
+    </table>
+</div>

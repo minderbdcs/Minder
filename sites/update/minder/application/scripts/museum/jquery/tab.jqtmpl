@@ -1,0 +1,15 @@
+<div>
+    <ul>
+        {{if $item.data.getPages().length > 1}}
+            {{each($index, $page) $item.data.getPages()}}
+            <li><a href="#tab_page_{{= $page.getName()}}">{{= $page.getTitle()}}</a></li>
+            {{/each}}
+        {{/if}}
+    </ul>
+
+    {{each($index, $page) $item.data.getPages()}}
+        <div id="tab_page_{{= $page.getName()}}">
+            <span class="minder-tab-page {{= $page.getName()}}">{{= $page.getName()}}:Placement</span>
+        </div>
+    {{/each}}
+</div>

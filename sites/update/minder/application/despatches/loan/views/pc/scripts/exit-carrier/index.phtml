@@ -1,0 +1,116 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+/**
+ * @var Minder_View_Helper_StandardPage $page
+ */
+$page = $this->standardPage('Minder.Despatches.ExitCarrier');
+echo $page->messages();
+echo $page->pageTitle();
+
+/**
+ * @var Minder_View_Helper_ExitCarrierDialog $exitCarrierDialog
+ */
+$exitCarrierDialog = $this->exitCarrierDialog('', '', array());
+
+if ($page->hasErrors()) {
+    echo $this->render('footer.phtml');
+    return;
+}
+
+?>
+<div id="EXIT-CARRIER">
+    <table>
+        <tr>
+            <td>
+                <?php echo $exitCarrierDialog->scannedIndicators('');?>
+            </td>
+            <td><strong data-carrier-message="data-carrier-message"></strong></td>
+        </tr>
+    </table>
+<?php echo $exitCarrierDialog->carrierStatistics('');?>
+</div>
+
+<?php echo $page->screenContainers();?>
+
+<script type="text/javascript">
+
+
+    minderNamespace('Minder.Despatches.ExitCarrier', function(){
+        $.extend(this, Minder.Dlg.ExitCarrier);
+
+        this.onLoad = function(searchResults, screenData, knownCarriers, despatchPackUrl) {
+            this.setDespatchPackUrl(despatchPackUrl);
+            this.setKnownCarriers(knownCarriers);
+            this.initScreenVarianceSearchResults(searchResults, true);
+            this.initSearchForms(searchResults);
+            this.onDataReady(screenData);
+            this.showAll();
+        };
+
+        this.getRowSelectUrl = function() {
+            return '<?php echo $this->url(array('action' => 'select-row'))?>';
+        };
+
+        this.getLoadUrl = function() {
+            return '<?php echo $this->url(array('action' => 'get-dataset'))?>';
+        };
+
+        this.getSearchUrl = function() {
+            return '<?php echo $this->url(array('action' => 'search'))?>';
+        };
+
+        this.getDialogContainer = function() {
+            return $('#EXIT-CARRIER');
+        };
+
+
+    });
+
+    function globalSearch(){/*suppress global search handler*/}
+    $(function(){
+
+        function onBarcodeSuccess(evt) {
+            var connoteTest = /^CONNOTE_\w+/,
+                paramDescription = evt.parseResult.paramDesc;
+            $('#barcode').val('').focus();
+
+            if (paramDescription.param_name == 'CARRIER_ID') {
+                Minder.Despatches.ExitCarrier.setCarrier(paramDescription.param_filtered_value);
+            } else if (connoteTest.test(paramDescription.param_name)) {
+                Minder.Despatches.ExitCarrier.setPackId(paramDescription.param_filtered_value);
+            }
+        }
+
+        var
+            $barcode = $('#barcode');
+
+        $barcode.minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->carrierIdParam;?>]});
+
+        <?php
+            foreach ($this->connoteBarcodeDescriptions as $barcodeDescription) {
+        ?>
+        $barcode.minderBarcodeInput(
+            {
+                'barcodeDescriptors' : [<?php echo $barcodeDescription;?>]
+            }
+        );
+        <?php
+            }
+        ?>
+
+        $barcode.bind('parse-error', function(evt) {
+            showErrors([evt.parseResult.errorMsg], 10000);
+            $('#barcode').val('').focus();
+        }).bind('parse-success', onBarcodeSuccess);
+
+        Minder.Despatches.ExitCarrier.onLoad(
+            <?php echo json_encode($this->searchResults)?>,
+            {sysScreens: <?php echo json_encode($this->sysScreens)?>},
+            <?php echo json_encode($this->knownCarriers);?>,
+            '<?php echo $this->url(array('action' => 'despatch-pack'));?>'
+        );
+    });
+</script>
+
+<?php echo $this->StandardSRTemplate(array(), true); ?>
+<?php echo $this->render('footer.phtml'); ?>

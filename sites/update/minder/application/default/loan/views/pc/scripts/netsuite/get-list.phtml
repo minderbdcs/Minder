@@ -1,0 +1,77 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+if ($this->data) {
+    echo '<div id="tabs">';
+?>
+<form action="" method="post" name="nav">
+    <ul class="toolbar">
+        <li>Select type of Order <?php echo $this->formSelect('type', $this->selectedType, array('onchange' => 'document.forms.nav.submit();'), array('salesOrder' => 'salesOrder', 'purchaseOrder' => 'purchaseOrder')); ?></li>
+        <li>Page <?php echo $this->formSelect('pageselector', $this->page, array('onchange' => 'document.forms.nav.submit();'), $this->pages); ?></li>
+    </ul>
+<!--     <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'ADD', array()); ?>
+    </ul>
+ -->
+<?php
+    //echo '<div style="width:99%;">';
+    echo '<table id="table" class="tablesorter withborder" width="99%">';
+    echo '<thead><tr>';
+    echo '<th>';
+    echo $this->formCheckbox('selectall', '', array());
+    echo '</th>';
+    foreach ($this->data[0] as $key => $line) {
+        echo '<th>' . $this->headers[$key] . '</th>';
+    }
+    echo '</tr></thead><tbody>';
+    $i = 0;
+    foreach ($this->data as $line) {
+        echo '<tr>';
+        echo '<th>';
+        echo $this->formCheckbox('id[' . $i . ']', '', array());
+        ++$i;
+        echo '</th>';
+        foreach ($line as $key => $val) {
+            if ($key !== 'itemList') {
+                echo '<td>' . ($val===false? 'false': html_entity_decode($val))  . '</td>';
+            } else {
+                echo '<td><div>';
+                $cnt = count($val);
+
+                    if ($cnt > 0) {
+                        echo '<table id="items" class="w">';
+                        echo '<thead><tr>';
+                        foreach ($val[0] as $keyItem => $item) {
+                            echo '<td>' . strtoupper($keyItem) . '</td>';
+                        }
+                        echo '</tr></thead>';
+                        echo '<tbody>';
+                        foreach ($val as $keyItem => $row) {
+                            echo '<tr>';
+                            foreach ($row as $keyRow => $col) {
+                                echo '<td>' . html_entity_decode($col) . '</td>';
+                            }
+                            echo '</tr>';
+                        }
+                        echo '</table>';
+                    }
+
+                echo '</div></td>';
+            }
+        }
+        echo '</tr>';
+    }
+    echo '</tbody></table>';
+    //echo '</div>';
+
+}
+?>
+</form>
+<script type="text/javascript">
+<!--
+$().ready(function() {
+        $("#table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+//    $('#table').tablesorter({widgets: ['zebra']});
+});
+//-->
+</script>
+<?php echo $this->render('footer.phtml'); ?>

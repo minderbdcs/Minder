@@ -1,0 +1,18 @@
+DELIVERY
+================================================================
+* Use AJAX to populate details if GRN is provided
+* Does not handle GRN input
+*
+
+
+CONNOTE
+=================================================================
+* Javascript to check the docket number and received packages are provided
+* Add checkbox that will put "NA" into consignment no
+
+
+HIRE
+=================================================================
+* Need to add comment popup
+
+

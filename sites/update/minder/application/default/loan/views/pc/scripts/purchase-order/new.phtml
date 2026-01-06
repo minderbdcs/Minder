@@ -1,0 +1,989 @@
+<?php
+echo $this->messenger()->all(); 
+$attr = array();
+?>
+<a name="top">&nbsp;</a>
+<form name="po_edit"
+      id="po_edit"
+      action="/minder/purchase-order/edit"
+      method="post"
+      >
+<input type="hidden" name="id" value="<?php echo $this->id; ?>" >     
+<?php 
+if ($this->id!=null || $this->id!='') {
+	echo "<h3>PURCHASE ORDER: ".$this->id."</h3>";
+} else {
+	echo "<h3>NEW PURCHASE ORDER</h3>";
+}
+
+?>
+<table id="order" cellspacing="5">
+	<tr>
+		<td>
+			Order Status:
+		</td>
+		<td>
+			<?php echo $this->formSelect('order_status', $this->order_status, array(), $this->po_status_list); ?>
+		</td>
+		<td>
+			Created Date:
+		</td>
+		<td>
+			<?php echo $this->formText('create_date', $this->create_date, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Revision No:
+		</td>
+		<td>
+			<?php echo $this->formText('revision_no', $this->revision_no, array()); ?>
+		</td>
+		<td>
+			Printed Date:
+		</td>
+		<td>
+			<?php echo $this->formText('printed_date', $this->printed_date, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Currency:
+		</td>
+		<td>
+			<?php echo $this->formSelect('po_currency', $this->po_currency, array(), $this->po_currency_list); ?>
+		</td>
+		<td>
+			Due Date:
+		</td>
+		<td>
+			<?php echo $this->formText('due_date', $this->due_date, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Cost Centre:
+		</td>
+		<td>
+			<?php echo $this->formSelect('cost_centre', $this->cost_centre, array(), $this->cost_centre_list); ?>
+		</td>
+		<td>
+			Earliest Date:
+		</td>
+		<td>
+			<?php echo $this->formText('earliest_date', $this->earliest_date, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Order Entered By:
+		</td>
+		<td>
+			<?php echo $this->formText('order_entered_by', $this->order_entered_by, array()); ?>
+		</td>
+		<td>
+			Last Update Date:
+		</td>
+		<td>
+			<?php echo $this->formText('update_date', $this->update_date, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4">	
+			<hr>
+			<h3>SUPPLIED BY</h3>
+		</td>
+	<tr>
+		<td>
+			Supplied By (Existing):
+		</td>
+		<td>
+			<?php echo $this->formSelect('supplied_by_existing', $this->supplied_by_existing, array(), $this->supplied_by_existing_list); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Supplied By (New):
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_by_new', $this->supplied_by_new, array()); ?>
+		</td>
+		<td>
+			<input type="radio" name="person_type" id="person_type" value="company" <?php if($this->person_type=='CS') echo 'checked="checked"'; ?>>
+			COMPANY
+		</td>
+		<td>
+		<input type="radio" name="person_type" id="person_type" value="individual" <?php if($this->person_type=='IN') echo 'checked="checked"'; ?>>
+			INDIVIDUAL
+		</td>
+	</tr>
+	<tr>
+		<td>
+			First Name:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_first_name', $this->supplied_first_name, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Last Name:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_last_name', $this->supplied_last_name, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Supplied By Address:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_address1', $this->supplied_address1, array()); ?>
+		</td>
+		<td>
+			<input type="radio" name="address_type" id="address_type" value="postal" <?php if($this->address_type=='MT') echo 'checked="checked"'; ?>>
+			POSTAL
+		</td>
+		<td>
+			<input type="radio" name="address_type" id="address_type" value="office" <?php if($this->address_type=='OF') echo 'checked="checked"'; ?>>
+			OFFICE
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_address2', $this->supplied_address2, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			City:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_city', $this->supplied_city, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			State:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_state', $this->supplied_state, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Post Code:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_postcode', $this->supplied_postcode, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Country:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_country', $this->supplied_country, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Telephone:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_telephone', $this->supplied_telephone, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Supplier Contact:
+		</td>
+		<td>
+			<?php echo $this->formText('supplied_contact', $this->supplied_contact, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4">
+			<hr>
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="2">
+			<h3>PURCHASED BY</h3>
+		</td>
+		<td colspan="2">
+			<h3>DELIVER TO</h3>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Send Invoice To:
+		</td>
+		<td>
+			<?php echo $this->formText('purchased_send_invoice_to', $this->purchased_send_invoice_to, array()); ?>
+		</td>
+		<td>
+			Order Required By:
+		</td>
+		<td>
+			<?php echo $this->formText('delivery_required_by', $this->delivery_required_by, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Order Raised By:
+		</td>
+		<td>
+			<?php echo $this->formText('purchase_raised_by', $this->purchase_raised_by, array()); ?>
+		</td>
+		<td>
+			Warehouse ID:
+		</td>
+		<td>
+			<?php echo $this->formSelect('delivery_warehouse', $this->delivery_warehouse, array(), $this->warehouse_list); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Requisition No:
+		</td>
+		<td>
+			<?php echo $this->formText('purchase_requisition_no', $this->purchase_requisition_no, array()); ?>
+		</td>
+		<td>
+			Delivery To Dock #:
+		</td>
+		<td>
+			<?php echo $this->formSelect('delivery_to_dock', $this->delivery_to_dock, array(), $this->delivery_to_dock_list); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="2">
+			Send Invoice To:
+		</td>
+		<td colspan="2">
+			Shipping Address
+			<?php echo $this->formCheckbox('shipping_address_as_invoice', null, array(), array()); ?>
+			Same as Send Invoice To
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="2">
+			<?php echo $this->formSelect('send_invoice_to_limited', $this->send_invoice_to_limited, array('style'=>'width:350px;'), $this->send_invoice_to_limited_list); ?>
+		</td>
+		<td colspan="2">
+			<?php echo $this->formSelect('shipping_address', $this->shipping_address, array('style'=>'width:356px;'), $this->shipping_address_list); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			First Name:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_first_name', $this->invoice_first_name, array()); ?>
+		</td>
+		<td>
+			First Name:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_first_name', $this->shipping_first_name, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Last Name:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_last_name', $this->invoice_last_name, array()); ?>
+		</td>
+		<td>
+			Last Name:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_last_name', $this->shipping_last_name, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Address:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_address1', $this->invoice_address1, array()); ?>
+		</td>
+		<td>
+			Address:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_address1', $this->shipping_address1, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_address2', $this->invoice_address2, array()); ?>
+		</td>
+		<td>
+			&nbsp;
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_address2', $this->shipping_address2, array()); ?>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			City:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_city', $this->invoice_city, array()); ?>
+		</td>
+		<td>
+			City:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_city', $this->shipping_city, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			State:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_state', $this->invoice_state, array()); ?>
+		</td>
+		<td>
+			State:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_state', $this->shipping_state, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Postcode:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_postcode', $this->invoice_postcode, array()); ?>
+		</td>
+		<td>
+			Postcode:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_postcode', $this->shipping_postcode, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Country:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_country', $this->invoice_country, array()); ?>
+		</td>
+		<td>
+			Country:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_country', $this->shipping_country, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Telephone:
+		</td>
+		<td>
+			<?php echo $this->formText('invoice_telephone', $this->invoice_telephone, array()); ?>
+		</td>
+		<td>
+			Telephone:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_telephone', $this->shipping_telephone, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="3">
+			<ul class="toolbar">
+			    <li><input type="submit" value="Save" id="action" name="do"/></li>
+			    <li><input type="submit" value="Cancel" id="action" name="action"/></li>
+			</ul>		
+		</td>
+		<td>
+			<ul class="toolbar">
+			    <li><input type="submit" value="Return->Top" id="action" name="action" onclick="window.scrollTo(0, 0);" /></li>		
+			</ul>
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="4">
+			<hr>
+			<h3>SHIPPING INFORMATION</h3>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Ship Via:
+		</td>
+		<td>
+			<?php echo $this->formSelect('ship_via', $this->ship_via, array(), $this->ship_via_list); ?>
+		</td>
+		<td>
+			Ship Payment:
+		</td>
+		<td>
+			<?php echo $this->formSelect('ship_payment', $this->ship_payment, array(), $this->ship_payment_list); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Ship Service:
+		</td>
+		<td>
+			<?php echo $this->formSelect('ship_service', $this->ship_service, array(), $this->ship_service_list); ?>
+		</td>
+		<td>
+			Ship Account No:
+		</td>
+		<td>
+			<?php echo $this->formText('ship_account_no', $this->ship_account_no, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="4">
+			<hr>
+			<h3>IN-TRANSIT DETAILS</h3>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Good Receipt No:
+		</td>
+		<td>
+			<?php echo $this->formText('good_receipt_no', $this->good_receipt_no, array('readonly'=>'true')); ?>
+		</td>
+		<td>
+			Vessel Name:
+		</td>
+		<td>
+			<?php echo $this->formText('vessel_name', $this->vessel_name, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Shipping Container #:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_container_no', $this->shipping_container_no, array()); ?>
+		</td>
+		<td>
+			Voyage No:
+		</td>
+		<td>
+			<?php echo $this->formText('voyage_no', $this->voyage_no, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td colspan="4">
+			<hr>
+			<h3>LEGACY DETAILS (Imported Data)</h3>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Inwards #:
+		</td>
+		<td>
+			<?php echo $this->legacy_inwards; ?>&nbsp;
+		</td>
+		<td>
+			SSN Prefix:
+		</td>
+		<td>
+			<?php echo $this->legacy_ssn_prefix; ?>&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Warehouse ID:
+		</td>
+		<td>
+			<?php echo $this->legacy_warehouse; ?>&nbsp;
+		</td>
+		<td>
+			Receipt ID:
+		</td>
+		<td>
+			<?php echo $this->legacy_receipt_id; ?>&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Status:
+		</td>
+		<td>
+			<?php echo $this->legacy_status; ?>&nbsp;
+		</td>
+		<td>
+			Receipt Date:
+		</td>
+		<td>
+			<?php echo $this->legacy_receipt_date; ?>&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td>
+			Memo:
+		</td>
+		<td colspan="3">
+			<?php echo $this->legacy_text; ?>&nbsp;
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4">
+			<hr>
+			<h3>PURCHASE COSTS</h3>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Freight:
+		</td>
+		<td>
+			<?php echo $this->formText('freight', $this->freight, array()); ?>
+		</td>
+		<td>
+			Shipping Container:
+		</td>
+		<td>
+			<?php echo $this->formText('shipping_container', $this->shipping_container, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Customs Fees:
+		</td>
+		<td>
+			<?php echo $this->formText('customs_fees', $this->customs_fees, array()); ?>
+		</td>
+		<td>
+			Container Unloading:
+		</td>
+		<td>
+			<?php echo $this->formText('container_unloading', $this->container_unloading, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Storage Fees:
+		</td>
+		<td>
+			<?php echo $this->formText('storage_fees', $this->storage_fees, array()); ?>
+		</td>
+		<td>
+			Administration Charges:
+		</td>
+		<td>
+			<?php echo $this->formText('adminstrative_charges', $this->adminstrative_charges, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Insurance:
+		</td>
+		<td>
+			<?php echo $this->formText('insurance', $this->insurance, array()); ?>
+		</td>
+		<td>
+			Other Charges:
+		</td>
+		<td>
+			<?php echo $this->formText('other_charges', $this->other_charges, array()); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Tax (%):
+		</td>
+		<td>
+			<?php echo $this->formText('tax', $this->tax, array()); ?>
+		</td>
+		<td>
+			Tax Cost:
+		</td>
+		<td>
+			<?php echo $this->formText('tax_cost', $this->tax_cost, array('readonly'=>'true')); ?>
+		</td>
+	</tr>	
+	<tr>
+		<td>
+			Deposit Paid:
+		</td>
+		<td>
+			<?php echo $this->formText('deposit_paid', $this->deposit_paid, array()); ?>
+		</td>
+		<td>
+			Amount Due:
+		</td>
+		<td>
+			<?php echo $this->formText('amount_due', $this->amount_due, array('readonly'=>'true')); ?>
+			<input type="hidden" id="line_total_sum" name="line_total_sum" value="<?php echo $this->line_total_sum; ?>">
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4">
+			NOTES<br>
+			Instructions
+		</td> 
+	</tr>
+	<tr>		
+		<td colspan="4"> 
+		    <div id="instructions_tabs" style="width:99%" class="ui-tabs-container">
+		        <ul>
+		            <li><a href="#int_tab"><span><b>Internal</b></span></a></li>
+		            <li><a href="#ext_tab"><span><b>External</b></span></a></li>
+		        </ul>
+		        <div id="int_tab">	
+		        	<textarea name="internal_instructions" style="width: 100%;">
+		        		<?php echo $this->internal_instructions; ?>&nbsp;
+		        	</textarea>		
+				</div>
+		        <div id="ext_tab">
+		        	<textarea name="external_instructions" style="width: 100%;">			  	
+		        		<?php echo $this->external_instructions; ?>&nbsp;
+		        	</textarea>  	
+				</div>
+				<script type="text/javascript">
+				<!--
+				$(document).ready(function(){
+				    $("#instructions_tabs > ul").tabs();
+				});
+				--></script>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3">
+			<ul class="toolbar">
+			    <li><input type="submit" value="Save" id="action" name="do"/></li>
+			    <li><input type="submit" value="Cancel" id="action" name="action"/></li>
+			</ul>		
+		</td>
+		<td>
+			<ul class="toolbar">
+				<li><input type="button" value="Return->Top" id="action" name="action" onclick="window.scrollTo(0, 0);"/></li>			    
+			</ul>
+		</td>
+	</tr>	
+</table>    
+</form>
+
+<script language="javascript">
+
+	$('#delivery_warehouse').change(function(){
+		update_delivery_to_dock();
+	});
+
+	$('#send_invoice_to_limited').change(function(){
+		update_shipping_address();
+		
+	});
+	
+	
+	$('#purchased_send_invoice_to').change(function() {
+		update_send_invoice_to_limited();
+		update_shipping_address();	
+	});
+	
+	
+	$('#ship_via').change(function() {
+		update_ship_service();
+	});
+	
+	
+	$('#supplied_by_existing').change(function() {
+		update_supplied_address();
+	});
+	
+	function update_shipping_address(){
+		id = $('#send_invoice_to_limited').val();
+//		$.getJSON(
+//			'/minder/purchase-order/get-persons-by-company-ajax/',
+//			{id: id},
+//			function (data) {
+//				$('#shipping_address').empty();
+//				$(data.ids).each(function(i){
+//					$('#shipping_address').append("<option value=\""+this+"\">"+data.names[i]+"</option>");
+//				});
+//			}				
+//		);
+		
+		$.getJSON(
+			'/minder/purchase-order/get-address-by-id-ajax/',
+			{id: id},
+			function (data) {
+				if (data.address!=null && data.address!=false) {
+					$('#invoice_first_name').val(data.address.firstName);
+					$('#invoice_last_name').val(data.address.lastName);
+					$('#invoice_address1').val(data.address.line1);
+					$('#invoice_address2').val(data.address.line2);
+					$('#invoice_city').val(data.address.city);
+					$('#invoice_state').val(data.address.state);
+					$('#invoice_postcode').val(data.address.postcode);
+					$('#invoice_country').val(data.address.country);
+					$('#invoice_telephone').val(data.address.phone);
+				} else {
+					$('#invoice_first_name').val('');
+					$('#invoice_last_name').val('');
+					$('#invoice_address1').val('');
+					$('#invoice_address2').val('');
+					$('#invoice_city').val('');
+					$('#invoice_state').val('');
+					$('#invoice_postcode').val('');
+					$('#invoice_country').val('');
+					$('#invoice_telephone').val('');
+				}
+			}				
+		);
+		
+	}	
+	
+	
+	function update_supplied_address(){
+		id = $('#supplied_by_existing :selected').val();
+		
+		$.getJSON(
+			'/minder/purchase-order/get-address-by-type-ajax/',
+			{id: id},
+			function (data) {
+				if (data.address!=false && data.address!=null) {
+					$('#supplied_first_name').val(data.address.firstName);
+					$('#supplied_last_name').val(data.address.lastName);
+					$('#supplied_address1').val(data.address.line1);
+					$('#supplied_address2').val(data.address.line2);
+					$('#supplied_city').val(data.address.city);
+					$('#supplied_state').val(data.address.state);
+					$('#supplied_postcode').val(data.address.postcode);
+					$('#supplied_country').val(data.address.country);
+					$('#supplied_telephone').val(data.address.phone);
+				} else {
+					$('#supplied_first_name').val('');
+					$('#supplied_last_name').val('');
+					$('#supplied_address1').val('');
+					$('#supplied_address2').val('');
+					$('#supplied_city').val('');
+					$('#supplied_state').val('');
+					$('#supplied_postcode').val('');
+					$('#supplied_country').val('');
+					$('#supplied_telephone').val('');
+				}
+			}				
+		);
+		
+	}	
+	
+	function update_send_invoice_to_limited(){
+		id = $('#purchased_send_invoice_to').val();
+		$.getJSON(
+			'/minder/purchase-order/get-address-list-by-type-ajax/',
+			{id: id},
+			function (data) {
+				$('#send_invoice_to_limited').empty();
+				$(data.ids).each(function(i){
+					$('#send_invoice_to_limited').append("<option value=\"\"></option>");
+					$('#send_invoice_to_limited').append("<option value=\""+this+"\">"+data.names[i]+"</option>");
+				});
+			}				
+		);
+	}	
+	
+	function update_ship_service() {
+		id = $('#ship_via :selected').val();
+		$.getJSON(
+			'/minder/purchase-order/get-service-by-via-ajax/',
+			{id: id},
+			function (data) {
+				$('#ship_service').empty();
+				$(data.ids).each(function(i){
+					$('#ship_service').append("<option value=\""+this+"\">"+data.names[i]+"</option>");
+				});
+			}				
+		);
+	} 	
+	
+	function calculate_amount_due() {
+
+		if($('#freight').val()=='')
+			$('#freight').val('0.00');
+
+		if($('#customs_fees').val()=='')
+			$('#customs_fees').val('0.00');
+
+		if($('#storage_fees').val()=='')
+			$('#storage_fees').val('0.00');
+
+		if($('#shipping_container').val()=='')
+			$('#shipping_container').val('0.00');
+
+		if($('#container_unloading').val()=='')
+			$('#container_unloading').val('0.00');
+
+		if($('#insurance').val()=='')
+			$('#insurance').val('0.00');
+
+		if($('#adminstrative_charges').val()=='')
+			$('#adminstrative_charges').val('0.00');
+
+		if($('#other_charges').val()=='')
+			$('#other_charges').val('0.00');
+
+		if($('#line_total_sum').val()=='')
+			$('#line_total_sum').val('0.00');
+
+		if($('#deposit_paid').val()=='')
+			$('#deposit_paid').val('0.00');
+
+		ad =	parseFloat($('#freight').val()) + 
+			+ 	parseFloat($('#customs_fees').val()) +
+			+ 	parseFloat($('#storage_fees').val()) +
+			+ 	parseFloat($('#insurance').val()) +
+			+ 	parseFloat($('#shipping_container').val()) +
+			+ 	parseFloat($('#container_unloading').val()) +
+			+ 	parseFloat($('#adminstrative_charges').val()) +
+			+ 	parseFloat($('#other_charges').val())
+			+ 	parseFloat($('#line_total_sum').val());
+			
+			
+		xd = ad *  parseFloat($('#tax').val()) * 0.01;
+		
+		if (isNaN(xd)) { 
+			xd = '0.00';
+		}
+		
+		$('#tax_cost').val(xd);
+			
+		ad = ad * ( 1 + parseFloat($('#tax').val())*0.01 ) - parseFloat($('#deposit_paid').val());
+		
+		if (isNaN(ad)) { 
+			ad = '0.00';
+		}
+			
+		$('#amount_due').val(ad);
+	}
+	
+	function update_delivery_to_dock() {
+		id = $('#delivery_warehouse :selected').val();
+		$.getJSON(
+			'/minder/purchase-order/get-delivery-to-dock-ajax/',
+			{id: id},
+			function (data) {
+				$('#delivery_to_dock').empty();
+				$(data.ids).each(function(i){
+					$('#delivery_to_dock').append("<option value=\""+this+"\">"+data.names[i]+"</option>");
+				});
+			}				
+		);		
+	}
+
+	$(document).ready(function(){
+		$('#create_date').datepicker({dateFormat: 'yy-mm-dd'});
+		$('#printed_date').datepicker({dateFormat: 'yy-mm-dd'});
+		$('#due_date').datepicker({dateFormat: 'yy-mm-dd'});
+		$('#earliest_date').datepicker({dateFormat: 'yy-mm-dd'});
+		$('#update_date').datepicker({dateFormat: 'yy-mm-dd'});
+		
+		
+		$('#freight').change(calculate_amount_due);
+		$('#customs_fees').change(calculate_amount_due);
+		$('#storage_fees').change(calculate_amount_due);
+		$('#insurance').change(calculate_amount_due);
+		$('#tax').change(calculate_amount_due);
+		$('#deposit_paid').change(calculate_amount_due);
+		
+		$('#shipping_container').change(calculate_amount_due);
+		$('#container_unloading').change(calculate_amount_due);
+		$('#adminstrative_charges').change(calculate_amount_due);
+		$('#other_charges').change(calculate_amount_due);
+		$('#tax_cost').change(calculate_amount_due);
+		
+//		update_send_invoice_to_limited();
+//		update_shipping_address();	
+		
+	    $('#purchased_send_invoice_to').autocomplete(
+	    	'<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'search'), '', false); ?>',
+	    	{
+	    		matchSubset: 1,
+	    		matchContains: 1,
+	    		cacheLength: 10,
+	    		selectFirst: 1,
+	    		extraParams: 
+	    		{id: $('#purchased_send_invoice_to').val()}});
+	    		
+	    $('#purchased_send_invoice_to').result(update_shipping_address);		
+		
+		calculate_amount_due();
+	});
+	
+</script>

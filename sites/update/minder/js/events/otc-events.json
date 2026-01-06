@@ -1,0 +1,86 @@
+{
+  "source": "js/events/otc-events.json",
+  "exportName": "OtcMessageBus",
+  "events": [
+    {
+      "event" : "close-opened-dialogs-request",
+      "arguments": []
+    },
+    {
+      "event" : "capture-tool-images-request",
+      "arguments": ["tool"]
+    },
+    {
+      "event" : "reload-tool-request",
+      "arguments": []
+    },
+    {
+      "event" : "description-barcode",
+      "arguments": ["descriptionLabel"]
+    },
+    {
+      "event" : "cost-center-barcode",
+      "arguments": ["costCenterId"]
+    },
+    {
+      "event" : "issue-qty-barcode",
+      "arguments": ["issueQty"]
+    },
+    {
+      "event" : "consumable-barcode",
+      "arguments": ["consumableId"]
+    },
+    {
+      "event" : "tool-barcode",
+      "arguments": ["toolId"]
+    },
+    {
+      "event" : "tool-alt-barcode",
+      "arguments": ["toolAltBarcode"]
+    },
+    {
+      "event" : "borrower-barcode",
+      "arguments": ["borrowerId"]
+    },
+    {
+      "event" : "location-barcode",
+      "arguments": ["locationId"]
+    },
+    {
+      "event" : "log-request",
+      "arguments": ["message"]
+    },
+    {
+      "event" : "switch-to-issues-request",
+      "arguments": []
+    },
+    {
+      "event" : "switch-to-returns-request",
+      "arguments": []
+    },
+    {
+      "event" : "switch-to-audit-request",
+      "arguments": []
+    },
+    {
+      "event" : "query-borrower-request",
+      "arguments": ["borrowerId"]
+    },
+    {
+      "event" : "query-location-request",
+      "arguments": ["location"]
+    },
+    {
+      "event" : "query-cost-center-request",
+      "arguments": ["costCenter"]
+    },
+    {
+      "event" : "query-tool-request",
+      "arguments": ["toolId"]
+    },
+    {
+      "event" : "query-legacy-tool-code-request",
+      "arguments": ["toolCode"]
+    }
+  ]
+}

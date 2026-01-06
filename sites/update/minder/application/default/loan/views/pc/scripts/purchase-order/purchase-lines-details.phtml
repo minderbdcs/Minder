@@ -1,0 +1,209 @@
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'index'), null, true); ?>" method="post" id="lines_form_details">
+<?php echo $this->formHidden('from', 'purchase-lines-details') ?>  
+    <div>
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">LINE DETAILS:</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                        $this->navigation['show_by'],
+                                        array('onchange' => 'this.form.submit()'),
+                                        array(5  => 5,
+                                              10 => 10,
+                                              15 => 15,
+                                              20 => 20,
+                                              30 => 30,
+                                              40 => 40,
+                                              50 => 50,
+                                              100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'this.form.submit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span class="purchase_lines_details_selected"><?php echo $this->totalSelectedDetailLines; ?></span></li>
+    </ul>
+    <table id="lines_details" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_detail_lines',
+                                               '',
+                                               array('onclick' => 'selectAllDetailsLines(this)', 'checked' => $this->allDetailsCheck)) ;?>
+           </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+
+<?php
+        foreach ($this->purcahseLineDetailsList as $line) { ?>
+        <tr>
+            <th><?php 
+                echo $this->formCheckbox($line['RECORD_ID'], $line['RECORD_ID'], array('checked' => array_key_exists($line['RECORD_ID'], $this->conditions) ? 'checked' : '', 'class' => 'line-selector', 'onclick' => 'showSelectedDetailsLines(this)')) ?></th>
+<?php     foreach ($this->headers as $key => $val) { ?>
+            <td><a href="" onclick="return loadEditLineDetailForm('<?php echo $line['RECORD_ID']; ?>');"><?php echo $this->escape($line[$key]) ?></a></td>
+
+<?php     } ?>
+        </tr>
+<?php }  ?>
+<?php if (!count($this->purcahseLineDetailsList)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $v) : ?>
+            <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" id="lines-info" width="100%">
+        <tr>
+            <td>Total <span id="total_details_lines"><?php echo $this->numRecords; ?></span> <?php echo ($this->numRecords > 1 ? ' records' : ' record') ?></td>
+            <td>Show from <?php echo ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1) . ' to ' . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td width="80%">&nbsp;</td>
+        </tr>
+    </table>
+     <ul class="toolbar" style="margin-top: 3px;" id="edit_field_buttons">
+        <li>
+            <input type="button" class="order-button" name="action" id="returned" value="ADD DETAIL" onclick="return loadNewLineDetailForm();" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="action" id="return_all" value="DELETE" onclick="return deleteDetailLines(this);" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: csv" value="REPORT: CSV" onclick="frmSubmitPurchaseLinesDetails(this)" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: xls" value="REPORT: XLS" onclick="frmSubmitPurchaseLinesDetails(this)" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="create_issns" value="CREATE ISSNs" onclick="return frmSubmitPurchaseLinesDetails(this);" />
+        </li>
+    </ul>
+</form>
+<br />
+
+<div id="detail_line_form" stle="display: none;"></div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    
+    $("#lines_details").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+    
+});
+
+
+function frmSubmitPurchaseLinesDetails(target){
+    
+    var method      = $(target).val();  
+    var oldAction   = $('#lines_form_details').attr('action');
+    var action      = $('#lines_form_details').attr('action') + '/purchase-lines-details';
+  
+                      $('#lines_form_details').append('<input type="hidden" name="action" value="' + method + '" />');
+                      $('#lines_form_details').attr('action', action).submit();
+                      $('#lines_form_details').remove($('input[name=action]'));
+                      $('#lines_form_details').attr('action', oldAction);
+    return false;
+                    
+}
+
+function loadEditLineDetailForm(objectNo){
+    
+    $('#detail_line_form').load('<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'edit-line-detail'), null, true); ?>', {
+        object_no:  objectNo  
+    }, function(){
+         $('#detail_line_form').show();
+         
+    });
+    
+    return false;
+        
+}
+
+function loadNewLineDetailForm(){
+    
+    $('#detail_line_form').load('<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'new-line-detail'), null, true); ?>', null, function(){
+         $('#detail_line_form').show();
+    });
+    
+    return false;    
+}
+
+function cancelAddEditAction(){
+   
+    $('#detail_line_form').hide();
+    
+    return false;    
+}
+
+function selectAllDetailsLines(target){
+    
+    $.getJSON('<?php echo $this->url(array('action' => 'detail-lines-selected', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     'select_all'
+    }, function(json){
+        checkAllDetailsBoxes();
+        showDetailLinesAndShowSelectedDetailLines(json);    
+    });
+        
+}
+
+function showSelectedDetailsLines(target){
+    
+    $.getJSON('<?php echo $this->url(array('action' => 'detail-lines-selected', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     target.value, 
+        value:  target.value
+    }, function(json){
+        showDetailLinesAndShowSelectedDetailLines(json);
+    });
+}
+
+function showDetailLinesAndShowSelectedDetailLines(json){
+    
+    var totalDetailLines         =  json.total_details_lines;
+    var totalSelectedDetailLines =  json.total_selected_details_lines;
+    
+    if(totalDetailLines == totalSelectedDetailLines){
+        $('#select_all_detail_lines').attr('checked', 'checked');    
+    } else {
+        $('#select_all_detail_lines').attr('checked', false);    
+    }
+    
+    $('.purchase_lines_details_selected').text(totalSelectedDetailLines);
+}
+
+function checkAllDetailsBoxes(){
+   
+    var chk         = $("#lines_details input:checkbox");
+    var checkOnOff  = $('#select_all_detail_lines').attr('checked');
+    
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+}
+
+function deleteDetailLines(target){
+    
+    var totalSelected   =   parseInt($('.purchase_lines_details_selected').text());
+    
+    if(totalSelected > 0){
+        var result          = confirm('Do you wnat to Delete PURCHASE_ORDER_DETAIL_LINE - Yes/No?');
+    
+        if(result){
+            frmSubmitPurchaseLinesDetails(target);    
+        }    
+    }
+    
+    return false;    
+}
+ 
+
+</script>

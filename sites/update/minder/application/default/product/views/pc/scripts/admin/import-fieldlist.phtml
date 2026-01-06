@@ -1,0 +1,88 @@
+    <ul class="toolbar">
+        <li>
+            <label for="moveinall">Unused fields <b><span id="leftside"><?php echo count($this->data); ?></span></b></label>
+            <input id="moveinall" type="submit" value="&gt;&gt;" onclick="return moveinall();">
+        </li>
+        <li>
+            <label for="moveoutall">Used fields <b><span id="rightside">0</span></b></label>
+            <input id="moveoutall" type="submit" value="&lt;&lt;" onclick="return moveoutall();">
+        </li>
+    </ul>
+<div id="listcontainer">
+    <div id="sourcelist">
+        <ul class="fields">
+<?php
+foreach ($this->data as $key => $val) {
+    echo '<li><input type="text" readonly  name="' . $this->escape($key) . '" value="'  . $this->escape($val) . '"></li>';
+}
+?>
+        </ul>
+    </div>
+    <div id="importlist">
+        <form enctype="multipart/form-data">
+        <ul class="fields">
+        </ul>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+var leftSide = <?php echo count($this->data); ?>;
+var rightSide = 0;
+$().ready(function () {
+    $('#sourcelist .fields li').bind("click", movein);
+    updateCounter();
+    //$.each($('#sourcelist .fields li'), function(){$(this).click(movein);});
+});
+function movein() {
+    var element = $(this).clone();
+    $(this).remove();
+    $(element).click(moveout);
+    $('#importlist .fields').append(element);
+    leftSide--;
+    rightSide++;
+    updateCounter();
+    //$.each($('#importlist .fields li'), function(){alert($(this).click(moveout).html());});
+}
+function moveout() {
+    var element = $(this).clone();
+    $(this).remove();
+    $(element).click(movein);
+    $('#sourcelist .fields').append(element);
+    leftSide++;
+    rightSide--;
+    updateCounter();
+    //$.each($('#sourcelist .fields li'), function(){$(this).click(movein).html());});
+}
+
+function moveoutall() {
+    var element = $('#importlist .fields').html();
+    $('#importlist .fields').empty();
+    $('#sourcelist .fields').append(element);
+    $.each($('#sourcelist .fields li'), function(){$(this).click(movein);});
+    leftSide += rightSide;
+    rightSide = 0 ;
+    updateCounter();
+    return false;
+}
+
+function moveinall() {
+    var element = $('#sourcelist .fields').html();
+    $('#sourcelist .fields').empty();
+    $('#importlist .fields').append(element);
+    $.each($('#importlist .fields li'), function(){$(this).click(moveout);});
+    rightSide += leftSide;
+    leftSide = 0 ;
+    updateCounter();
+    return false;
+}
+
+function updateCounter() {
+    $('#leftside').text(leftSide);
+    $('#rightside').text(rightSide);
+    if (rightSide == 0) {
+        $('#action').addClass('disabled')[0].disabled = true;
+    } else {
+        $('#action').removeClass('disabled')[0].disabled = false;
+    }
+}
+</script>

@@ -1,0 +1,112 @@
+<?php echo $this->render('header.phtml') ?>
+<h2><?php echo $this->pageTitle; ?></h2>
+
+<?php echo $this->messenger()->all() ?>
+<form method="post" id="po_lines_form" action="<?php echo $this->url() ?>/?fmt=12-inch">
+
+<div id="info_bar" class="with_border">
+    <ul>
+        <li>Purchase Order: <?php echo $this->purchaseOrderId ? $this->escape($this->purchaseOrderId) : '&mdash;' ?></li>
+        <li>Inwards Consignment No: <?php echo $this->consignmentNo ? $this->escape($this->consignmentNo) : '&mdash;' ?></li>
+    </ul>
+</div>
+
+<div class="with_border" style="border-top: none;">
+    <span style="text-transform: uppercase; font-weight: bold;">Lines List</span>
+    <?php echo $this->formLabel('show_by', 'View by:') ?>
+    <?php echo $this->formSelect('show_by', $this->navigation['show_by'], array('onchange' => 'frmSubmit()'), array(5  => 5, 10 => 10, 15 => 15, 20 => 20, 30 => 30, 40 => 40, 50 => 50, 100 => 100)) ?>
+    <?php echo $this->formLabel('pageselector', 'Page:') ?>
+    <?php echo $this->formSelect('pageselector', $this->navigation['pageselector'], array('onchange' => 'frmSubmit()'), $this->pages); ?>
+</div>
+
+<table id="po_lines" class="withborder tablesorter">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_po_lines" onclick="selectAll(this)" /></th>
+<?php foreach ($this->purchaseOrderLineHeaders as $header) { ?>
+            <th><?php echo $this->escape($header) ?></th>
+<?php } ?>
+        </tr>
+    </thead>
+    <tbody>
+<?php foreach ($this->purchaseOrderLines as $line) { ?>
+        <tr>
+            <th><?php
+                if ($line['PO_LINE_STATUS'] <> 'CL') {
+                    echo $this->formCheckbox($line['PO_LINE'], $line['PO_LINE'], array('onclick' => 'showSelected(this)', 'class' => 'po_line_selector'));
+                }
+            ?></th>
+<?php     foreach ($this->purchaseOrderLineHeaders as $key => $val) { ?>
+            <td>
+            <?php
+                if ($line['PO_LINE_STATUS'] <> 'CL') {
+            ?>
+                <a href="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'receive', 'action' => 'grn-details', 'po_line' => $line['PO_LINE']), null, true) ?>/?fmt=12-inch"><?php echo $this->escape($line[$key]) ?></a>
+            <?php } else { ?>
+            <?php echo $this->escape($line[$key]) ?>
+            <?php } ?>
+                </td>
+
+<?php     } ?>
+        </tr>
+<?php } ?>
+<?php if (!count($this->purchaseOrderLines)) { ?>
+        <tr>
+            <th/>
+<?php     foreach ($this->purchaseOrderLineHeaders as $k => $v) { ?>
+            <td/>
+<?php     } ?>
+        </tr>
+<?php } ?>
+    </tbody>
+</table>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+        </ul>
+
+<div id="action_buttons">
+<?php echo $this->formSubmit('do_action', 'Previous', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?>
+</div>
+
+</form>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#po_lines').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,1],[2,0]], widgets: ['zebra']});
+});
+
+function frmSubmit() {
+    $('#po_lines_form')[0].submit();
+    return true;
+}
+
+function showSelected(target) {
+    $('#select_all_po_lines')[0].checked = checkSelected('#po_lines', '.po_line_selector');
+
+    $(target.form).append('<input type="hidden" name="po_line" value="' + target.value + '" /><input type="hidden" name="state" value="' + target.checked + '" />');
+    // Select the first link in the current tr.
+    var link = $(target).parent().next().find('a');
+    if (link.length) {
+        target.form.action = link.get(0).href;
+    }
+    frmSubmit();
+}
+
+function selectAll(target) {
+
+}
+
+function checkSelected(tableId, checkBoxesClass) {
+    var checkBoxes = $(tableId).find(checkBoxesClass);
+    return checkBoxes.length == checkBoxes.filter(':checked').length;
+}
+</script>
+
+<?php echo $this->render('footer.phtml') ?>

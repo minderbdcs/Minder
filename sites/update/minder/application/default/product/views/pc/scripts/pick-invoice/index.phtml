@@ -1,0 +1,294 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all();?>
+
+<h2 title="<?php echo $this->invoiceSysScreenName;?>"><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+    /**
+     * @var Minder_View_Helper_SysScreenSearchResult $resultsForm
+     */
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+?>
+
+<?php 
+    echo $this->sysScreenSearchForm(array('name' => 'pick_invoice_search_form'), $this->searchFields, $this->searchActions);
+?>
+
+<div id="PICK_INVOICE_LIST_CONTAINER">
+<form name="pick_invoice_results_form" id="pick_invoice_results_form" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="invoice_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+            <div class="sys-screen-title" title="<?php echo $this->invoiceSysScreenName;?>">Invoices List<stpan class="modification_flag <?php echo $this->invoiceSelNamespace;?>"></span></div>
+            <div class="paginator-container">
+                <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalCount == $this->selectedCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->invoiceSelNamespace));?>
+                <label for="results_per_page">View By:</label>
+                <?php echo $this->formSelect('show_by', 
+                                                $this->navigation['show_by'],
+                                                array(),
+                                                array(5  => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                      100 => 100)) ?>
+                <label for="page">Page:</label>
+                <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+            </div>
+             
+            <ul class="black-top-border" style="clear: both;">
+                <li style="display: inline;">Selected: <span id="prods_selected" class="selected_count <?php echo $this->invoiceSelNamespace;?>"><?php echo $this->selectedCount;?></span></li>
+            </ul>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter invoice_details" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('select_all_checked' => (count($this->invoices) == count($this->selectedInvoices)), 'selection_namespace' => $this->invoiceSelNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->invoiceSelNamespace), $this->invoices, $this->selectedInvoices);?>
+                        </thead>
+                    </table>
+                <!-- tab content ends -->
+
+                <!-- totals info start -->
+                <table class="withborder" width="100%">
+                    <tr>
+                        <td>Total <span class="total_count <?php echo $this->invoiceSelNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                    </tr>
+                </table>
+                <!-- totals info end -->
+           </div>    
+        <?php }?>
+
+        <div style="clear: both; padding-left: 10px;">
+            <?php
+                if (empty($this->buttons))
+                    echo $this->render('pick-invoice/legacy/pick-invoice-buttons.phtml');
+                else
+                    echo $resultsForm->renderButtons($this->buttons);
+            ?>
+        </div>
+    </div>
+    <!-- tabs container end -->
+</form>
+<script type="text/javascript">
+    <?php echo $resultsForm->renderButtonActions($this->buttons);?>
+</script>
+
+<!-- SYS_SCREEN_ACTIONs starts-->
+<?php echo $resultsForm->renderActions();?>
+<!-- SYS_SCREEN_ACTIONs ends-->
+</div>
+
+<div style="clear: right;"></div>
+
+<div id="PICK_INVOICE_LINES_CONTAINER"></div>
+
+<div style="clear: both;"></div>
+
+<div id="EDIT_FORM_CONTAINER"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#PICK_INVOICE_LIST_CONTAINER #invoice_tabs > ul').tabs();
+        $('#PICK_INVOICE_LIST_CONTAINER #pageselector, #PICK_INVOICE_LIST_CONTAINER #show_by').change(function(){
+            $('#pick_invoice_results_form').submit();
+        });
+        $('.invoice_details').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('#PICK_INVOICE_LIST_CONTAINER .row_selector.<?php echo $this->invoiceSelNamespace;?>, #PICK_INVOICE_LIST_CONTAINER .select_all_rows.<?php echo $this->invoiceSelNamespace;?>, #PICK_INVOICE_LIST_CONTAINER .select_complete.<?php echo $this->invoiceSelNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('action' => 'select-row'));?>',
+            {
+                'scopeSelector'       : '#PICK_INVOICE_LIST_CONTAINER',
+                'selectionNamespace'  : '<?php echo $this->invoiceSelNamespace?>',
+                'selectionAction'     : 'select-row',
+                'selectionController' : 'pick-invoice'
+            },
+            {
+                'onSuccess' : getLines
+            }
+        );
+        
+        $('.invoice_details').minderEditResults(
+            '<?php echo $this->url(array('action' => 'save-invoice-changes', 'controller' => 'pick-invoice', 'module' => 'default'), null, true);?>',
+            {
+                'saveButtonSelector'       : '#invoice_tabs #save_btn',
+                'cancelButtonSelector'     : '#invoice_tabs #cancel_btn',
+                'modificationFlagSelector' : '#invoice_tabs .modification_flag',
+                'namespace'                : '<?php echo $this->invoiceSelNamespace?>',
+                'tabDatasetSelector'       : '.data_set'
+            },
+            {
+                'onSuccess'  : function(response) {
+                    if (response.messages && response.messages.length > 0)
+                        showMessage(response.messages);
+                    
+                    if (response.warnings && response.warnings.length > 0)
+                        showWarnings(response.warnings);
+
+                    location.href='<?php echo $this->url(array('action' => 'index'));?>';
+                }
+            }
+        );        
+        
+        $('#order_report_csv_btn, #order_report_xls_btn').click(function(evt){
+            evt.preventDefault();
+            makeReport($(this).val(), '<?php echo $this->invoiceSelNamespace;?>');
+        });
+        
+        $('#hold_btn').click(onHoldBtnClick);
+        $('#print_invoice_btn').click(onPrintInvoiceBtnClick);
+
+        $.minderInvoiceReport({
+            "printServiceUrl": '<?php echo $this->url(array('module' => 'default', 'controller' => 'pick-invoice', 'action' => 'print-invoice-report'));?>',
+            'viewServiceUrl': '<?php echo $this->url(array('module' => 'default', 'controller' => 'pick-invoice', 'action' => 'show-invoice'));?>',
+            'namespaceMap' : {
+                '<?php echo $this->invoiceSelNamespace;?>': '<?php echo $this->invoiceSelNamespace;?>'
+            },
+            'runInvoiceReportCallback': onPrintInvoiceBtnClickCallback
+        });
+
+
+        <?php if ($this->minder->isAdmin) {?>
+            $('#PICK_INVOICE_LIST_CONTAINER .invoice_details .data_set tr').dblclick(function(evt){
+                evt.preventDefault();
+                
+                $('#EDIT_FORM_CONTAINER').html('').load(
+                    '<?php echo $this->url(array('action' => 'get-edit-form', 'controller' => 'pick-invoice'), null, true)?>',
+                    {
+                        row_id     : $(this).attr('row_id'),
+                        model_name : '<?php echo $this->invoiceSelNamespace;?>'
+                    }
+                );
+            });
+        <?php }?>
+        getLines();
+    });
+
+    function onPrintInvoiceBtnClick(evt) {
+        evt.preventDefault();
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'print-invoice'));?>',
+            {},
+            onPrintInvoiceBtnClickCallback
+        );
+    }
+
+    function onPrintInvoiceBtnClickCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.savedInvoices && response.savedInvoices.length) {
+            $.each(response.savedInvoices, function(index, savedInvoices) {
+                window.open('<?php echo $this->url(array('action' => 'show-invoice', 'controller' => 'pick-order2', 'module' => 'default'), null, true);?>' + '/pickOrder/' + savedInvoices.pickOrder + '/uniqNo/' + savedInvoices.uniqNo + '/year/' + savedInvoices.year + '/month/' + savedInvoices.month);
+            });
+        }
+    }
+
+    function holdInvoice() {
+        if (getSelectedInvoicesCount() < 1) {
+            showWarnings(['No row selected. Please, select one.']);
+            return;
+        }
+
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'hold-invoice'));?>',
+            {},
+            holdInvoiceCallback
+        );
+    }
+
+    function onHoldBtnClick(evt) {
+        evt.preventDefault();
+        holdInvoice();
+    }
+    
+    function holdInvoiceCallback(response) {
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+            
+        if (response.invoiceHelded)
+            location.href='<?php echo $this->url(array('action' => 'index'));?>';
+    }
+
+    function getSelectedInvoicesCount() {
+        var result = parseInt($('.selected_count.<?php echo $this->invoiceSelNamespace?>').html());
+        return isNaN(result) ? 0 : result;
+    }
+    
+    function getLines() {
+        var data = {};
+        var showBy = parseInt($('#PICK_INVOICE_LINES_CONTAINER #show_by').val());
+        var pageselector = parseInt($('#PICK_INVOICE_LINES_CONTAINER #pageselector').val());
+        if (!(isNaN(showBy) || showBy === 0)) {
+            data.show_by = showBy;
+        }
+        
+        if (!isNaN(pageselector)) {
+            data.pageselector = pageselector;
+        }
+        
+        $('#EDIT_FORM_CONTAINER').html('');
+        $('#PICK_INVOICE_LINES_CONTAINER').html('');
+        $('#PICK_INVOICE_LINES_CONTAINER').load(
+            '<?php echo $this->url(array('controller' => 'pick-invoice', 'action' => 'get-lines'), null, true); ?>',
+            data
+        );
+
+        if (getSelectedInvoicesCount() < 1) {
+            $('#print_invoice_btn').attr('disabled', 'disabled');
+        } else {
+            $('#print_invoice_btn').removeAttr('disabled');
+        }
+    }
+
+    function makeReport(format, sysScreen) {
+        location.href = '<?php echo $this->url(
+            array(
+                'module' => $this->reportModule,
+                'controller' => $this->reportController,
+                'action' => $this->reportAction,
+                'selection_action' => 'select-row',
+                'selection_controller' => 'pick-invoice'
+            ),
+            null,
+            true
+        );?>' + '/report_format/' + escape(format) + '/selection_namespace/' + escape(sysScreen);
+    }
+
+    function saveChanges(sysScreen) {
+        var $_invoiceDetails = $('.invoice_details');
+        if ($_invoiceDetails.minderEditResults('isModified'))
+            $_invoiceDetails.minderEditResults('save');
+    }
+
+    function cancelChanges(sysScreen) {
+        $('.invoice_details').minderEditResults('cancel');
+    }
+
+    function runInvoiceReport(reportType, sysScreen, paramsMap, displayReports) {
+        $.minderInvoiceReport('runReport', reportType, sysScreen, paramsMap, displayReports);
+    }
+</script>
+<?php echo $this->render('footer.phtml');

@@ -1,0 +1,322 @@
+<div id="count-container">
+    <h2>COUNT LOCATION</h2>
+    <ul class="toolbar">
+        <li>
+            <label for="cl_st_wh_id">Warehouse: </label>
+
+            <?php echo $this->formSelect('cl_st_wh_id', '', array(), $this->warehouseList);?>
+        </li>
+        <li>
+            <label for="cl_st_locn_id">Location ID: </label>
+            <input class="ac_input" autocomplete="off" name="cl_st_locn_id" id="cl_st_locn_id" value="" type="text">
+        </li>
+    </ul>
+    <ul class="toolbar">
+        <li>
+            <button name="freezeLocation" type="button" class="green-button">FREEZE LOCATION</button>
+        </li>
+        <li>
+            <button name="releaseLocation" type="button" class="green-button">RELEASE LOCATION</button>
+        </li>
+    </ul>
+</div>
+
+<div id="count-issn-container" class="hidden" style="display: none;">
+    <?php echo $this->formHidden('recountFlag', 0); ?>
+    <h2>COUNT ISSN's = <span class="issns-in-location">0</span></h2>
+    <table>
+        <tbody>
+        <tr>
+            <td>
+                <table>
+                    <tbody>
+                    <tr>
+                        <th><?php echo $this->formLabel('ci_st_ssn_id', 'ISSN: '); ?></th>
+                        <td><?php echo $this->formText('ci_st_ssn_id', '', array()); ?></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tbody>
+                    <tr>
+                        <th><?php echo $this->formLabel('ci_count', 'COUNT: '); ?></th>
+                        <td><?php echo $this->formText('ci_count', $this->stCount, array()); ?></td>
+                    </tr>
+                    <tr id="recount-container" class="hidden" style="display: none;">
+                        <th><?php echo $this->formLabel('ci_recount', 'RECOUNT: '); ?></th>
+                        <td><?php echo $this->formText('ci_recount', $this->stCount, array()); ?></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <h3>Location Total ISSN's <span class="issns-in-location">0</span>. Counted: <span class="issns-counted">0</span></h3>
+    <ul class="toolbar">
+        <li>
+            <button name="saveCount" type="button" class="green-button">SAVE COUNT</button>
+        </li>
+        <li>
+            <button name="exitCount" type="button" class="green-button">EXIT COUNT</button>
+        </li>
+    </ul>
+</div>
+
+<script type="text/javascript">
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function initAutocomplete(wharehouse) {
+    $('#cl_st_locn_id').unautocomplete().autocomplete(
+        '<?php echo $this->url(array('action' => 'lookup'));?>',
+        {
+            matchSubset: 1,
+            matchContains: 1,
+            cacheLength: 50,
+            formatItem: formatItemWithDesc,
+            selectFirst: 1,
+            extraParams: {field: 'cl_st_locn_id', wh_id: wharehouse}
+        }
+    );
+}
+
+function onWhChange(evt) {
+    initAutocomplete($(evt.target).val());
+}
+
+function freezeLocation()
+{
+    var flag = true;
+    var locn = $('#cl_st_locn_id')[0].value;
+    var wh = $('#cl_st_wh_id')[0].value;
+    var msg = [];
+
+    if (locn == '') {
+        msg.push('Empty Location.');
+        flag = false;
+    }
+
+    if (wh == '') {
+        msg.push('Empty Warehouse.');
+        flag = false;
+    }
+
+    if (flag) {
+        $('#count-container').block($('<?php echo $this->SysScreenWaitPrompt('Freezing...');?>'));
+
+        $.getJSON('<?php echo $this->url(array('action' => 'freeze-location'));?>',
+            {'locn_id': locn, 'wh_id' : wh},
+            freezeLoacationCallback
+        );
+    } else {
+        showErrors(['Can\'t freeze: ' + msg.join(' ')], getMessageContainer(Const.ERRORS));
+    }
+}
+
+function freezeLoacationCallback(response) {
+    $('#count-container').unblock();
+
+    if (response.messages && response.messages.length) {
+        showMessage(response.messages, getMessageContainer(Const.MESSAGES));
+    }
+
+    if (response.warnings && response.warnings.length) {
+        showWarnings(response.warnings, getMessageContainer(Const.WARNINGS));
+    }
+
+    if (response.errors && response.errors.length) {
+        showErrors(response.errors,getMessageContainer(Const.ERRORS));
+    }
+
+    if (response.status) {
+        $('#count-container').hide();
+        $('#recount').hide();
+        $('#count-issn-container').show();
+        $('.issns-in-location').text(response.issnsInLocation);
+        $('#count-container').trigger('location-freezed');
+    }
+}
+
+function releaseLocationDirect() {
+    var flag = true;
+    var locn = $('#cl_st_locn_id')[0].value;
+    var wh = $('#cl_st_wh_id')[0].value;
+    var msg = [];
+
+    if (getIssnsInLocation() > 0 && getIssnsInLocation() != getCountedIssns()) {
+        if (!confirm('Finished location?')) {
+            return;
+        }
+    }
+
+    if (locn == '') {
+        msg.push('Empty Location.');
+        flag = false;
+    }
+
+    if (wh == '') {
+        msg.push('Empty Warehouse.');
+        flag = false;
+    }
+
+    if (flag) {
+        $('#count-container').block($('<?php echo $this->SysScreenWaitPrompt('Releasing...');?>'));
+
+        $.getJSON('<?php echo $this->url(array('action' => 'release-location-direct'));?>',
+            {'locn_id': locn, 'wh_id' : wh},
+            releaseLocationCallback
+        );
+    } else {
+        showErrors(["Can't release location: " + msg.join(' ')],  getMessageContainer(Const.ERRORS));
+    }
+}
+
+function releaseLocationCallback(response) {
+    $('#count-container').unblock();
+
+    if (response.messages && response.messages.length) {
+        showMessage(response.messages, getMessageContainer(Const.MESSAGES));
+    }
+
+    if (response.warnings && response.warnings.length) {
+        showWarnings(response.warnings,  getMessageContainer(Const.WARNINGS));
+    }
+
+    if (response.errors && response.errors.length) {
+        showErrors(response.errors,  getMessageContainer(Const.ERRORS));
+    }
+
+    if (response.success) {
+        $('#cl_st_locn_id').val('');
+        $('#cl_st_wh_id').val('');
+
+        $('.issns-in-location, .issns-counted').text('0');
+
+        $('#count-container').trigger('location-released');
+    }
+}
+
+function exitCount() {
+    $('#count-container').show();
+    $('#count-issn-container').hide();
+}
+
+function saveCount() {
+    var
+        request = {
+            ssnId       : $('#ci_st_ssn_id').val(),
+            count       : parseInt($('#ci_count').val()),
+            reCount     : parseInt($('#ci_recount').val()),
+            recountFlag : parseInt($('#recountFlag').val()),
+            whId        : $('#cl_st_wh_id').val(),
+            locnId      : $('#cl_st_locn_id').val()
+        },
+        errors = [];
+
+
+    if (request.whId == '') {
+        errors.push('Empty Warehouse.');
+    }
+
+    if (request.locnId == '') {
+        errors.push('Empty Location.');
+    }
+
+    if (request.ssnId == '') {
+        errors.push('Empty ISSN.');
+    }
+
+    if (isNaN(request.count)) {
+        errors.push('Empty COUNT.');
+    }
+
+    if (request.recountFlag && isNaN(request.reCount)) {
+        errors.push('Empty RECOUNT.');
+    }
+
+    if (errors.length) {
+        showErrors(errors,  getMessageContainer(Const.ERRORS));
+    } else {
+        $('#count-issn-container').block($('<?php echo $this->SysScreenWaitPrompt('Saving...');?>'));
+
+        $.getJSON('<?php echo $this->url(array('action' => 'save-count'));?>',
+            request,
+            saveCountCallback
+        );
+    }
+}
+
+function getCountedIssns() {
+    var
+        result = parseInt($('.issns-counted').text());
+
+    return isNaN(result) ? 0 : result;
+}
+
+function getIssnsInLocation() {
+    var
+        result = $('.issns-in-location').text();
+
+    return isNaN(result) ? 0 : result;
+}
+
+function saveCountCallback(response) {
+    $('#count-issn-container').unblock();
+
+    if (response.messages && response.messages.length) {
+        showMessage(response.messages,  getMessageContainer(Const.MESSAGES));
+    }
+
+    if (response.warnings && response.warnings.length) {
+        showWarnings(response.warnings, getMessageContainer(Const.WARNINGS));
+    }
+
+    if (response.errors && response.errors.length) {
+        showErrors(response.errors,getMessageContainer(Const.ERRORS));
+    }
+
+    if (response.success) {
+        if (response.mustRecount) {
+            $('#recount-container').show();
+            $('#recountFlag').val('1');
+        } else {
+            $('#recount-container').hide();
+            $('#recountFlag').val('0');
+            $('#ci_st_ssn_id').focus().val('');
+            $('#ci_count').val('');
+            $('#ci_recount').val('');
+            $('.issns-counted').text(getCountedIssns() + parseInt(response.counted));
+
+            $('#count-container').trigger('stocktake-updated');
+        }
+    }
+}
+
+
+function getMessageContainer(messageType) {
+    var
+        container = $('#count-container').parent().find('ul.' + messageType);
+
+    if (container.length < 1) {
+        container = $('<ul class="' + messageType + '"></ul>');
+        $('#count-container').parent().prepend(container);
+    }
+
+    return container;
+}
+
+$(function() {
+    $('#cl_st_wh_id').change(onWhChange);
+    initAutocomplete($('#cl_st_wh_id').val());
+    $('#count-container button[name="freezeLocation"]').click(freezeLocation);
+    $('#count-container button[name="releaseLocation"]').click(releaseLocationDirect);
+    $('#count-issn-container button[name="exitCount"]').click(exitCount);
+    $('#count-issn-container button[name="saveCount"]').click(saveCount);
+});
+
+</script>

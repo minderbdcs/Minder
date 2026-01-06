@@ -1,0 +1,13 @@
+<phpunit
+        bootstrap="acceptance/bootstrap.php"
+        verbose="true"
+        >
+    <testsuites>
+        <testsuite name="Full_Acceptance_Tests">
+            <directory>acceptance</directory>
+        </testsuite>
+        <testsuite name="awaiting_checking">
+            <directory>acceptance/AwaitingChecking</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

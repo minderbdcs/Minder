@@ -1,0 +1,175 @@
+<div id="list_loans_dialog" class="flora otc-list_loans_dialog" title="List loans" style="display: none;">&nbsp;</div>
+
+<script type="text/javascript">
+    $(function(){
+        var
+            $dialog = $('#list_loans_dialog'),
+            width = $dialog.css('width'),
+            height = $dialog.css('height');
+
+        $dialog.css('width', 'auto');
+        $dialog.css('height', 'auto');
+
+        $dialog.dialog({
+            buttons:       {CLOSE: closeLoans},
+            width: width,
+            height: height,
+            autoOpen:      false,
+            position:      [0, 65],
+            buttonStyle:   'otc-dialog-button'
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();
+            $('#barcode').focus();
+            $dialog.attr('active', true);
+        }).bind('dialogclose', function() {
+            $('#barcode').focus();
+            $dialog.removeAttr('active');
+            $dialog.removeAttr('issues-returns-active');
+            $dialog.removeAttr('returns-active');
+        });
+
+        $dialog.delegate('.page-no, .show-by', 'change', function(){
+            listLoans({'pageselector': getLoansPage(), 'show_by': getLoansShowBy()});
+        }).delegate('input[name="cancel"]', 'click', function(evt) {
+            evt.preventDefault();
+            closeLoans();
+        }).delegate('input[name="report"]', 'click', function(evt) {
+            evt.preventDefault();
+            exportLoans($(this).val());
+        }).delegate('input[type="checkbox"]', 'click', function(evt) {
+            var
+                $this = $(evt.target);
+            selectLoansRow($this.val(), $this.attr('checked'));
+        });
+        $dialog.parents('.ui-resizable').bind('resizestop', function(){
+            resizeGetLoansContent();
+        });
+    });
+
+    function resizeGetLoansContent() {
+        resizeDialogContent($('#list_loans_dialog'));
+    }
+
+    function getLoansSettings() {
+        window.loanSettings = window.loanSettings || {
+            dataUrl: '/minder/otc/list-loans-returns',
+            exportUrl: '/minder/otc/loans-export',
+            markUrl: '/minder/otc/list-loans-returns-mark'
+        };
+
+        return  window.loanSettings
+    }
+
+    function listIssuesReturns() {
+        $("#list_loans_dialog").attr('issues-returns-active', true);
+        setLoansSource(
+            '<?php echo $this->url(array('action' => 'list-loans-returns'))?>',
+            '<?php echo $this->url(array('action' => 'export-loans-returns'))?>',
+            '<?php echo $this->url(array('action' => 'mark-loans-returns'))?>'
+        );
+        listLoans();
+    }
+
+    function listReturns() {
+        $("#list_loans_dialog").attr('returns-active', true);
+        setLoansSource(
+            '<?php echo $this->url(array('action' => 'returns-list-loans'))?>',
+            '<?php echo $this->url(array('action' => 'export-loans'))?>',
+            '<?php echo $this->url(array('action' => 'mark-loans'))?>'
+        );
+        listLoans();
+    }
+
+    function setLoansSource(url, exportUrl, markUrl) {
+        getLoansSettings().dataUrl = url;
+        getLoansSettings().exportUrl = exportUrl;
+        getLoansSettings().markUrl = markUrl;
+    }
+
+    function listLoans(navigation) {
+        $("#list_loans_dialog").load(
+            getLoansSettings().dataUrl,
+            navigation,
+            function(){
+                resizeGetLoansContent();
+                updateSelectAllLoans();
+            }
+        ).dialog("open");
+
+        return false;
+    }
+
+    function exportLoans(format) {
+        window.location = getLoansSettings().exportUrl + '/report/' + escape(format);
+    }
+
+    function closeLoans() {
+        $("#list_loans_dialog").dialog("close");
+    }
+
+    function getLoansPage() {
+        return $("#list_loans_dialog").find('.page-no').find(':selected').val();
+    }
+
+    function getLoansShowBy() {
+        return $("#list_loans_dialog").find('.show-by').find(':selected').val();
+    }
+
+    function selectLoansRow(rowId, select) {
+
+        if (rowId == 'select_all') {
+            selectAllLoans(select);
+        } else {
+            updateSelectAllLoans();
+        }
+
+        $.get(
+            getLoansSettings().markUrl,
+            {
+                'rowId': rowId,
+                'select': select
+            },
+            function(response) {
+                $('#list_loans_dialog').find('.rows_selected').text(response.selectedRows);
+            },
+            'json'
+        )
+    }
+
+    function updateSelectAllLoans() {
+        var
+            $dialog = $('#list_loans_dialog'),
+            $rows = $dialog.find('tbody').find('tr'),
+            $selected = $rows.find('input[type="checkbox"]:checked');
+
+        if ($rows.length > 0 && $rows.length == $selected.length) {
+            $dialog.find('.select_all_rows').attr('checked', true);
+        } else {
+            $dialog.find('.select_all_rows').removeAttr('checked');
+        }
+    }
+
+    function selectAllLoans(select) {
+        var
+            $rowSelectors = $('#list_loans_dialog').find('tbody').find('tr').find('input[type="checkbox"]');
+
+        if (select) {
+            $rowSelectors.attr('checked', true);
+        } else {
+            $rowSelectors.removeAttr('checked');
+        }
+
+    }
+
+    function isListLoansActive() {
+        return !!$('#list_loans_dialog').attr('active');
+    }
+
+    function isIssuesReturnsActive() {
+        return !!$('#list_loans_dialog').attr('issues-returns-active');
+    }
+
+    function isReturnsActive() {
+        return !!$('#list_loans_dialog').attr('returns-active');
+    }
+</script>

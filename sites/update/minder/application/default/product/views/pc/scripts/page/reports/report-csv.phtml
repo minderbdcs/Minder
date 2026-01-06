@@ -1,0 +1,18 @@
+<?php
+if (is_array($this->data) && count($this->data) > 0) {
+    $fp = fopen("php://temp/", 'r+');
+    foreach ($this->data as $row) {
+        $line = array();
+        foreach ($this->headers as $key => $val) {
+            if ($key == '__rowId' || $key == '__selected' || $key == 'PKEY_EXPR') {
+                continue;
+            }
+
+            $line[] = $row[$key];
+        }
+        fputcsv($fp, $line, ',');
+    }
+    rewind($fp);
+    echo stream_get_contents($fp);
+    fclose($fp);
+}

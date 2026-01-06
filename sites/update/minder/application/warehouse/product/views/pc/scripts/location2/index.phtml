@@ -1,0 +1,474 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<div id="search_form_container">
+    <?php echo $this->sysScreenSearchForm2($this->searchFormSsName, array('search_fields' => $this->searchFields));?>
+</div>
+
+<div id="location_container" class="hidden">
+</div>
+
+<div id='issn_container' class="hidden">
+</div>
+
+<?php echo $this->render('location2/product-label-dialog.phtml');?>
+
+<?php
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function globalSearch_menuSelect() {
+        //disable globalSearch_menuSelect
+    }
+
+    function globalSearch() {
+        //disable globalSearch
+    }
+
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.sysScreens['<?php echo $this->locationNamespace;?>']) {
+            $('#location_container').minderSearchResult(response.sysScreens['<?php echo $this->locationNamespace;?>']);
+        }
+
+        if (response.sysScreens['<?php echo $this->issnNamespace;?>']) {
+            $('#issn_container').minderSearchResult(response.sysScreens['<?php echo $this->issnNamespace;?>']);
+        }
+
+
+        $(document).dequeue();
+    }
+    
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->locationNamespace;?>':
+                paginator = $('#location_container').minderSearchGetPaginatorState();
+                break;
+            case '<?php echo $this->issnNamespace;?>':
+                paginator = $('#issn_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#location_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#location_container > div, #issn_container > div').unblock();
+            $(this).dequeue();
+        });
+
+        if (evt.namespace == '<?php echo $this->locationNamespace;?>')
+            loadData('<?php echo $this->issnNamespace;?>');
+    }
+
+    function updateProdProfileValues(issnFirstSelectedRow) {
+        if (typeof productLabelDialogUpdateProdIdAndDescription == 'function')
+            productLabelDialogUpdateProdIdAndDescription(issnFirstSelectedRow['PROD_ID'], issnFirstSelectedRow['DESCRIPTION']);
+    }
+
+    function setSelection(namespace, sysScreen) {
+        if (namespace == '<?php echo $this->issnNamespace;?>' && sysScreen.firstSelectedRow) {
+            updateProdProfileValues(sysScreen.firstSelectedRow);
+        }
+
+        $('.selected-container.' + namespace).html(sysScreen.selectedRowsTotal);
+
+        var rowsOnPage = 0;
+
+        switch (namespace) {
+            case '<?php echo $this->locationNamespace;?>':
+                rowsOnPage = $('#location_container .data-set:first tr').length;
+                break;
+            case '<?php echo $this->issnNamespace;?>':
+                rowsOnPage = $('#issn_container .data-set:first tr').length;
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        var totalRows  = parseInt($('.total-container.' + namespace).html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == sysScreen.selectedRowsOnPage) {
+            $('.select_all_rows.' + namespace).attr('checked', true);
+        } else {
+            $('.select_all_rows.' + namespace).removeAttr('checked');
+        }
+
+        if (totalRows == sysScreen.selectedRowsTotal) {
+            $('.select_complete.' + namespace).attr('checked', true);
+        } else {
+            $('.select_complete.' + namespace).removeAttr('checked');
+        }
+
+        $('.row_selector.' + namespace).each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (sysScreen.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $.each(response.sysScreens, setSelection);
+
+        $(document).dequeue();
+    }
+
+    function loadData(namespace) {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        var containerId = '';
+
+        switch (namespace) {
+            case '<?php echo $this->locationNamespace;?>':
+                containerId = 'location_container';
+                break;
+            case '<?php echo $this->issnNamespace;?>':
+                containerId = 'issn_container';
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+        
+        dataToSend.sysScreens[namespace] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function locationTabContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->locationNamespace;?>');
+    }
+
+    function locationTabContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->locationNamespace;?>');
+    }
+
+    function locationTabContainerOnPreSort(evt) {
+    }
+
+    function locationTabContainerOnSort(evt) {
+        loadData('<?php echo $this->locationNamespace;?>');
+    }
+
+    function issnTabContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->issnNamespace;?>');
+    }
+
+    function issnTabContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->issnNamespace;?>');
+    }
+
+    function issnTabContainerOnPreSort(evt) {
+    }
+
+    function issnTabContainerOnSort(evt) {
+        loadData('<?php echo $this->issnNamespace;?>');
+    }
+
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+
+        $('#location_container, #issn_container').removeClass('hidden');
+
+        dataToSend.push({
+            'name': 'sysScreens[<?php echo $this->locationNamespace;?>]',
+            'value': []
+        });
+
+        dataToSend.push({
+            'name': 'sysScreens[<?php echo $this->issnNamespace;?>]',
+            'value': []
+        });
+
+        $('#barcode').val('').parent().block();
+        $('#search_form_container').block();
+        $(document).queue(function() {
+            $('#location_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#location_container > div, #issn_container > div, #search_form_container').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+    
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        switch (sysScreen) {
+            case '<?php echo $this->locationSsName;?>' :
+                nameSpace = '<?php echo $this->locationNamespace?>';
+                break;
+            case '<?php echo $this->issnSsName;?>' :
+                nameSpace = '<?php echo $this->issnNamespace?>';
+                break;
+            default:
+                throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+        }
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(nameSpace);
+    }
+
+    function printLocationLabel() {
+        var selectedLocationRows = getSelectedRows('<?php echo $this->locationNamespace?>');
+
+        if (selectedLocationRows < 1) {
+            showWarnings(['No Location rows selected. Select one.']);
+            return;
+        }
+
+        $(document).queue(function() {
+            $('#location_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Printing Labels...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'print-location-label'));?>',
+                {},
+                onPrintLocationLabelResponse,
+                'json'
+            );
+        }).queue(function() {
+            $('#location_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onPrintLocationLabelResponse(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $(document).dequeue();
+    }
+
+
+/******************************/
+    function printBorrowerLabel() {
+        var selectedLocationRows = getSelectedRows('<?php echo $this->locationNamespace?>');
+
+        if (selectedLocationRows < 1) {
+            showWarnings(['No Location rows selected. Select one.']);
+            return;
+        }
+
+        $(document).queue(function() {
+            $('#location_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Printing Labels...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'print-borrower-label'));?>',
+                {},
+                onPrintBorrowerLabelResponse,
+                'json'
+            );
+        }).queue(function() {
+            $('#location_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onPrintBorrowerLabelResponse(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $(document).dequeue();
+    }
+/******************************/
+
+
+    function getSelectedRows(namespace) {
+        var selectedRows = parseInt($('.selected-container.' + namespace).html());
+        return isNaN(selectedRows) ? 0 : selectedRows;
+    }
+
+    function printProductLabel() {
+
+        if (typeof productLabelDialogGetProdId != 'function')
+            throw 'Product Label Dialog is not initialized';
+
+        var selectedProdId = productLabelDialogGetProdId();
+
+        if (selectedProdId == '') {
+            showWarnings(['No Product ID selected. Please select one.']);
+            return;
+        }
+
+        var selectedIssnRows = getSelectedRows('<?php echo $this->issnNamespace?>');
+
+        if (selectedIssnRows < 1) {
+            showWarnings(['No rows selected. Please select one.']);
+            return;
+        }
+
+        if (selectedIssnRows > 1) {
+            showWarnings(['More then one row selected. Please select only one row.']);
+            return;
+        }
+
+        $('#product_label_dialog').dialog('open');
+    }
+
+    function printIssnLabel() {
+        var selectedIssnRows = getSelectedRows('<?php echo $this->issnNamespace?>');
+
+        if (selectedIssnRows < 1) {
+            showWarnings(['No rows selected. Please select one.']);
+            return;
+        }
+
+        $(document).queue(function() {
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Printing Labels...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'print-issn-label'));?>',
+                {},
+                onPrintIssnLabelResponse,
+                'json'
+            );
+        }).queue(function() {
+            $('#issn_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onPrintIssnLabelResponse(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $(document).dequeue();
+    }
+
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        $('#location_container').minderSearchResult(<?php echo json_encode($this->locationJsSearchResults);?>);
+        $('#location_container').minderSearchResult({autosorter:true, customSort:true});
+        $('#location_container').minderSearchResult(<?php echo json_encode($this->locationJsSearchResultsDataset);?>);
+
+        $('#location_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', locationTabContainerOnPageChanged)
+            .bind('show-by-changed', locationTabContainerOnShowByChanged)
+            .bind('pre-sort', locationTabContainerOnPreSort)
+            .bind('sort', locationTabContainerOnSort);
+
+        $('#issn_container').minderSearchResult(<?php echo json_encode($this->issnJsSearchResults);?>);
+        $('#issn_container').minderSearchResult({autosorter:true, customSort:true});
+        $('#issn_container').minderSearchResult(<?php echo json_encode($this->issnJsSearchResultsDataset);?>);
+
+        $('#issn_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', issnTabContainerOnPageChanged)
+            .bind('show-by-changed', issnTabContainerOnShowByChanged).bind('pre-sort', issnTabContainerOnPreSort)
+            .bind('sort', issnTabContainerOnSort);
+
+        $(document).bind('do-search', documentOnDoSearch);
+        $('#search_form_container .SEARCH_RESULTS_FORM_search_btn').bind('click', searchBtnOnClick);
+    });
+    
+  
+/* ]]> */
+</script>
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+            <ul class="toolbar">
+                {{each $item.data.buttons}}
+                    <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+</script>
+<?php echo $this->render('footer.phtml'); ?>

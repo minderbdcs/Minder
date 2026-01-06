@@ -1,0 +1,7 @@
+<div style="clear: both; padding-left: 10px;">
+    <ul class="toolbar">
+        {{each($index, $subView) $item.data.getSortedSubViews()}}
+            <li><span class="minder-element {{= $subView.getName()}}">{{= $subView.getName()}}:Placement</span></li>
+        {{/each}}
+    </ul>
+</div>

@@ -1,0 +1,129 @@
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'awaiting-exit'), null, true); ?>" method="post" id="lines_form">
+<?php echo $this->formHidden('from', 'exit-lines') ?>  
+<div id="json" style="display: none;"><?php echo json_encode($this->counters) ?></div>
+    <div>
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">LABELS LIST</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                        $this->navigation['show_by'],
+                                        array('onchange' => 'this.form.submit()'),
+                                        array(5  => 5,
+                                              10 => 10,
+                                              15 => 15,
+                                              20 => 20,
+                                              30 => 30,
+                                              40 => 40,
+                                              50 => 50,
+                                              100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'this.form.submit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span class="pack_lines_selected">0</span></li>
+    </ul>
+    <table id="exit-lines" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_lines" onclick="selectAllLines(this)" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+
+<?php
+        foreach ($this->packIdList as $packId) { ?>
+        <tr>
+            <th><?php echo $this->formCheckbox('pack_id[]', $packId['PACK_ID'], array('checked' => array_key_exists($packId['PACK_ID'], (array) $this->conditions) ? 'checked' : '', 'class' => 'line-selector', 'onclick' => 'checkLine(this)')) ?></th>
+<?php     foreach ($this->headers as $key => $val) { ?>
+            <td><?php echo $this->escape($packId[$key]) ?></td>
+
+<?php     } ?>
+        </tr>
+<?php }  ?>
+<?php if (!count($this->packIdList)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $v) : ?>
+            <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+     <table class="withborder" id="lines-info">
+        <tr>
+            <td width="20%">Total <?php echo $this->numRecords . ($this->numRecords > 1 ? ' records' : ' record') ?></td>
+            <td width="20%">Show from <?php echo ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1) . ' to ' . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td width="20%">&nbsp;<td>
+            <td width="20%">&nbsp;</td>
+            <td width="20%">&nbsp;</td>
+        </tr>
+    </table>
+     <ul class="toolbar" style="margin-top: 3px;" id="edit_field_buttons">
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: csv" value="REPRINT LABEL" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: csv" value="REPORT: CSV" onclick="return frmSubmitLines(this)" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: xls" value="REPORT: XLS" onclick="return frmSubmitLines(this)" />
+        </li>
+    </ul>
+</form>
+<script type="text/javascript">
+$(document).ready(function(){
+
+    $("#exit-lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+
+});
+
+
+function checkLine(target) {
+    
+    var linesSelected = parseInt($('.pack_lines_selected').text());
+    if(target.checked) {
+        linesSelected++;        
+    } else {
+        linesSelected--;
+    }
+    
+    $('.pack_lines_selected').text(linesSelected);
+
+}
+
+function selectAllLines(target) {
+    
+    var condition = target.checked;
+    
+    var chkBoxes  = $('#exit-lines :checkbox');
+    var count     = $('#exit-lines :checkbox').size();  
+    
+    $.each(chkBoxes, function(){
+        this.checked =   condition; 
+    })
+    
+    if(condition) {
+        $('.pack_lines_selected').text(count-1);    
+    } else {
+        $('.pack_lines_selected').text(0);    
+    }
+}
+
+function frmSubmitLines(target){
+    $('#lines_form').attr('action','<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'exit-lines'), null, true); ?>').submit();
+
+    return true;
+}
+
+
+</script>

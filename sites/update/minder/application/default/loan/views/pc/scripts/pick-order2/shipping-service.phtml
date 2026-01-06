@@ -1,0 +1,6 @@
+<?php
+$json = array();
+foreach ($this->data as $key => $val) {
+    $json[] = json_encode(array('key' => $key, 'val' => $val));
+}
+echo '[' . implode(',', $json) . ']';

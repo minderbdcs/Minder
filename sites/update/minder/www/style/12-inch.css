@@ -1,0 +1,79 @@
+#page h2 {
+    margin-bottom: 1em;
+}
+#page input, #page select {
+    width: auto !important;
+}
+
+.with_border {
+    border-top: solid 1px #999;
+    border-bottom: solid 1px #999;
+}
+.without_border, .with_border {
+    padding: .5em 0; 
+}
+
+.form_item {
+    margin: .5em 0;
+}
+.button {
+    background: #a0df82;
+    color: #000;
+    font-weight: bold;
+    padding: .6em !important;
+    width: 10em !important;
+    font-size: 1.1em !important;
+    text-transform: uppercase;
+}
+
+table.with_border {
+    border-collapse: collapse;
+    border-spacing: 0;     
+    width: 100%;
+    border-top: none;
+    border-bottom: solid 1px #999;
+}
+table.with_border td, table.with_border th {
+    padding: .5em;
+    margin: 0;
+}
+table.with_border th {
+    width: 10%;
+    text-align: right;
+    white-space: nowrap;
+}
+table.with_border td {
+    text-align: left;
+}
+
+#print_labels td, #print_labels th {
+    border-top: none;
+    border-bottom: solid 1px #999;
+}
+
+#info_bar {
+    background: #a0df82;
+    font-weight: bold;
+    padding-left: .5em;
+    padding-right: .5em;
+}
+#info_bar li, #info_bar ul {
+    list-style: none;
+}
+#info_bar li {
+    display: inline;
+    padding-left: 2em;
+}
+
+#variety, #print_labels, #third_party, #grn_details, #hire {
+    margin: 0;
+    padding: 0;
+}
+
+#action_buttons input {
+    margin-top: .5em;
+    padding: .6em;
+    width: 10em !important;
+    font-size: 1.1em !important;
+    text-transform: uppercase;
+}

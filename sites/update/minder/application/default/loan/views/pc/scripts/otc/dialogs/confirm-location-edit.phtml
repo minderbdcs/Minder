@@ -1,0 +1,162 @@
+<div id="confirm_location_edit_dialog" class="flora otc-confirm_location_edit_dialog" title="Confirm Location Edit" style="display: none;">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+
+<h2> LOCATION EXISTS </h2>
+</br>
+        <table class="summary" style="width:99%">
+        <tr>
+            <td>
+                LOCATION ID (Max 8):
+            </td>
+            <td>
+                 <strong class="current-location-id">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                LOCATION NAME (Max 50):
+            </td>
+            <td>
+                <input type="text" name="locationedit_name" value="" class="current-location-name" id="locationedit_name">
+            </td>
+        </tr>
+	<tr>
+            <td>
+                LOCATION OWNER :
+            </td>
+            <td>
+                <strong class="current-location-owner">
+            </td>
+        </tr>
+        <tr>
+	    <td>
+		<label>
+                    <input type="radio" name="move_stat1" value="ST" class="current-move-stat1" />Location Is On-Site
+                </label>
+	    </td><td>
+                <label>
+                    <input type="radio" name="move_stat1" value="OS" class="current-move-stat2" />Or Is Off-Site
+                </label>		
+	    </td>
+      </tr>      
+</table>
+
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        // dialog add tool
+        $('#confirm_location_edit_dialog').dialog({
+            buttons: {
+                'EDIT': confirmLocationEditDialogConfirmEdit,
+                'HTML': '',
+                'CANCEL': confirmLocationEditDialogCancelEdit
+            },
+            width: '750px',
+            height: '380px',
+            autoOpen: false,
+            position: [0, 65],
+            buttonStyle: 'otc-dialog-button',
+	    insertHtml:  '<label for="print_label">Print Label</label>&nbsp;<input type="checkbox" id="print_label_location_edit" name="print_label_location_edit" value=""><br /><label>Label Qty:&nbsp;<select id="location_edit_label_qty" name="location_edit_label_qty" style="width: 5em"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select></label>'
+        }).bind('dialogclose', function(){
+            var $confirmLocationEditDialog = $('#confirm_location_edit_dialog');
+
+            $confirmLocationEditDialog.removeAttr('active');
+            $('#barcode').focus();
+
+            $confirmLocationEditDialog.data('deferred').resolve(!!$confirmLocationEditDialog.data('confirmed'));
+        }).bind('dialogopen', function(event, ui) {
+            $('#confirm_location_edit_dialog').attr('active', 'active');
+            //$(this).show();
+            $('#barcode').focus();
+		var
+                $locationEditLabelQty = $('#location_edit_label_qty'),
+                $printLabelEditFlag = $('#print_label_location_edit'),
+                defaultLabelQty = parseInt('<?php echo $this->defaultBorrowerLabelQty; ?>') || 0;
+
+            $locationEditLabelQty.unbind('change').change(function(){
+                var
+                    labelQty = parseInt($(this).val()) || 0;
+                if (labelQty < 1) {
+                    $printLabelEditFlag.removeAttr('checked');
+                } else {
+                    $printLabelEditFlag.attr('checked', true);
+                }
+            });
+
+            $printLabelEditFlag.unbind('change').change(function(){
+                if ($(this).attr('checked')) {
+                    $locationEditLabelQty.val(defaultLabelQty || 1);
+                } else {
+                    $locationEditLabelQty.val(0);
+                }
+            });
+
+            $locationEditLabelQty.val(defaultLabelQty).change();
+            $('#confirm_location_edit_dialog').attr('active', true);
+
+            $(this).show();
+        });
+    });
+
+    function confirmLocationEditDialogConfirm(newLocation, existedLocation) {
+        var result = $.Deferred(),
+            $confirmLocationEditDialog = $("#confirm_location_edit_dialog");
+	$confirmLocationEditDialog.find('.current-location-owner').text(existedLocation.locationOwner);
+        $confirmLocationEditDialog.find('.current-location-id').text(newLocation.locationnew_id);
+        $confirmLocationEditDialog.find('.current-location-name').val(existedLocation.locationName);
+	$confirmLocationEditDialog.find('.new-location-name').val(newLocation.location_name);
+        var $moveStat=existedLocation.moveStat;
+
+	
+
+if($moveStat!='OS') {
+                if(!($moveStat).trim()) {
+                $confirmLocationEditDialog.find('.current-move-stat2').attr('disabled', false);
+                $confirmLocationEditDialog.find('.current-move-stat1').attr('checked', true).val('ST');
+                }
+                else {
+                $confirmLocationEditDialog.find('.current-move-stat1').attr('checked', true).val(existedLocation.moveStat);
+                $confirmLocationEditDialog.find('.current-move-stat2').attr('disabled', true);
+
+                }
+        }
+        else {
+                $confirmLocationEditDialog.find('.current-move-stat2').attr('checked', true);
+                $confirmLocationEditDialog.find('.current-move-stat1').attr('disabled', true);
+        }
+
+
+	
+	$confirmLocationEditDialog.data('deferred', result);
+        $confirmLocationEditDialog.data('confirmed', false);
+        $confirmLocationEditDialog.dialog("open");
+
+        return result.promise();
+    }
+    function _getEditLocationDialogData() {
+
+        return {
+	    wh_id: $('#limit_warehouse').val(),
+            locationnew_id: $("#locationnew_id").val(),
+            location_name: $("#locationedit_name").val(),
+            move_stat: $("input:checked[type='radio'][name='move_stat1']").val(),
+	    print_label: $("#print_label_location_edit")[0].checked,
+            label_qty: $('#location_edit_label_qty').val()
+       }
+    }
+    function confirmLocationEditDialogConfirmEdit(evt) {
+        $('#confirm_location_edit_dialog').data('confirmed', true).dialog('close');
+	var editLocation=_getEditLocationDialogData();
+	editLocation.confirmEdit = true;
+        _addLocationDialogDoSave(editLocation);
+        return false;
+    }
+
+
+    function confirmLocationEditDialogCancelEdit() {
+        $('#confirm_location_edit_dialog').data('confirmed', false).dialog('close');
+        return false;
+    }
+</script>

@@ -1,0 +1,1103 @@
+<?php
+$priceNumberFormat = Minder2_Environment::getInstance()->getPriceNumberFormat();
+$percentNumberFormat = '#%';
+$invoiceToList = array('' => '');
+$shipToList = array('' => '');
+if ($this->pickOrder->personId != '') {
+    $invoiceToAddresses = $this->minder->getAddresses('MT', $this->pickOrder->personId);
+    $i = 0;
+    foreach ($invoiceToAddresses as $addr) {
+        $t = $addr->line1;
+        if ($addr->line2 != '') { $t .= ', ' . $addr->line2; }
+        if ($addr->city != '') { $t .= ', ' . $addr->city; }
+        if ($addr->state != '') { $t .= ', ' . $addr->state; }
+        if ($addr->postcode != '') { $t .= ', ' . $addr->postcode; }
+        if ($addr->country != '') { $t .= ', ' . $addr->country; }
+        $invoiceToList['r' . $addr->recordId] = $t;
+        $i++;
+    }
+    $shipToAddresses = $this->minder->getAddresses('DT', $this->pickOrder->personId);
+    $i = 0;
+    foreach ($shipToAddresses as $addr) {
+        $t = $addr->line1;
+        if ($addr->line2 != '') { $t .= ', ' . $addr->line2; }
+        if ($addr->city != '') { $t .= ', ' . $addr->city; }
+        if ($addr->state != '') { $t .= ', ' . $addr->state; }
+        if ($addr->postcode != '') { $t .= ', ' . $addr->postcode; }
+        if ($addr->country != '') { $t .= ', ' . $addr->country; }
+        $shipToList['r' . $addr->recordId] = $t;
+        $i++;
+    }
+    
+    $contact = $this->pickOrder->contactName;
+    if (empty($contact)) {
+        $person = $this->minder->getPerson($this->pickOrder->personId);
+        if ($person!=null) {
+            $contact = substr($person->firstName .' '. $person->lastName, 0, 50);
+        }
+    }
+}
+
+
+$costCentreList = array('' => '');
+foreach ($this->minder->getCostCentreList() as $k => $v) {
+    $costCentreList[$k] = $v;
+}
+?>
+<form action="<?php echo $this->url(); ?>" method="post" class="pick-order-edit-form">
+    <h1>Sales Order: <?php echo $this->escape($this->pickOrder->pickOrder); ?></h1>
+    <input type="hidden" name="pick_order_type" value="<?php echo $this->escape($this->pickOrder->pickOrderType); ?>" />
+    <div class="section" style="border-top: none;">
+        <h2>General</h2>
+        <table>
+            <tr>
+                <th>Status</th>
+<?php if ($this->minder->isAdmin || $this->minder->isCreditManagerT()) : ?>
+                <td><?php echo $this->formSelect('pick_status', $this->pickOrder->pickStatus, array('tabindex' => '1'), $this->minder->getPickOrderStatusList()) ?></td>
+<?php else :  ?>
+                <td><?php $l = $this->minder->getPickOrderStatusList(); echo $this->escape(isset($l[$this->pickOrder->pickStatus]) ? $l[$this->pickOrder->pickStatus] : $this->pickOrder->pickStatus); ?></td>
+<?php endif; ?>
+                <th>Priority</th>
+                <td><?php echo $this->formText('pick_priority', $this->pickOrder->pickPriority, array('tabindex' => '2', 'title' => 'Higher Priority = lower or more negative value')) ?></td>
+            </tr>
+            <tr>
+                <th><label>Type</label></th>
+                <td><?php echo $this->formText('pick_order_type', $this->pickOrder->pickOrderType, array('tabindex' => '3')); ?></td>
+                <th><label>Sub Type</label></th>
+                <td><?php echo $this->formText('pick_order_sub_type', $this->pickOrder->pickOrderSubType, array('tabindex' => '4')); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Sold From</h2>
+        <table>
+            <tr>
+                <th><label>Company</label></th>
+                <td><?php echo $this->formSelect('company_id', $this->pickOrder->companyId, array('onchange' => 'suppliedFromSoldFromAddress()', 'tabindex' => '3', 'id' => 'edit_company_id'), $this->minder->getCompanyList()); ?></td>
+                <th><label>Cost Centre</label></th>
+                <td><?php echo $this->formSelect('cost_center', $this->pickOrder->costCenter, array('tabindex' => '5'), $costCentreList); ?></td>
+            </tr>
+            <tr>
+                <th><label>Warehouse</label></th>
+                <td><?php echo $this->formSelect('wh_id', $this->pickOrder->whId, array('onchange' => 'warehouseChanged()', 'tabindex' => '4'), $this->minder->getWarehouseListLimited()); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="floats cl" style="padding-bottom: 1em;">
+        <input type="submit" name="action" value="Save" class="fl" />
+        <input type="button" name="action" value="Cancel" class="fl" style="margin-left: 10px;" onclick="return hideEdit();" />
+        <input type="button" value="Return -&gt; Top" class="fr" onclick="window.scrollTo(0, 0);" />
+    </div>
+    <div class="section cl">
+        <h2>Supplied By ID</h2>
+        <p><?php echo $this->formCheckbox('s_same_as_sold_from', $this->pickOrder->sSameAsSoldFrom, array('onclick' => 'suppliedFromSoldFromAddress()', 'tabindex' => '6', 'checked' => $this->pickOrder->sSameAsSoldFrom == 'T' ? 'checked' : '')); ?> Same as sold from</p>
+        <table>
+            <tr>
+                <th><label>Supplied By</label></th>
+                <td><?php echo $this->formText('s_person_id', $this->pickOrder->sPersonId, array('autocomplete' => 'off', 'tabindex' => '7')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>First Name</label></th>
+                <td><?php echo $this->formText('s_first_name', $this->pickOrder->sFirstName, array('autocomplete' => 'off', 'tabindex' => '8')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Last Name</label></th>
+                <td><?php echo $this->formText('s_last_name', $this->pickOrder->sLastName, array('autocomplete' => 'off', 'tabindex' => '9')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><h3>Supplied By Address</h3></th>
+                <td><?php echo $this->formText('s_address_line1', $this->pickOrder->sAddressLine1, array('autocomplete' => 'off', 'tabindex' => '10')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <td><?php echo $this->formText('s_address_line2', $this->pickOrder->sAddressLine2, array('autocomplete' => 'off', 'tabindex' => '11')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>City</label></th>
+                <td><?php echo $this->formText('s_city', $this->pickOrder->sCity, array('autocomplete' => 'off', 'tabindex' => '12')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>State</label></th>
+                <td><?php echo $this->formText('s_state', $this->pickOrder->sState, array('autocomplete' => 'off', 'tabindex' => '13')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Postcode</label></th>
+                <td><?php echo $this->formText('s_post_code', $this->pickOrder->sPostCode, array('autocomplete' => 'off', 'tabindex' => '14')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Country</label></th>
+                <td><?php echo $this->formText('s_country', $this->pickOrder->sCountry, array('autocomplete' => 'off', 'tabindex' => '15')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Telephone</label></th>
+                <td><?php echo $this->formText('s_phone', $this->pickOrder->sPhone, array('autocomplete' => 'off', 'tabindex' => '16')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <table>
+            <tr>
+                <th colspan="2"><h2>Sold To</h2></th>
+                <th colspan="2"><h2>Deliver To</h2></th>
+            </tr>
+            <tr>
+                <th><label>Invoice To ID</label></th>
+                <td><?php echo $this->formText('person_id', $this->pickOrder->personId, array('autocomplete' => 'off', 'tabindex' => '17', 'id' => 'edit_person_id', 'onchange'=>'soldToChanged')); ?></td>
+                <th><label>Ship to ID</label></th>
+                <td><?php echo $this->formText('d_person_id', $this->pickOrder->dPersonId, array('tabindex' => '30', 'onchange' => 'deliverToChanged()')); ?></td>
+           </tr>
+            <tr>
+                <th><label>Contact</label></th>
+                <td>
+                    <?php echo $this->formText('display_contact_name', $contact, array('autocomplete' => 'off', 'tabindex' => '18', 'id' => 'display_contact_name', 'onChange' => 'displayContactNameChanged()')); ?>
+                    <?php echo $this->formHidden('contact_name', $this->pickOrder->contactName, array('id' => 'edit_contact_name')); ?>
+                </td>
+                <th><label>Due Date</label></th>
+                <td><?php echo $this->formText('pick_due_date', $this->pickOrder->pickDueDate, array('autocomplete' => 'off', 'tabindex' => '31', 'id' => 'edit_pick_due_date')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Customer Reference</label></th>
+                <td><?php echo $this->formText('customer_po_wo', $this->pickOrder->customerPoWo, array('autocomplete' => 'off', 'tabindex' => '19', 'id' => 'edit_customer_po_wo')); ?></td>
+                <th>&nbsp;</th>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <th><h3>Invoice Address</h3></th>
+                <td></td>
+                <th><h3>Shipping Address</h3></th>
+                <td><?php echo $this->formCheckbox('p_same_as_invoice_to', $this->pickOrder->pSameAsInvoiceTo, array('onclick' => 'shipToInvoice()', 'tabindex' => '32', 'checked' => $this->pickOrder->pSameAsInvoiceTo == 'T' ? 'checked' : '')); ?> Same as invoice</td>
+            </tr>
+            <tr>
+                <td colspan="2"><?php echo $this->formSelect('invoice_to', '', array('onchange' => 'invoiceToSelected()', 'style' => 'width: 50ex', 'tabindex' => '20'), $invoiceToList); ?></td>
+                <td colspan="2"><?php echo $this->formSelect('ship_to', '', array('onchange' => 'shipToSelected()', 'style' => 'width: 50ex', 'tabindex' => '33'), $shipToList); ?></td>
+            </tr>
+            <tr>
+                <th><label>First Name</label></th>
+                <td><?php echo $this->formText('p_first_name', $this->pickOrder->pFirstName, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '21', 'id' => 'edit_p_first_name')); ?></td>
+                <th><label>First Name</label></th>
+                <td><?php echo $this->formText('d_first_name', $this->pickOrder->dFirstName, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '34')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Last Name</label></th>
+                <td><?php echo $this->formText('p_last_name', $this->pickOrder->pLastName, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '22')); ?></td>
+                <th><label>Last Name</label></th>
+                <td><?php echo $this->formText('d_last_name', $this->pickOrder->dLastName, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '35')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Address</label></th>
+                <td><?php echo $this->formText('p_address_line1', $this->pickOrder->pAddressLine1, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '23')); ?></td>
+                <th><label>Address</label></th>
+                <td><?php echo $this->formText('d_address_line1', $this->pickOrder->dAddressLine1, array('autocomplete' => 'off', 'tabindex' => '36')); ?></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <td><?php echo $this->formText('p_address_line2', $this->pickOrder->pAddressLine2, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '24')); ?></td>
+                <th>&nbsp;</th>
+                <td><?php echo $this->formText('d_address_line2', $this->pickOrder->dAddressLine2, array('autocomplete' => 'off', 'tabindex' => '37')); ?></td>
+            </tr>
+            <tr>
+                <th><label>City</label></th>
+                <td><?php echo $this->formText('p_city', $this->pickOrder->pCity, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '25')); ?></td>
+                <th><label>City</label></th>
+                <td><?php echo $this->formText('d_city', $this->pickOrder->dCity, array('autocomplete' => 'off', 'tabindex' => '38', 'id' => 'edit_d_city')); ?></td>
+            </tr>
+            <tr>
+                <th><label>State</label></th>
+                <td><?php echo $this->formText('p_state', $this->pickOrder->pState, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '26')); ?></td>
+                <th><label>State</label></th>
+                <td><?php echo $this->formText('d_state', $this->pickOrder->dState, array('autocomplete' => 'off', 'tabindex' => '39', 'id' => 'edit_d_state')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Postcode</label></th>
+                <td><?php echo $this->formText('p_post_code', $this->pickOrder->pPostCode, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '27')); ?></td>
+                <th><label>Postcode</label></th>
+                <td><?php echo $this->formText('d_post_code', $this->pickOrder->dPostCode, array('autocomplete' => 'off', 'tabindex' => '40')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Country</label></th>
+                <td><?php echo $this->formText('p_country', $this->pickOrder->pCountry, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '28')); ?></td>
+                <th><label>Country</label></th>
+                <td><?php echo $this->formText('d_country', $this->pickOrder->dCountry, array('autocomplete' => 'off', 'tabindex' => '41', 'id' => 'edit_d_country')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Telephone</label></th>
+                <td><?php echo $this->formText('p_phone', $this->pickOrder->pPhone, array('autocomplete' => 'off', 'onchange' => 'shipToInvoice()', 'tabindex' => '29')); ?></td>
+                <th><label>Telephone</label></th>
+                <td><?php echo $this->formText('d_phone', $this->pickOrder->dPhone, array('autocomplete' => 'off', 'tabindex' => '42')); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div class="floats cl" style="padding-bottom: 1em;">
+        <input type="submit" name="action" value="Save" class="fl" />
+        <input type="button" name="action" value="Cancel" class="fl" style="margin-left: 10px;" onclick="return hideEdit();" />
+        <input type="button" value="Return -&gt; Top" class="fr" onclick="window.scrollTo(0, 0);" />
+    </div>
+    <div class="section cl">
+        <h2>Shipping Information</h2>
+        <table>
+            <tr>
+                <th><label>Ship Via</label></th>
+                <td><?php echo $this->formSelect('ship_via', $this->pickOrder->shipVia, array('onchange' => 'shipViaChanged()', 'tabindex' => '43', 'id' => 'edit_ship_via'), $this->minder->getShipViaList()); ?></td>
+                <th><label>Other Documents &amp; Inclusions</label></th>
+                <td><?php echo $this->formCheckbox('supplier_list', $this->pickOrder->supplierList, array('tabindex' => '50', 'checked' => $this->pickOrder->supplierList == 'T' ? 'checked' : '')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Service</label></th>
+                <td><?php echo $this->formSelect('ship_service', $this->pickOrder->shipService, array('tabindex' => '44'), $this->minder->getShipServiceList($this->pickOrder->shipVia)); ?></td>
+                <th><label>Send Invoice with Goods</label></th>
+                <td><?php echo $this->formCheckbox('inv_with_goods', $this->pickOrder->invWithGoods, array('tabindex' => '51', 'checked' => $this->pickOrder->invWithGoods == 'T' ? 'checked' : '')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Run #</label></th>
+                <td><?php echo $this->formText('delivery_run_no', $this->pickOrder->deliveryRunNo, array('autocomplete' => 'off', 'tabindex' => '45')); ?></td>
+                <th><label>Allow partial pick</label></th>
+                <td><?php echo $this->formCheckbox('partial_pick_allowed', $this->pickOrder->partialPickAllowed, array('tabindex' => '52', 'checked' => $this->pickOrder->partialPickAllowed == 'T' ? 'checked' : '')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Despatch Location</label></th>
+                <td><?php echo $this->formSelect('despatch_location', $this->pickOrder->despatchLocation, array('tabindex' => '46', 'id' => 'edit_despatch_location'), array_merge(array(''=>''), $this->minder->getDespatchLocationList($this->pickOrder->whId))); ?></td>
+                <th><label>Allow partial despatch</label></th>
+                <td><?php echo $this->formCheckbox('partial_despatch_allowed', $this->pickOrder->partialDespatchAllowed, array('tabindex' => '52', 'checked' => $this->pickOrder->partialDespatchAllowed == 'T' ? 'checked' : '')); ?></td>
+            </tr>
+            <tr>
+                <th><label>Shipping Method</label></th>
+                <td><?php echo $this->formSelect('shipping_method', $this->pickOrder->shippingMethod, array('autocomplete' => 'off', 'tabindex' => '47'), $this->shippingMethods); ?></td>
+                <th><label>Export Category</label></th>
+                <td><?php echo $this->formSelect('export_category', $this->pickOrder->exportCategory, array('tabindex' => '53'), $this->minder->getExportCategoryList()); ?></td>
+            </tr>
+            <tr>
+                <th><label>Oversize</label></th>
+                <td><?php echo $this->formCheckbox('over_sized', $this->pickOrder->overSized,  array('tabindex' => '48', 'checked' => $this->pickOrder->overSized == 'T' ? 'checked' : '')); ?></td>
+                <th><label>Net Weight</label></th>
+                <td><?php echo $this->formText('net_weight', $this->pickOrder->netWeight, array('autocomplete' => 'off', 'tabindex' => '54')); ?></td>
+            </tr>
+            <tr>
+                <th>Oversize Reason</th>
+                <td><?php echo $this->formText('over_sized_reason', $this->pickOrder->overSizedReason, array('autocomplete' => 'off', 'tabindex' => '49')); ?></td>
+                <th>Package Base</th>
+                <td><?php echo $this->formSelect('pallet_base', $this->pickOrder->palletBase,  array('tabindex' => '55'), $this->minder->getPackageBaseList()); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Billing Information</h2>
+        <table>
+            <tr>
+                <th><h3>Amounts:</h3></th>
+                <td></td>
+                <th><h3>Ledger Codes:</h3></th>
+                <td></td>
+            </tr>
+
+            <tr>
+                <th>Lines Sub Total SSN_ID</th>
+                <td><?php echo $this->formText('sub_total_amount_ssn_id', $this->pickOrder->subTotalAmountSsnId, array('autocomplete' => 'off', 'readonly' => 'true', 'class' => 'number')); ?></td>
+                <?php
+                    $SsnIdCode     = '';
+                    $SsnIdCodeDesc = '';
+                    if ($this->displayLedgerCodes) {
+                        $SsnIdCode     = $this->pickOrder->legacyLedgerSaleSsnIdCode;
+                        if (isset($this->ledgerCodesDescriptions['by_code'][$SsnIdCode])) {
+                            $SsnIdCodeDesc = $this->ledgerCodesDescriptions['by_code'][$SsnIdCode];
+                        }
+                    }
+                ?>
+                <th><?php echo $SsnIdCodeDesc?></th>
+                <td><?php echo $this->formText('display_legacy_ledger_ssn_id_code', $SsnIdCode, array('autocomplete' => 'off', 'readonly' => 'true')); ?></td>
+            </tr>
+
+            <tr>
+                <th>Lines Sub Total PROD_ID</th>
+                <td><?php echo $this->formText('sub_total_amount_prod_id', $this->pickOrder->subTotalAmountProdId, array('autocomplete' => 'off', 'readonly' => 'true', 'class' => 'number')); ?></td>
+                <?php
+                    $SaleCode     = '';
+                    $SaleCodeDesc = '';
+                    if ($this->displayLedgerCodes) {
+                        $SaleCode     = $this->pickOrder->legacyLedgerSaleCode;
+                        if (isset($this->ledgerCodesDescriptions['by_code'][$SaleCode])) {
+                            $SaleCodeDesc = $this->ledgerCodesDescriptions['by_code'][$SaleCode];
+                        }
+                    }
+                ?>
+                <th><?php echo $SaleCodeDesc?></th>
+                <td><?php echo $this->formText('display_legacy_ledger_sale_code', $SaleCode, array('autocomplete' => 'off', 'readonly' => 'true')); ?></td>
+            </tr>
+
+            <tr>
+                <th>Lines Sub Total</th>
+                <td><?php echo $this->formText('sub_total_amount', $this->pickOrder->subTotalAmount, array('data-number-format' => $priceNumberFormat, 'autocomplete' => 'off', 'readonly' => 'true', 'class' => 'number', 'tabindex' => '56')); ?><?php echo $this->formHidden('tax_sub_total', $this->pickOrder->subTotalTax); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Freight Charge</th>
+                <td><?php echo $this->formText('freight', $this->pickOrder->freight, array('data-number-format' => $priceNumberFormat, 'autocomplete' => 'off', 'class' => 'number', 'onchange' => 'recalculateTotal()', 'tabindex' => '57')); ?></td>
+                <?php 
+                    $freightCode     = '';
+                    $freightCodeDesc = '';
+                    if ($this->displayLedgerCodes) {
+                        $freightCode     = $this->pickOrder->legacyLedgerFreightCode;
+                        if (isset($this->ledgerCodesDescriptions['by_code'][$freightCode])) {
+                            $freightCodeDesc = $this->ledgerCodesDescriptions['by_code'][$freightCode];
+                        }
+                    }
+                ?>
+                <th><?php echo $freightCodeDesc?></th>
+                <td><?php echo $this->formText('display_legacy_ledger_freight_code', $freightCode, array('tabindex' => '68', 'autocomplete' => 'off', 'readonly' => 'true')); ?> </td>
+                    
+            </tr>
+            <tr>
+                <th>Freight Tax</th>
+                <td><?php echo $this->formText(
+                    'freight_tax_amount', 
+                    $this->pickOrder->freightTaxAmount, 
+                    array(
+                        'data-number-format' => $priceNumberFormat, 
+                        'autocomplete' => 'off', 
+                        'readonly' => 'true', 
+                        'class' => 'number', 
+                        'tabindex' => '58',
+                        'title' => ' = "Freight Charge" * "Tax - %" / 100 = ' . $this->pickOrder->freight . ' * ' . $this->pickOrder->taxRate . ' / 100 '
+                    )
+                ); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Administration Fee - %</th>
+                <td><?php echo $this->formText('admin_fee_rate', $this->pickOrder->adminFeeRate, array('data-number-format' => $percentNumberFormat, 'autocomplete' => 'off', 'class' => 'number', 'onchange' => 'recalculateTotal()', 'tabindex' => '59')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Administration Fee - $</th>
+                <td><?php echo $this->formText('admin_fee_amount', $this->pickOrder->adminFeeAmount, array('data-number-format' => $priceNumberFormat, 'autocomplete' => 'off', 'class' => 'number', 'onchange' => 'recalculateTotal()', 'tabindex' => '60')); ?></td>
+                <?php 
+                    $adminFeeCode     = '';
+                    $adminFeeCodeDesc = '';
+                    if ($this->displayLedgerCodes) {
+                        $adminFeeCode     = $this->pickOrder->legacyLedgerAdminFeeCode;
+                        if (isset($this->ledgerCodesDescriptions['by_code'][$adminFeeCode])) {
+                            $adminFeeCodeDesc = $this->ledgerCodesDescriptions['by_code'][$adminFeeCode];
+                        }
+                    }
+                ?>
+                <th><?php echo $adminFeeCodeDesc?></th>
+                <td><?php echo $this->formText('display_legacy_ledger_admin_fee_code', $adminFeeCode, array('tabindex' => '69', 'autocomplete' => 'off', 'readonly' => 'true')); ?></td>
+            </tr>
+            <tr>
+                <th>Other Cost 1</th>
+                <td><?php echo $this->formText('other_num1', $this->pickOrder->otherNum1, array('data-number-format' => $priceNumberFormat, 'autocomplete' => 'off', 'class' => 'number', 'onchange' => 'recalculateTotal()', 'tabindex' => '61')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Other Cost 2</th>
+                <td><?php echo $this->formText('other_num2', $this->pickOrder->otherNum2, array('data-number-format' => $priceNumberFormat, 'autocomplete' => 'off', 'class' => 'number', 'onchange' => 'recalculateTotal()', 'tabindex' => '62')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Tax - %</th>
+                <td><?php echo $this->formText('tax_rate', $this->pickOrder->taxRate, array('data-number-format' => $percentNumberFormat, 'autocomplete' => 'off', 'readonly' => 'true', 'class' => 'number', 'tabindex' => '63')); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Tax - $</th>
+                <td><?php echo $this->formText(
+                    'tax_amount', 
+                    $this->pickOrder->taxAmount, 
+                    array(
+                        'data-number-format' => $priceNumberFormat, 
+                        'autocomplete' => 'off', 
+                        'readonly' => 'true', 
+                        'class' => 'number', 
+                        'tabindex' => '64',
+                        'title' => ' = "Tax Sub Total" + ("Freight Charge" + ("Lines Sub Total" + "Freight Charge") * "Administration Fee - %" / 100 + "Administration Fee - $" + "Other Cost 1" + "Other Cost 2") * "Tax - %" / 100 = ' 
+                                    . $this->pickOrder->taxSubTotal . ' + (' . $this->pickOrder->freight . ' + (' . $this->pickOrder->subTotalAmount . ' + ' . $this->pickOrder->freight . ') * ' . $this->pickOrder->adminFeeRate . ' / 100 + ' . $this->pickOrder->adminFeeAmount . ' + ' . ((empty($this->pickOrder->otherNum1)) ? '0.00' : $this->pickOrder->otherNum1) . ' + ' . ((empty($this->pickOrder->otherNum2)) ? '0.00' : $this->pickOrder->otherNum2) . ') * ' . $this->pickOrder->taxRate . ' / 100 = '
+                                    . $this->pickOrder->taxSubTotal . ' + ' . ($this->pickOrder->freight + ($this->pickOrder->subTotalAmount + $this->pickOrder->freight) * $this->pickOrder->adminFeeRate / 100 + $this->pickOrder->adminFeeAmount + $this->pickOrder->otherNum1 + $this->pickOrder->otherNum2) . ' * ' . $this->pickOrder->taxRate . ' / 100'
+                    )
+                ); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Deposit Received - $</th>
+                <td><?php echo $this->formText('amount_paid', $this->pickOrder->amountPaid, array('data-number-format' => $priceNumberFormat, 'autocomplete' => 'off', 'class' => 'number', 'onchange' => 'recalculateTotal()', 'tabindex' => '65')); ?></td>
+                <?php 
+                    $depositCode     = '';
+                    $depositCodeDesc = '';
+                    if ($this->displayLedgerCodes) {
+                        $depositCode     = $this->pickOrder->legacyLedgerDepositCode;
+                        if (isset($this->ledgerCodesDescriptions['by_code'][$depositCode])) {
+                            $depositCodeDesc = $this->ledgerCodesDescriptions['by_code'][$depositCode];
+                        }
+                    }
+                ?>
+                <th><?php echo $depositCodeDesc?></th>
+                <td><?php echo $this->formText('display_legacy_ledger_deposit_code', $depositCode, array('tabindex' => '70', 'autocomplete' => 'off', 'readonly' => 'true')); ?></td>
+            </tr>
+            <tr>
+                <th>Amount Due</th>
+                <td><?php echo $this->formText(
+                    'due_amount', 
+                    $this->pickOrder->dueAmount, 
+                    array(
+                        'data-number-format' => $priceNumberFormat, 
+                        'autocomplete' => 'off', 
+                        'readonly' => 'true', 
+                        'class' => 'number', 
+                        'tabindex' => '66',
+                        'title' => ' = "Lines Sub Total" + "Freight Charge" + ("Lines Sub Total" + "Freight Charge") * "Administration Fee - %" / 100 + "Administration Fee - $" + "Other Cost 1" + "Other Cost 2" + "Tax - $" - "Deposit Received - $" = '
+                                    . $this->pickOrder->subTotalAmount . ' + ' . $this->pickOrder->freight . ' + (' . $this->pickOrder->subTotalAmount . ' + ' . $this->pickOrder->freight . ') * ' . $this->pickOrder->adminFeeRate . ' / 100 + ' . $this->pickOrder->adminFeeAmount . ' + ' . ((empty($this->pickOrder->otherNum1)) ? '0.00' : $this->pickOrder->otherNum1) . ' + ' . ((empty($this->pickOrder->otherNum2)) ? '0.00' : $this->pickOrder->otherNum2) . ' + ' . $this->pickOrder->taxAmount . ' - ' . $this->pickOrder->amountPaid . ' = '
+                                    . $this->pickOrder->subTotalAmount . ' + ' . ($this->pickOrder->freight + ($this->pickOrder->subTotalAmount + $this->pickOrder->freight) * $this->pickOrder->adminFeeRate / 100 + $this->pickOrder->adminFeeAmount + $this->pickOrder->otherNum1 + $this->pickOrder->otherNum2) . ' + ' . $this->pickOrder->taxAmount . ' - ' . $this->pickOrder->amountPaid
+                    )
+                ); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Payment Method</label></th>
+                <td><?php echo $this->formSelect('payment_method', $this->pickOrder->paymentMethod, array('tabindex' => '67'), $this->minder->getPaymentMethodList()); ?></td>
+                <th><label>Terms</label></th>
+                <td><?php echo $this->formSelect('terms', $this->pickOrder->terms, array('tabindex' => '71'), $this->minder->getPaymentTermsList()); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div class="floats cl" style="padding-bottom: 1em;">
+        <input type="submit" name="action" value="Save" class="fl" />
+        <input type="button" name="action" value="Cancel" class="fl" style="margin-left: 10px;" onclick="return hideEdit();" />
+        <input type="button" value="Return -&gt; Top" class="fr" onclick="window.scrollTo(0, 0);" />
+    </div>
+    <div class="section cl">
+        <h2>Notes</h2>
+<?php
+if (isset($this->notes['Instructions'])):
+?>
+        <h3>Instructions</h3>
+        <div id="instructions">
+            <ul>
+<?php
+if (in_array('External', $this->notes['Instructions'])) {
+?>
+                <li><a href="#special_instructions1_page"><span>External</span></a></li>
+<?php
+}
+if (in_array('Internal', $this->notes['Instructions'])) {
+?>
+                <li><a href="#special_instructions2_page"><span>Internal</span></a></li>
+<?php
+}
+?>
+            </ul>
+<?php
+if (in_array('External', $this->notes['Instructions'])) {
+?>
+            <div id="special_instructions1_page">
+                <?php echo $this->formTextarea('special_instructions1', $this->pickOrder->specialInstructions1, array('tabindex' => '72', 'id' => 'edit_special_instructions1')); ?>
+            </div>
+<?php
+}
+if (in_array('Internal', $this->notes['Instructions'])) {
+?>
+            <div id="special_instructions2_page">
+                <?php echo $this->formTextarea('special_instructions2', $this->pickOrder->specialInstructions2, array('tabindex' => '73', 'id' => 'edit_special_instructions2')); ?>
+            </div>
+<?php
+}
+?>
+        </div>
+<?php
+endif;
+if (isset($this->notes['Other Notes'])):
+?>
+        <h3>Other Notes</h3>
+        <div id="other_notes">
+            <ul>
+<?php foreach ($this->notes['Other Notes'] as $v) { ?>
+                <li><a href="#other<?php echo $v; ?>_page"><span><?php echo $v; ?></span></a></li>
+<?php } ?>
+            </ul>
+<?php foreach ($this->notes['Other Notes'] as $v) { $propName = 'other' . $v; ?>
+            <div id="other<?php echo $v; ?>_page">
+                <?php echo $this->formTextarea('other' . $v, $this->pickOrder->$propName, array('tabindex' => '74')); ?>
+            </div>
+<?php } ?>
+        </div>
+<?php
+endif;
+if (isset($this->notes['Remarks'])):
+?>
+        <h3>Remarks</h3>
+        <div id="remarks">
+            <ul>
+<?php foreach ($this->notes['Remarks'] as $v) { ?>
+                <li><a href="#remarks<?php echo $v; ?>_page"><span><?php echo $v; ?></span></a></li>
+<?php } ?>
+            </ul>
+<?php foreach ($this->notes['Remarks'] as $v) { $propName = 'remarks' . $v; ?>
+            <div id="remarks<?php echo $v; ?>_page">
+                <?php echo $this->formTextarea('remarks' . $v, $this->pickOrder->$propName, array('tabindex' => '75')); ?>
+            </div>
+<?php } ?>
+        </div>
+<?php
+endif;
+if (isset($this->notes['Footer'])):
+?>
+        <h3>Footer</h3>
+        <div id="footerctrl">
+            <ul>
+<?php foreach ($this->notes['Footer'] as $v) { ?>
+                <li><a href="#footerctrl-<?php echo $v; ?>"><span><?php echo $v; ?></span></a></li>
+<?php } ?>
+            </ul>
+<?php foreach ($this->notes['Footer'] as $v) { $propName = 'footer' . $v; ?>
+            <div id="footerctrl-<?php echo $v; ?>">
+                <?php echo $this->formTextarea('footer' . $v, $this->pickOrder->$propName, array('tabindex' => '76')); ?>
+            </div>
+<?php } ?>
+        </div>
+<?php
+endif;
+?>
+    </div>
+    <div class="floats cl" style="padding-bottom: 1em;">
+        <input type="submit" name="action" value="Save" class="fl" />
+        <input type="button" name="action" value="Cancel" class="fl" style="margin-left: 10px;" onclick="return hideEdit();" />
+        <input type="button" value="Return -&gt; Top" class="fr" onclick="window.scrollTo(0, 0);" />
+    </div>
+</form>
+<script type="text/javascript">
+
+function formatItem(row) {
+    return row[0] + "<br><i>" + row[1] + "</i>";
+}
+
+function updateSoldByPersonId(li)
+{
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'lookup'), '', false); ?>?s_person_id=' + escape($('#s_person_id')[0].value),
+        function(c) {
+            $('#s_first_name')[0].value = c.firstName;
+            $('#s_last_name')[0].value = c.lastName;
+            $('#s_address_line1')[0].value = c.addressLine1;
+            $('#s_address_line2')[0].value = c.addressLine2;
+            $('#s_city')[0].value = c.city;
+            $('#s_state')[0].value = c.state;
+            $('#s_post_code')[0].value = c.postcode;
+            $('#s_country')[0].value = c.country;
+            $('#s_phone')[0].value = c.telephone;
+            shipToInvoice();
+        });
+}
+
+function updateSoldBySoldFrom()
+{
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'lookup'), '', false); ?>?s_person_id=' + escape($('#edit_company_id')[0].value),
+        function(c) {
+            $('#s_person_id')[0].value = $('#edit_company_id')[0].value;
+            $('#s_first_name')[0].value = c.firstName;
+            $('#s_last_name')[0].value = c.lastName;
+            $('#s_address_line1')[0].value = c.addressLine1;
+            $('#s_address_line2')[0].value = c.addressLine2;
+            $('#s_city')[0].value = c.city;
+            $('#s_state')[0].value = c.state;
+            $('#s_post_code')[0].value = c.postcode;
+            $('#s_country')[0].value = c.country;
+            $('#s_phone')[0].value = c.telephone;
+        });
+}
+
+function shipToInvoice()
+{
+    var readonly = $('#p_same_as_invoice_to')[0].checked;
+
+    $('#d_first_name')[0].readOnly = readonly;
+    $('#d_last_name')[0].readOnly = readonly;
+    $('#d_address_line1')[0].readOnly = readonly;
+    $('#d_address_line2')[0].readOnly = readonly;
+    $('#edit_d_city')[0].readOnly = readonly;
+    $('#edit_d_state')[0].readOnly = readonly;
+    $('#d_post_code')[0].readOnly = readonly;
+    $('#edit_d_country')[0].readOnly = readonly;
+    $('#d_phone')[0].readOnly = readonly;
+    $('#ship_to')[0].disabled = readonly;
+    $('#d_person_id')[0].readOnly = readonly;
+
+    if (readonly) {
+        $('#d_first_name')[0].value = $('#edit_p_first_name')[0].value;
+        $('#d_last_name')[0].value = $('#p_last_name')[0].value;
+        $('#d_address_line1')[0].value = $('#p_address_line1')[0].value;
+        $('#d_address_line2')[0].value = $('#p_address_line2')[0].value;
+        $('#edit_d_city')[0].value = $('#p_city')[0].value;
+        $('#edit_d_state')[0].value = $('#p_state')[0].value;
+        $('#d_post_code')[0].value = $('#p_post_code')[0].value;
+        $('#edit_d_country')[0].value = $('#p_country')[0].value;
+        $('#d_phone')[0].value = $('#p_phone')[0].value;
+    }
+}
+
+function suppliedFromSoldFromAddress()
+{
+    var personId = $('#edit_person_id')[0].autocompleter;
+    personId.setExtraParams({field: 'person_id', company_id: $('#edit_company_id')[0].value, nolimit: true});
+
+    var deliverTo = $('#d_person_id')[0].autocompleter;
+    deliverTo.setExtraParams({field: 'person_id', company_id: $('#edit_company_id')[0].value, nolimit: true});
+
+    var readonly = $('#s_same_as_sold_from')[0].checked;
+
+    $('#s_person_id')[0].readOnly = readonly;
+    $('#s_first_name')[0].readOnly = readonly;
+    $('#s_last_name')[0].readOnly = readonly;
+    $('#s_address_line1')[0].readOnly = readonly;
+    $('#s_address_line2')[0].readOnly = readonly;
+    $('#s_city')[0].readOnly = readonly;
+    $('#s_state')[0].readOnly = readonly;
+    $('#s_post_code')[0].readOnly = readonly;
+    $('#s_country')[0].readOnly = readonly;
+    $('#s_phone')[0].readOnly = readonly;
+
+    if (readonly) {
+        updateSoldBySoldFrom();
+    }
+}
+
+
+    
+
+function soldToChanged()
+{
+	var personId = $('#edit_person_id')[0];
+
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'address'), '', false); ?>', {person_id: personId.value, type: 'MT'}, function(json){
+        if (json.length > 1) {
+            // Fill "Invoice To" combobox (dropdown list).
+            var invoiceTo = $('#invoice_to')[0];
+            invoiceTo.options.length = 0;
+            invoiceTo.options[0] = new Option('', 'none');
+            var t = 1;
+            for (var i in json) {
+                var key = 'r' + json[i].recordId;
+                var val = [];
+                if (json[i].firstName) {
+                    val.push(json[i].firstName);
+                }
+                if (json[i].line1) {
+                    val.push(json[i].line1);
+                }
+                if (json[i].line2) {
+                    val.push(json[i].line2);
+                }
+                if (json[i].city) {
+                    val.push(json[i].city);
+                }
+                if (json[i].state) {
+                    val.push(json[i].state);
+                }
+                if (json[i].postcode) {
+                    val.push(json[i].postcode);
+                }
+                if (json[i].country) {
+                    val.push(json[i].country);
+                }
+                
+                invoiceTo.options[t] = new Option(val.join(', '), key);
+                t = t + 1;
+            }
+            if (invoiceTo.options.length == 1) {
+                invoiceTo.options.length = 0;
+            }
+            clearSoldToItems();
+        } else if (json.length == 1) {
+            // Paste data in input fields.
+            $('#edit_p_first_name')[0].value = json[0].firstName;
+            $('#p_last_name')[0].value = json[0].lastName;
+            $('#p_address_line1')[0].value = json[0].line1;
+            $('#p_address_line2')[0].value = json[0].line2;
+            $('#p_city')[0].value = json[0].city;
+            $('#p_state')[0].value = json[0].state;
+            $('#p_post_code')[0].value = json[0].postcode;
+            $('#p_country')[0].value = json[0].country;
+            $('#p_phone')[0].value = json[0].phone;
+            $('#edit_contact_name')[0].value = json[0].contact;
+//            $('#invoice_to')[0].options.length = 0;
+
+			
+
+			var val = [];
+                if (json[0].firstName) {
+                    val.push(json[0].firstName);
+                }
+                if (json[0].line1) {
+                    val.push(json[0].line1);
+                }
+                if (json[0].line2) {
+                    val.push(json[0].line2);
+                }
+                if (json[0].city) {
+                    val.push(json[0].city);
+                }
+                if (json[0].state) {
+                    val.push(json[0].state);
+                }
+                if (json[0].postcode) {
+                    val.push(json[0].postcode);
+                }
+                if (json[0].country) {
+                    val.push(json[0].country);
+                }
+			$('#invoice_to').empty();
+			$('#invoice_to').append("<option value=\"\"></option>");
+			$('#invoice_to').append("<option value=\""+'r'+json[0].recordId+"\">"+val+"</option>");
+			
+        } else {
+           clearSoldToItems();
+           $('#invoice_to')[0].options.length = 0;
+        }
+        shipToInvoice();
+    });
+}
+
+function clearSoldToItems()
+{
+    $('#edit_p_first_name').val('');
+    $('#p_last_name').val('');
+    $('#p_address_line1').val('');
+    $('#p_address_line2').val('');
+    $('#p_city').val('');
+    $('#p_state').val('');
+    $('#p_post_code').val('');
+    $('#p_country').val('');
+    $('#p_phone').val('');
+}
+
+function shipToSelected()
+{
+    var shipTo = $('#ship_to')[0];
+    
+    if (shipTo.value=='') {
+    	clearDeliverToItems();
+    	return;
+    }    
+    
+    $.getJSON('<?php echo $this->url(array('controller' => 'address', 'action' => 'show'), '', false); ?>/id/' + escape(shipTo.value.substring(1)), function(json) {
+        if (json) {
+            $('#d_first_name')[0].value = json.firstName;
+            $('#d_last_name')[0].value = json.lastName;
+            $('#d_address_line1')[0].value = json.line1;
+            $('#d_address_line2')[0].value = json.line2;
+            $('#edit_d_city')[0].value = json.city;
+            $('#edit_d_state')[0].value = json.state;
+            $('#d_post_code')[0].value = json.postcode;
+            $('#edit_d_country')[0].value = json.country;
+            $('#d_phone')[0].value = json.phone;
+        }
+    });
+}
+
+function deliverToChanged()
+{
+    var personId = $('#d_person_id')[0];
+
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'address'), '', false); ?>', {person_id: personId.value, type: 'DT'}, function(json){
+        if (json.length > 1) {
+            // Fill "Invoice To" combobox (dropdown list).
+            var shipTo = $('#ship_to')[0];
+            shipTo.options.length = 0;
+            shipTo.options[0] = new Option('', 'none');
+            var t = 1;
+            for (var i in json) {
+                var key = 'r' + json[i].recordId;
+                var val = []
+                if (json[i].firstName) {
+                    val.push(json[i].firstName);
+                }
+                if (json[i].line1) {
+                    val.push(json[i].line1);
+                }
+                if (json[i].line2) {
+                    val.push(json[i].line2);
+                }
+                if (json[i].city) {
+                    val.push(json[i].city);
+                }
+                if (json[i].state) {
+                    val.push(json[i].state);
+                }
+                if (json[i].postcode) {
+                    val.push(json[i].postcode);
+                }
+                if (json[i].country) {
+                    val.push(json[i].country);
+                }
+                shipTo.options[t] = new Option(val.join(', '), key);
+                t = t + 1;
+            }
+            if (shipTo.options.length == 1) {
+                shipTo.options.length = 0;
+            }
+            clearDeliverToItems();
+        } else if (json.length == 1) {
+            // Paste data in input fields.
+            $('#d_first_name')[0].value = json[0].firstName;
+            $('#d_last_name')[0].value = json[0].lastName;
+            $('#d_address_line1')[0].value = json[0].line1;
+            $('#d_address_line2')[0].value = json[0].line2;
+            $('#edit_d_city')[0].value = json[0].city;
+            $('#edit_d_state')[0].value = json[0].state;
+            $('#d_post_code')[0].value = json[0].postcode;
+            $('#edit_d_country')[0].value = json[0].country;
+            $('#d_phone')[0].value = json[0].phone;
+            $('#ship_to')[0].options.length = 0;
+            
+            
+			var val = [];
+                if (json[0].firstName) {
+                    val.push(json[0].firstName);
+                }
+                if (json[0].line1) {
+                    val.push(json[0].line1);
+                }
+                if (json[0].line2) {
+                    val.push(json[0].line2);
+                }
+                if (json[0].city) {
+                    val.push(json[0].city);
+                }
+                if (json[0].state) {
+                    val.push(json[0].state);
+                }
+                if (json[0].postcode) {
+                    val.push(json[0].postcode);
+                }
+                if (json[0].country) {
+                    val.push(json[0].country);
+                }
+			$('#ship_to').empty();
+			$('#ship_to').append("<option value=\"\"></option>");
+			$('#ship_to').append("<option value=\""+'r'+json[0].recordId+"\">"+val+"</option>");            
+            
+        } else {
+           clearDeliverToItems();
+           $('#ship_to')[0].options.length = 0;
+        }
+        shipToInvoice();
+    });
+}
+
+function clearDeliverToItems()
+{
+    $('#d_first_name').val('');
+    $('#d_last_name').val('');
+    $('#d_address_line1').val('');
+    $('#d_address_line2').val('');
+    $('#edit_d_city').val('');
+    $('#edit_d_state').val('');
+    $('#d_post_code').val('');
+    $('#edit_d_country').val('');
+    $('#d_phone').val('');
+    $('#edit_contact_name').val('');
+}
+
+function invoiceToSelected()
+{
+    var invoiceTo = $('#invoice_to')[0];
+    
+    if (invoiceTo.value=='') {
+    	clearSoldToItems();
+    	return;
+    }
+    
+    $.getJSON('<?php echo $this->url(array('controller' => 'address', 'action' => 'show'), '', false); ?>/id/' + escape(invoiceTo.value.substring(1)), function(json) {
+        if (json) {
+            $('#edit_p_first_name')[0].value = json.firstName;
+            $('#p_last_name')[0].value = json.lastName;
+            $('#p_address_line1')[0].value = json.line1;
+            $('#p_address_line2')[0].value = json.line2;
+            $('#p_city')[0].value = json.city;
+            $('#p_state')[0].value = json.state;
+            $('#p_post_code')[0].value = json.postcode;
+            $('#p_country')[0].value = json.country;
+            $('#p_phone')[0].value = json.phone;
+            $('#edit_contact_name')[0].value = json.contact;
+            
+        }
+        shipToInvoice();
+    });
+}
+
+function shipViaChanged()
+{
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'shipping-service'), '', false); ?>?ship_via=' + escape($('#edit_ship_via')[0].value),
+        function(d) {
+            var shipService = $('#ship_service')[0];
+            shipService.options.length = 0;
+            for (var i = 0; i < d.length; i++) {
+                shipService.options[i] = new Option(d[i].val, d[i].key)
+            }
+        });
+}
+
+function warehouseChanged()
+{
+    $.getJSON('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'despatch-location'), '', false); ?>?wh_id=' + escape($('#wh_id')[0].value),
+        function(d) {
+            var despatchLocation = $('#edit_despatch_location')[0];
+            despatchLocation.options.length = 0;
+            for (var i = 0; i < d.length; i++) {
+                despatchLocation.options[i] = new Option(d[i].val, d[i].key)
+            }
+        });
+}
+
+function recalculateTotal() {
+    var subTotalAmount = Number($('#sub_total_amount').minderNumberFormat('getValue'));
+    if (isNaN(subTotalAmount)) {
+        subTotalAmount = 0;
+        $('#sub_total_amount').minderNumberFormat('setValue', subTotalAmount);
+    }
+    var taxSubTotal = Number($('#tax_sub_total').minderNumberFormat('getValue'));
+    if (isNaN(taxSubTotal)) {
+        taxSubTotal = 0;
+        $('#tax_sub_total').minderNumberFormat('setValue', taxSubTotal);
+    }
+    var freight = Number($('#freight').minderNumberFormat('getValue'));
+    if (isNaN(freight)) {
+        freight = 0;
+        $('#freight').minderNumberFormat('setValue', freight);
+    }
+    var taxRate = Number($('#tax_rate').minderNumberFormat('getValue'));
+    if (isNaN(taxRate)) {
+        taxRate = 0;
+        $('#tax_rate').minderNumberFormat('setValue', taxRate);
+    }
+    var adminFeeRate = Number($('#admin_fee_rate').minderNumberFormat('getValue'));
+    if (isNaN(adminFeeRate)) {
+        adminFeeRate = 0;
+        $('#admin_fee_rate').minderNumberFormat('setValue', adminFeeRate);
+    }
+    var adminFeeAmount = Number($('#admin_fee_amount').minderNumberFormat('getValue'));
+    if (isNaN(adminFeeAmount)) {
+        adminFeeAmount = 0;
+        $('#admin_fee_amount').minderNumberFormat('setValue', adminFeeAmount);
+    }
+    var otherNum1 = Number($('#other_num1').minderNumberFormat('getValue'));
+    if (isNaN(otherNum1)) {
+        otherNum1 = 0;
+        $('#other_num1').minderNumberFormat('setValue', otherNum1);
+    }
+    var otherNum2 = Number($('#other_num2').minderNumberFormat('getValue'));
+    if (isNaN(otherNum2)) {
+        otherNum2 = 0;
+        $('#other_num2').minderNumberFormat('setValue', otherNum2);
+    }
+    var amountPaid = Number($('#amount_paid').minderNumberFormat('getValue'));
+    if (isNaN(amountPaid)) {
+        amountPaid = 0;
+        $('#amount_paid').minderNumberFormat('setValue', amountPaid);
+    }
+
+    var freightTax = freight * taxRate / 100;
+    var taxableAmount = (freight + ((subTotalAmount + freight) * adminFeeRate / 100) + adminFeeAmount + otherNum1 + otherNum2);
+    var taxAmount = taxSubTotal + taxableAmount * taxRate / 100;
+    var total = subTotalAmount + taxableAmount + taxAmount;
+    var dueAmount = total - amountPaid;
+
+    $('#freight_tax_amount').minderNumberFormat('setValue', freightTax);
+    $('#freight_tax_amount').attr('title', ' = "Freight Charge" * "Tax - %" / 100 = ' + freight + ' * ' + taxRate + ' / 100 ');
+
+    $('#tax_amount').minderNumberFormat('setValue', taxAmount);
+    $('#tax_amount').attr('title', ' = "Tax Sub Total" + ("Freight Charge" + ("Lines Sub Total" + "Freight Charge") * "Administration Fee - %" / 100 + "Administration Fee - $" + "Other Cost 1" + "Other Cost 2") * "Tax - %" / 100 = '
+                                    + taxSubTotal + ' + (' + freight + ' + (' + subTotalAmount + ' + ' + freight + ') * ' + adminFeeRate + ' / 100 + ' + adminFeeAmount + ' + ' + otherNum1 + ' + ' + otherNum2 + ') * ' + taxRate + ' / 100 = '
+                                    + taxSubTotal + ' + ' + taxableAmount + ' * ' + taxRate + ' / 100');
+
+    $('#due_amount').minderNumberFormat('setValue', dueAmount);
+    $('#due_amount').attr('title', ' = "Lines Sub Total" + "Freight Charge" + ("Lines Sub Total" + "Freight Charge") * "Administration Fee - %" / 100 + "Administration Fee - $" + "Other Cost 1" + "Other Cost 2" + "Tax - $" - "Deposit Received - $" = '
+                                    + subTotalAmount + ' + ' + freight + ' + (' + subTotalAmount + ' + ' + freight + ') * ' + adminFeeRate + ' / 100 + ' + adminFeeAmount + ' + ' + otherNum1 + ' + ' + otherNum2 + ' + ' + taxAmount + ' - ' + amountPaid + ' = '
+                                    + subTotalAmount + ' + ' + taxableAmount + ' + ' + taxAmount + ' - ' + amountPaid);
+}
+
+function displayContactNameChanged()
+{
+    $('#edit_contact_name').attr('value', $('#display_contact_name').attr('value'));
+}
+
+function hideEdit(){
+    $('#order-edit').hide();
+    
+    return false;
+}
+
+$(document).ready(function(){
+    $('.pick-order-edit-form [data-number-format]').minderNumberFormat();
+
+    $('.pick-order-edit-form').submit(function(){
+        $(this).find('[data-number-format]').minderNumberFormat('remove');
+    });
+    recalculateTotal();
+
+    $('#edit_pick_due_date').datepicker({dateFormat: 'yy-mm-dd'});
+
+    $('#edit_person_id').autocomplete('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'search'), '', false); ?>', {matchSubset: 1, matchContains: 1, cacheLength: 10, formatItem: formatItem, selectFirst: 1, extraParams: {field: 'person_id'}});
+
+    $('#edit_person_id').result(soldToChanged);//soldToChanged
+
+    $('#d_person_id').autocomplete('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'search'), '', false); ?>', {matchSubset: 1, matchContains: 1, cacheLength: 10, formatItem: formatItem, selectFirst: 1, extraParams: {field: 'person_id'}});
+
+	$('#d_person_id').result(deliverToChanged);
+	
+    $('#s_person_id').autocomplete('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'search'), '', false); ?>', {matchSubset: 1, matchContains: 1, cacheLength: 10, formatItem: formatItem, selectFirst: 1, extraParams: {field: 's_person_id'}});
+
+	$('#s_person_id').result(updateSoldByPersonId);
+<?php
+if (isset($this->notes['Instructions'])) {
+?>
+    $('#instructions > ul').tabs();
+<?php
+}
+if (isset($this->notes['Other Notes'])) {
+?>
+    $('#other_notes > ul').tabs();
+<?php
+}
+if (isset($this->notes['Remarks'])) {
+?>
+    $('#remarks > ul').tabs();
+<?php
+}
+if (isset($this->notes['Footer'])) {
+?>
+    $('#footerctrl > ul').tabs();
+<?php
+}
+?>
+    shipToInvoice();
+    suppliedFromSoldFromAddress();
+});
+
+var deliveryAddresses = <?php echo json_encode($this->minder->getAddresses()); ?>;
+</script>

@@ -1,0 +1,822 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+  
+html
+{
+    font-size: 13px;
+    font-family: arial, sans serif;
+    line-height: 1.23em;
+}
+
+body, form, table, tr, td, th, h1, h2, h3, h4, p, img
+{
+    font-weight: normal;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 100%;
+}
+td
+{
+    text-align: left;
+    vertical-align: top;
+}
+th
+{
+    text-align: left;
+}
+table.withborder, table.withborder td, table.withborder th
+{
+    border-top: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+    border-collapse: collapse;
+}
+table.withborder td, table.withborder th
+{
+    padding: 2px;
+}
+button, input
+{
+    background-color: #ffffff;
+    color: #000000;
+}
+button, textarea, input[type="text"], input[type="password"], input[type="submit"], input[type="reset"], input[type="button"]
+{
+    border: 1px solid #999999;
+}
+input[type="text"]
+{
+    width: 30ex;
+}
+button, input[type="submit"], input[type="reset"], input[type="button"]
+{
+    border: 1px solid #999999;
+    padding: 2px 5px;
+}
+input.number
+{
+    width: 15ex;
+    text-align: right;
+}
+textarea
+{
+    height: 10ex;
+}
+select
+{
+    border: 1px solid #999999;
+    width: 30ex;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+}
+#left select {
+    width: 23ex;
+}
+a:link, a:visited, a:hover
+{
+    color: #333333;
+    text-decoration: none;
+}
+a:hover
+{
+    color: #003399;
+}
+h1, h2, h3, h4
+{
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font-weight: bold;
+}
+h1
+{
+    font-size: 115%;
+    text-transform: uppercase;
+}
+h2
+{
+    font-size: 108%;
+    text-transform: uppercase;
+}
+h3
+{
+    font-size: 100%;
+}
+h4
+{
+    font-size: 100%;
+}
+#header
+{
+    margin-bottom: 10px;
+}
+#header ul, ul#modules
+{
+    list-style-type: none;
+    padding: 0;
+    border-top: 1px solid #cccccc;
+    border-bottom: 1px solid #cccccc;
+    border-left: 0;
+    border-right: 0;
+    margin: 0;
+}
+#header li, ul#modules li
+{
+    display: inline;
+    padding: 0 10px;
+    line-height: 1.6em;
+    border: 0;
+    border-right: 1px solid #cccccc;
+    margin: 0;
+}
+#header #logo
+{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+}
+#header #top-nav
+{
+    float: right;
+}
+#header #top-nav li a {
+    font-weight: bold;	 
+}
+#header #minder-logo
+{
+    float: right;
+    clear: both;
+    width: 30px;
+    height: 29px;
+    margin: 3px;
+}
+#header #modules
+{
+}
+#header #modules li, ul#modules li
+{
+    font-weight: bold;
+}
+#header #modules li.selected a:link
+{
+    color: #003399;
+}
+
+#left
+{
+    float: left;
+    width: 170px;
+    padding: 0 0 0 10px;
+    border-right: 1px solid #cccccc;
+    margin-bottom: 10px;
+}
+#left h2
+{
+    border-top: 1px solid #999999;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+#left ul
+{
+    border: 0;
+    padding: 0;
+    margin: 0;
+    margin-bottom: 10px;
+    list-style-type: none;
+}
+#left li
+{
+    border: 0;
+    border-top: 1px solid #cccccc;
+    padding: 0;
+    margin: 0;
+    line-height: 1.5em;
+}
+#page
+{
+    margin-left: 190px;
+    border-top: 1px solid #cccccc;
+    /*border-bottom: 1px solid #cccccc;*/
+    padding: 10px 10px;
+}
+#footer
+{
+    clear: both;
+    margin-top: 20px;
+    padding: 20px 0;
+    border-top: 1px solid #999999;
+    text-align: center;
+}
+
+
+#page>h1
+{
+    margin-bottom: 20px;
+}
+div.section
+{
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-top: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+}
+div.section+div.section
+{
+    margin-top: 15px;
+}
+div.section>h2
+{
+}
+div.section table
+{
+    width: 100%;
+}
+div.section table td
+{
+    width: 35%;
+}
+div.section table th
+{
+    width: 15%;
+}
+div.section>div>.left
+{
+    display: table-cell;
+    left: 0;
+    top: 0;
+    width: 50%;
+}
+div.section>div>.right
+{
+    display: table-cell;
+    right: 0;
+    top: 0;
+    width: 0%;
+}
+table.summary, table.summary td, table.summary th
+{
+    border-top: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+    border-collapse: collapse;
+    width: 100%;
+}
+table.summary th
+{
+    background-color: #eeeeff;
+    text-align: right;
+    padding: 2px 5px 2px 2px;
+    width: 15%;
+}
+table.summary td
+{
+    padding: 2px 2px 2px 5px;
+    width: 35%;
+}
+table.search th
+{
+    /*background-color: #D1FBA7;*/
+    text-align: right;
+    padding: 2px 5px 2px 2px;
+}
+table.search td
+{
+    font-weight:bold;
+    text-align: left;
+    padding: 2px 5px 2px 2px;
+}
+ul.toolbar
+{
+    list-style-type: none;
+    border: 0;
+    padding: 0;
+    margin: 5px 0;
+}
+ul.toolbar li
+{
+    display: inline;
+    border: 0;
+    padding: 2px 5px 2px 0;
+    margin: 0;
+}
+#flash {
+    border: 3px solid #ff0000;
+    padding: 5px 10px;
+    margin: 5px 10px;
+}
+#message {
+    border: 3px solid #00ff00;
+    padding: 5px 10px;
+    margin: 5px 10px;
+}
+.floats {
+    overflow: hidden;
+    zoom: 1;
+}
+.floats fieldset {
+    border: solid 1px #ccc;
+    float: left;
+    margin-right: .5em;
+    padding: .5em;
+}
+.block-field {
+    margin: .5em 0;
+    clear: both;
+}
+.block-field input {
+    width: auto !important;
+}
+.cl {
+    clear: both;
+}
+.cl_r {
+    clear: right;
+}
+.fl {
+    float: left;
+}
+.fr {
+    float: right;
+}
+ul.float
+{
+    float:left;
+}
+#tab1, #tab2, #tab3
+{
+    float:left; 
+    width: 99%;
+}
+
+.calendar_header select {
+    width:11ex;
+}
+.datepicker_header select {
+    width:11ex;
+}
+
+.import_fields th
+{
+  padding:2px 2px 2px 2px;
+    border-bottom: 1px solid #999999;
+    border-collapse: collapse;
+    background-color: #D1FBA7;
+}
+
+#sourcelist, .field-list {
+  float:left;
+    overflow:auto;
+    height:250px;
+    min-width:270px;
+    width:20%;
+    padding-right: 2px;  
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 5px double #CCCCCC;
+    margin-left:0px;
+    margin-bottom: 10px;
+}
+#importlist {
+    float:left;
+    overflow:auto;
+    height:250px;
+    min-width:270px;
+    width:20%;
+    padding-left: 2px; 
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 5px double #CCCCCC;
+    margin-left: 0px;
+    margin-bottom: 10px;
+}
+
+#columnList {
+    border:5px double #CCCCCC;
+    float:left;
+    height:250px;
+    margin-bottom:10px;
+    min-width:70px;
+    overflow:auto;
+    padding-bottom:5px;
+    padding-left:2px;
+    padding-top:5px;
+    width:3%;
+}
+
+.fields {
+    list-style-type: none;
+    padding: 2px;
+    margin: 0;
+}
+
+.fields li {
+    /*background-color: #D1FBA7;*/
+    cursor: pointer;
+}
+.fields li input {
+    cursor: pointer;
+    font-weight:bold;
+    border:none;
+    background-color: #D1FBA7;
+    border-bottom: 1px solid #999999;
+    margin:2px 2px 2px 2px;
+}
+
+#columnList .fields li input {
+    background-color:#D1FBA7;
+    border-color:-moz-use-text-color -moz-use-text-color #999999;
+    border-style:none none solid;
+    border-width:medium medium 1px;
+    cursor:pointer;
+    font-weight:bold;
+    margin:2px;
+}
+
+#ignore_column{
+    background-color: #ff0000 !important;
+}
+
+#sample_table {
+    float:left;
+    width:500px;
+}
+
+#lines-info td {
+    white-space: nowrap; 
+}
+
+dt {
+    display: inline;
+}
+dd {
+    display: inline;
+}
+
+.leftside {
+    float: left;
+    width: 48%;
+    padding: 4px 4px 4px 4px; 
+    margin-bottom: 5px;   
+} 
+
+.rightside {
+  float: left;
+    width: 48%;
+    padding: 4px 4px 4px 4px;
+    margin-bottom: 5px;   
+}
+
+.label {
+    width:10ex;
+}
+
+li.field {
+    list-style-type: none;
+}
+.notes
+{
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 2px solid #000000;
+}
+.rightalign
+{
+    text-align: right;
+}
+
+.errors {
+    border: 3px solid #ff0000;
+    padding: 5px 10px;
+    margin: 5px 10px;
+    list-style-type: none;
+}
+
+.button_toolbar
+{
+    width: 99%;
+    clear: both;
+}
+
+tr.form_element td, tr.form_element th
+{
+    padding-bottom: 4px;
+    padding-top: 4px; 
+}
+.form_element td
+{
+  /*background-color: #0066CC;*/
+} 
+
+
+.table-selected
+{
+  
+}
+
+.ui-tabs-container
+{
+    float:left;
+}
+
+#table-wrapper
+{
+  width:99%;
+}
+
+
+/* Messages */
+.warnings, .messages, .errors, .restore-warnings, .restore-messages, .restore-errors {
+    margin: 0;
+    padding: 0 .5em 0 2.5em;
+    margin-bottom: 1em;
+    list-style: none;
+}
+.warnings li, .messages li, .errors li, .restore-warnings li, .restore-messages li, .restore-errors li {
+    list-style: none;
+    margin: .5em;
+    padding: 0;
+}
+.warnings, .restore-warnings {
+    background: #ffffce url(../icons/warnings.png) no-repeat .8em 50%;
+    color: #000;
+    border: solid 2px #f0c000;
+}
+.messages, .restore-messages {
+    background: #d8e4f1 url(../icons/messages.png) no-repeat .8em 50%;
+    color: #000;
+    border: solid 2px #3c78b5;
+}
+.errors, .restore-errors {
+    background: #fcc url(../icons/errors.png) no-repeat .8em 50%;
+    color: #000;
+    border: solid 2px #c00;
+}
+
+td > a {
+    display: block;
+}
+
+/*---------------------------* ddaccordion *---------------------------*/
+
+.glossymenu{
+margin: 5px 0;
+padding: 0;
+width: 168px; /*width of menu*/
+/*border: 1px solid #9A9A9A;*/
+border-bottom-width: 0;
+}
+
+.glossymenu a.menuitem{
+background: black url('../scripts/themes/ddaccordion/glossyback.png') repeat-x bottom left;
+font-size: 14px;
+font-weight: bold;
+color: black;
+display: block;
+position: relative; /*To help in the anchoring of the ".statusicon" icon image*/
+width: auto;
+padding: 4px 0;
+padding-left: 10px;
+text-decoration: none;
+border-bottom: 1px solid #000000;
+}
+
+
+.glossymenu a.menuitem:visited, .glossymenu .menuitem:active{
+color: black;
+}
+
+.glossymenu a.menuitem .statusicon{ /*CSS for icon image that gets dynamically added to headers*/
+position: absolute;
+top: 5px;
+right: 5px;
+border: none;
+}
+
+.glossymenu a.menuitem:hover{
+    background: #DFDCCB;
+    background-image: url('/minder/icons/buttonbacka.png');
+    color: #000000;
+    /*background-image: url('../scripts/themes/ddaccordion/glossyback2.png');*/
+}
+
+.glossymenu div.submenu{ /*DIV that contains each sub menu*/
+background: white;
+}
+
+.glossymenu div.submenu ul{ /*UL of each sub menu*/
+list-style-type: none;
+margin: 0;
+padding: 0;
+}
+
+.glossymenu div.submenu ul li {
+/*border-bottom: 1px solid blue;*/
+	padding-bottom: 1px !important;
+	color:red;
+}
+
+.glossymenu div.submenu ul li a{
+display: block;
+font-weight: normal;
+font-size:12px;
+color: black;
+text-decoration: none;
+padding: 2px 0;
+padding-left: 10px;
+}
+
+.glossymenu div.submenu ul li a:hover{
+    background: #DFDCCB;
+    background-image: url('/minder/icons/buttonbacka.png');
+    /*background-image: url('../scripts/themes/ddaccordion/glossyback2.png');*/
+    color: #000000;
+}
+
+/* table selected row */
+tr.rowselected, tr.rowselected td, tr.rowselected th {
+    background-color:#E0F4D7 !important; 
+}
+
+/* fix z-index for datepicker to place it above dialog window */
+
+#datepicker_div {
+    z-index: 1012;
+}
+
+.report_body {
+    width: 99%;
+    float:left;
+}
+
+div.report_body > table {
+    clear:both;
+    float:left;
+}
+/* new css button */
+
+#table {
+	float:left;
+}
+.green-button, input.new_button, input.order-button, button#action, input#action, input#add_action, input#jsbutton, input#view, button#selected_rows {
+    padding: 0px 0px 0px 0px;
+    background-image: url(/minder/icons/buttonbacka.png) repeat-x !important; 
+    background: url(/minder/icons/buttonbacka.png) !important;
+    font-weight:bolder;
+    /*width: 189px;*/
+    border: 1px solid;
+}
+
+.yellow-button {
+    padding: 0px 0px 0px 0px;
+    background-color: yellow;
+    font-weight:bolder;
+    border: 1px solid;
+}
+
+.red-button {
+    padding: 0px 0px 0px 0px;
+    background-color: red;
+    font-weight:bolder;
+    border: 1px solid;
+}
+
+table.tablesorter > thead > tr > th > input[type="checkbox"]{
+    /*background-image: url('/minder/icons/buttonback3.png');*/
+    background-color: #b1db87;
+    color: #b1db87;
+}
+table > tbody > tr > th > input[type="checkbox"]{
+    background: none transparent scroll repeat 0% 0%
+}
+
+#search_map {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.hidden
+{
+    display: none;
+}
+.edit-variance
+{
+    cursor: pointer;
+    border: 1px solid;
+    text-align: right;
+    width: 5ex;
+}
+.edit-variance .cell 
+{
+    width: 5ex;
+    font-size: 100%;
+    border:none;
+}
+td.toolbutton
+{
+    width:32px;
+    padding:0px !important;
+}
+.toolbutton[name="add"]
+{
+    background-image:url(/minder/icons/add.png);
+    width: 16px;
+    height: 16px;
+}
+.toolbutton[name="close"]
+{
+    background-image:url(/minder/icons/close.png) ;
+    width: 16px;
+    height: 16px;
+}
+
+fieldset, legend
+{
+    padding: 3px;
+}
+textarea[disabled="true"], input[disabled="true"], button[disabled="true"], select[disabled="true"],
+textarea[disabled], input[disabled], button[disabled], select[disabled],
+textarea[disabled="disabled"], input[disabled="disabled"], button[disabled="disabled"], select[disabled="disabled"],
+.disabled, 
+input#action[disabled="disabled"], button#action[disabled="disabled"], input#add_action[disabled="disabled"]
+{
+    background: none;
+    background-color: #eeeeee;
+    color: #000000;
+}
+
+.mandatory{
+    border: solid 1px !important;
+    border-color: red !important;
+}
+
+/*----------------SYS SCREEN AREA STYLES START---------------*/
+.sys-screen-title {
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.paginator-container {
+    float: left;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+.selected-container-top {
+    clear: both;
+}
+.black-top-border {
+    border-top-color:#999999;
+    border-top-style:solid;
+    border-top-width:1px;
+}
+/*----------------SYS SCREEN AREA STYLES START---------------*/
+
+table.tablesorter tbody tr.bad-line.odd td {
+    background-color: #FF2010;
+}
+table.tablesorter tbody tr.bad-line.even td {
+    background-color: #FFA0A0;
+}
+
+table.tablesorter tbody tr.unchecked.odd td {
+    background-color: darkorange;
+}
+table.tablesorter tbody tr.unchecked.even td {
+    background-color: #fbb450;
+}
+
+table.tablesorter tbody tr.selected-row.even td,
+table.tablesorter tbody tr.selected-row.odd td,
+table.tablesorter tbody tr.selected-row.even th,
+table.tablesorter tbody tr.selected-row.odd th{
+    background-color: yellow;
+}
+
+.summary-screen tr{
+    background-color: yellow;
+}
+
+.summary-screen th{
+    text-align: right;
+}
+
+.modules-switcher:hover {
+    cursor: pointer;
+}
+
+
+/*SFI style block*/
+/*
+body {
+    background-image: url("/minder/custom/siteback.jpg");
+}
+.glossymenu a.menuitem{
+    background: inherit;
+}
+.glossymenu div.submenu{
+    background: inherit;
+}
+/*end of SFI style block*/

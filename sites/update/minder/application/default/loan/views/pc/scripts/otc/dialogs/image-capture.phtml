@@ -1,0 +1,33 @@
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/Mdr/Mdr.Components.Messages.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/Mdr/Mdr.Pages.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/Mdr/Mdr.Pages.Otc.js"></script>
+
+<div id="otc-image-capture-dialog" class="flora otc-image-capture-dialog" title="Capture image" style="display: none;">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <div >
+
+            <div class="camera">
+                <video class="change-source" width="320" height="240"></video>
+            </div>
+
+            <div class="dialog-messages">
+
+            </div>
+        </div>
+
+        <div class="captured-image-container">
+        </div>
+
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        new Mdr.Pages.Otc.ImageCaptureDialog({
+            el: '#otc-image-capture-dialog',
+            messages: new Mdr.Components.Messages.MessagesView({
+                el: $('#otc-image-capture-dialog').find('.dialog-messages')
+            })
+        });
+    });
+</script>

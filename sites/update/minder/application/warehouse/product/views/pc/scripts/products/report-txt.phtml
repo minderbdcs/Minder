@@ -1,0 +1,20 @@
+<?php
+// Append header.
+$line = '';
+foreach ($this->headers as $column) {
+    $line .= $this->escape($column) . chr(9);
+}
+if (!empty($line)) {
+    echo "$line\n";
+}
+
+// Append data.
+foreach ($this->data as $row) {
+    $line = '';
+    foreach ($row as $column) {
+        $line .= $this->escape($column) . chr(9);
+    }
+    if (!empty($line)) {
+        echo "$line\n";
+    }
+}

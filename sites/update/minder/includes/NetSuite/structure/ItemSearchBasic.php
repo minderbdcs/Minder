@@ -1,0 +1,264 @@
+<?php
+/**
+ * Minder
+ *
+ * PHP version 5.2.4
+ *
+ * @category  Minder
+ * @package   Minder
+ * @author    Sergey Boroday <sergey.boroday@binary-studio.com>
+ * @copyright 2007 Barcoding & Data Collection Systems
+ * @license   http://www.barcoding.com.au/licence.html B&DCS Licence
+ * @version   SVN: <svn_id>
+ * @link      http://www.barcoding.com.au/
+ *
+ */
+
+/**
+ * ItemSearchBasic map NetSuite datatype
+ *
+ * @category  Minder
+ * @package   Minder
+ * @author    Sergey Boroday <sergey.boroday@binary-studio.com>
+ * @copyright 2007 Barcoding & Data Collection Systems
+ * @license   http://www.barcoding.com.au/licence.html B&DCS Licence
+ * @link      http://www.barcoding.com.au/
+ */
+
+class NetSuite_ItemSearchBasic {
+    public $account; //NetSuite_SearchMultiSelectField
+    public $autoLeadTime; //NetSuite_SearchBooleanField
+    public $autoPreferredStockLevel; //NetSuite_SearchBooleanField
+    public $autoReorderPoint; //NetSuite_SearchBooleanField
+    public $availableToPartners; //NetSuite_SearchBooleanField
+    public $category; //NetSuite_SearchMultiSelectField
+    public $class; //NetSuite_SearchMultiSelectField
+    public $component; //NetSuite_SearchMultiSelectField
+    public $copyDescription; //NetSuite_SearchBooleanField
+    public $cost; //NetSuite_SearchDoubleField
+    public $costingMethod; //NetSuite_SearchEnumMultiSelectField
+    public $created; //NetSuite_SearchDateField
+    public $dateViewed; //NetSuite_SearchDateField
+    public $daysBeforeExpiration; //NetSuite_SearchDoubleField
+    public $demandModifier; //NetSuite_SearchDoubleField
+    public $department; //NetSuite_SearchMultiSelectField
+    public $ebayAuction; //NetSuite_SearchBooleanField
+    public $ebayAuctionDuration; //NetSuite_SearchEnumMultiSelectField
+    public $ebayBuyNowPrice; //NetSuite_SearchDoubleField
+    public $ebayCategoryId; //NetSuite_SearchLongField
+    public $ebayItemDescr; //NetSuite_SearchStringField
+    public $ebayItemSubtitle; //NetSuite_SearchStringField
+    public $ebayItemTitle; //NetSuite_SearchStringField
+    public $ebayReservePrice; //NetSuite_SearchDoubleField
+    public $ebayStartPrice; //NetSuite_SearchDoubleField
+    public $ebayStore; //NetSuite_SearchBooleanField
+    public $externalId; //NetSuite_SearchMultiSelectField
+    public $feedDescription; //NetSuite_SearchStringField
+    public $feedName; //NetSuite_SearchStringField
+    public $froogleProductFeed; //NetSuite_SearchBooleanField
+    public $giftCertAuthCode; //NetSuite_SearchStringField
+    public $giftCertEmail; //NetSuite_SearchStringField
+    public $giftCertExpDate; //NetSuite_SearchDateField
+    public $giftCertFrom; //NetSuite_SearchStringField
+    public $giftCertMsg; //NetSuite_SearchStringField
+    public $giftCertOrigAmt; //NetSuite_SearchStringField
+    public $giftCertRecipient; //NetSuite_SearchStringField
+    public $imageUrl; //NetSuite_SearchStringField
+    public $internalId; //NetSuite_SearchMultiSelectField
+    public $isAvailable; //NetSuite_SearchBooleanField
+    public $isDropShipItem; //NetSuite_SearchBooleanField
+    public $isFeatured; //NetSuite_SearchBooleanField
+    public $isInactive; //NetSuite_SearchBooleanField
+    public $isOnline; //NetSuite_SearchBooleanField
+    public $isSpecialOrderItem; //NetSuite_SearchBooleanField
+    public $issueProduct; //NetSuite_SearchMultiSelectField
+    public $isTaxable; //NetSuite_SearchBooleanField
+    public $isVsoeBundle; //NetSuite_SearchBooleanField
+    public $itemUrl; //NetSuite_SearchStringField
+    public $lastModifiedDate; //NetSuite_SearchDateField
+    public $lastQuantityAvailableChange; //NetSuite_SearchDateField
+    public $leadTime; //NetSuite_SearchLongField
+    public $location; //NetSuite_SearchMultiSelectField
+    public $manufacturer; //NetSuite_SearchStringField
+    public $matrix; //NetSuite_SearchBooleanField
+    public $matrixChild; //NetSuite_SearchBooleanField
+    public $metaTagHtml; //NetSuite_SearchStringField
+    public $minimumQuantity; //NetSuite_SearchLongField
+    public $mpn; //NetSuite_SearchStringField
+    public $name; //NetSuite_SearchStringField
+    public $nexTagCategory; //NetSuite_SearchStringField
+    public $nexTagProductFeed; //NetSuite_SearchBooleanField
+    public $numberAllowedDownloads; //NetSuite_SearchDoubleField
+    public $offerSupport; //NetSuite_SearchBooleanField
+    public $onlineCustomerPrice; //NetSuite_SearchDoubleField
+    public $onSpecial; //NetSuite_SearchBooleanField
+    public $overallQuantityPricingType; //NetSuite_SearchEnumMultiSelectField
+    public $pageTitle; //NetSuite_SearchStringField
+    public $parent; //NetSuite_SearchMultiSelectField
+    public $preferredLocation; //NetSuite_SearchMultiSelectField
+    public $preferredStockLevel; //NetSuite_SearchDoubleField
+    public $preferredStockLevelDays; //NetSuite_SearchLongField
+    public $price; //NetSuite_SearchDoubleField
+    public $pricingGroup; //NetSuite_SearchMultiSelectField
+    public $purchaseUnit; //NetSuite_SearchMultiSelectField
+    public $quantityAvailable; //NetSuite_SearchDoubleField
+    public $quantityBackOrdered; //NetSuite_SearchDoubleField
+    public $quantityCommitted; //NetSuite_SearchDoubleField
+    public $quantityOnHand; //NetSuite_SearchDoubleField
+    public $quantityOnOrder; //NetSuite_SearchDoubleField
+    public $quantityPricingSchedule; //NetSuite_SearchMultiSelectField
+    public $reorderPoint; //NetSuite_SearchDoubleField
+    public $revRecSchedule; //NetSuite_SearchMultiSelectField
+    public $safetyStockLevel; //NetSuite_SearchDoubleField
+    public $safetyStockLevelDays; //NetSuite_SearchLongField
+    public $salesDescription; //NetSuite_SearchStringField
+    public $saleUnit; //NetSuite_SearchMultiSelectField
+    public $searchKeywords; //NetSuite_SearchStringField
+    public $seasonalDemand; //NetSuite_SearchBooleanField
+    public $serialNumber; //NetSuite_SearchStringField
+    public $shippingRate; //NetSuite_SearchDoubleField
+    public $shoppingDotComCategory; //NetSuite_SearchStringField
+    public $shoppingProductFeed; //NetSuite_SearchBooleanField
+    public $shopzillaCategoryId; //NetSuite_SearchLongField
+    public $shopzillaProductFeed; //NetSuite_SearchBooleanField
+    public $softDescriptor; //NetSuite_SearchMultiSelectField
+    public $stockDescription; //NetSuite_SearchStringField
+    public $stockUnit; //NetSuite_SearchMultiSelectField
+    public $storeDescription; //NetSuite_SearchStringField
+    public $subType; //NetSuite_SearchEnumMultiSelectField
+    public $taxCode; //NetSuite_SearchMultiSelectField
+    public $thumbnailUrl; //NetSuite_SearchStringField
+    public $totalValue; //NetSuite_SearchDoubleField
+    public $trackLandedCost; //NetSuite_SearchBooleanField
+    public $type; //NetSuite_SearchEnumMultiSelectField
+    public $unitsType; //NetSuite_SearchMultiSelectField
+    public $urlComponent; //NetSuite_SearchStringField
+    public $useBins; //NetSuite_SearchBooleanField
+    public $useMarginalRates; //NetSuite_SearchBooleanField
+    public $vendor; //NetSuite_SearchMultiSelectField
+    public $vsoeDeferral; //NetSuite_SearchMultiSelectField
+    public $vsoeDelivered; //NetSuite_SearchBooleanField
+    public $vsoePermitDiscount; //NetSuite_SearchMultiSelectField
+    public $vsoePrice; //NetSuite_SearchDoubleField
+    public $weight; //NetSuite_SearchDoubleField
+    public $customFieldList; //NetSuite_SearchCustomFieldList
+
+    public function __construct(  NetSuite_SearchMultiSelectField $account, NetSuite_SearchBooleanField $autoLeadTime, NetSuite_SearchBooleanField $autoPreferredStockLevel, NetSuite_SearchBooleanField $autoReorderPoint, NetSuite_SearchBooleanField $availableToPartners, NetSuite_SearchMultiSelectField $category, NetSuite_SearchMultiSelectField $class, NetSuite_SearchMultiSelectField $component, NetSuite_SearchBooleanField $copyDescription, NetSuite_SearchDoubleField $cost, NetSuite_SearchEnumMultiSelectField $costingMethod, NetSuite_SearchDateField $created, NetSuite_SearchDateField $dateViewed, NetSuite_SearchDoubleField $daysBeforeExpiration, NetSuite_SearchDoubleField $demandModifier, NetSuite_SearchMultiSelectField $department, NetSuite_SearchBooleanField $ebayAuction, NetSuite_SearchEnumMultiSelectField $ebayAuctionDuration, NetSuite_SearchDoubleField $ebayBuyNowPrice, NetSuite_SearchLongField $ebayCategoryId, NetSuite_SearchStringField $ebayItemDescr, NetSuite_SearchStringField $ebayItemSubtitle, NetSuite_SearchStringField $ebayItemTitle, NetSuite_SearchDoubleField $ebayReservePrice, NetSuite_SearchDoubleField $ebayStartPrice, NetSuite_SearchBooleanField $ebayStore, NetSuite_SearchMultiSelectField $externalId, NetSuite_SearchStringField $feedDescription, NetSuite_SearchStringField $feedName, NetSuite_SearchBooleanField $froogleProductFeed, NetSuite_SearchStringField $giftCertAuthCode, NetSuite_SearchStringField $giftCertEmail, NetSuite_SearchDateField $giftCertExpDate, NetSuite_SearchStringField $giftCertFrom, NetSuite_SearchStringField $giftCertMsg, NetSuite_SearchStringField $giftCertOrigAmt, NetSuite_SearchStringField $giftCertRecipient, NetSuite_SearchStringField $imageUrl, NetSuite_SearchMultiSelectField $internalId, NetSuite_SearchBooleanField $isAvailable, NetSuite_SearchBooleanField $isDropShipItem, NetSuite_SearchBooleanField $isFeatured, NetSuite_SearchBooleanField $isInactive, NetSuite_SearchBooleanField $isOnline, NetSuite_SearchBooleanField $isSpecialOrderItem, NetSuite_SearchMultiSelectField $issueProduct, NetSuite_SearchBooleanField $isTaxable, NetSuite_SearchBooleanField $isVsoeBundle, NetSuite_SearchStringField $itemUrl, NetSuite_SearchDateField $lastModifiedDate, NetSuite_SearchDateField $lastQuantityAvailableChange, NetSuite_SearchLongField $leadTime, NetSuite_SearchMultiSelectField $location, NetSuite_SearchStringField $manufacturer, NetSuite_SearchBooleanField $matrix, NetSuite_SearchBooleanField $matrixChild, NetSuite_SearchStringField $metaTagHtml, NetSuite_SearchLongField $minimumQuantity, NetSuite_SearchStringField $mpn, NetSuite_SearchStringField $name, NetSuite_SearchStringField $nexTagCategory, NetSuite_SearchBooleanField $nexTagProductFeed, NetSuite_SearchDoubleField $numberAllowedDownloads, NetSuite_SearchBooleanField $offerSupport, NetSuite_SearchDoubleField $onlineCustomerPrice, NetSuite_SearchBooleanField $onSpecial, NetSuite_SearchEnumMultiSelectField $overallQuantityPricingType, NetSuite_SearchStringField $pageTitle, NetSuite_SearchMultiSelectField $parent, NetSuite_SearchMultiSelectField $preferredLocation, NetSuite_SearchDoubleField $preferredStockLevel, NetSuite_SearchLongField $preferredStockLevelDays, NetSuite_SearchDoubleField $price, NetSuite_SearchMultiSelectField $pricingGroup, NetSuite_SearchMultiSelectField $purchaseUnit, NetSuite_SearchDoubleField $quantityAvailable, NetSuite_SearchDoubleField $quantityBackOrdered, NetSuite_SearchDoubleField $quantityCommitted, NetSuite_SearchDoubleField $quantityOnHand, NetSuite_SearchDoubleField $quantityOnOrder, NetSuite_SearchMultiSelectField $quantityPricingSchedule, NetSuite_SearchDoubleField $reorderPoint, NetSuite_SearchMultiSelectField $revRecSchedule, NetSuite_SearchDoubleField $safetyStockLevel, NetSuite_SearchLongField $safetyStockLevelDays, NetSuite_SearchStringField $salesDescription, NetSuite_SearchMultiSelectField $saleUnit, NetSuite_SearchStringField $searchKeywords, NetSuite_SearchBooleanField $seasonalDemand, NetSuite_SearchStringField $serialNumber, NetSuite_SearchDoubleField $shippingRate, NetSuite_SearchStringField $shoppingDotComCategory, NetSuite_SearchBooleanField $shoppingProductFeed, NetSuite_SearchLongField $shopzillaCategoryId, NetSuite_SearchBooleanField $shopzillaProductFeed, NetSuite_SearchMultiSelectField $softDescriptor, NetSuite_SearchStringField $stockDescription, NetSuite_SearchMultiSelectField $stockUnit, NetSuite_SearchStringField $storeDescription, NetSuite_SearchEnumMultiSelectField $subType, NetSuite_SearchMultiSelectField $taxCode, NetSuite_SearchStringField $thumbnailUrl, NetSuite_SearchDoubleField $totalValue, NetSuite_SearchBooleanField $trackLandedCost, NetSuite_SearchEnumMultiSelectField $type, NetSuite_SearchMultiSelectField $unitsType, NetSuite_SearchStringField $urlComponent, NetSuite_SearchBooleanField $useBins, NetSuite_SearchBooleanField $useMarginalRates, NetSuite_SearchMultiSelectField $vendor, NetSuite_SearchMultiSelectField $vsoeDeferral, NetSuite_SearchBooleanField $vsoeDelivered, NetSuite_SearchMultiSelectField $vsoePermitDiscount, NetSuite_SearchDoubleField $vsoePrice, NetSuite_SearchDoubleField $weight, NetSuite_SearchCustomFieldList $customFieldList) {
+        $this->account = $account;
+        $this->autoLeadTime = $autoLeadTime;
+        $this->autoPreferredStockLevel = $autoPreferredStockLevel;
+        $this->autoReorderPoint = $autoReorderPoint;
+        $this->availableToPartners = $availableToPartners;
+        $this->category = $category;
+        $this->class = $class;
+        $this->component = $component;
+        $this->copyDescription = $copyDescription;
+        $this->cost = $cost;
+        $this->costingMethod = $costingMethod;
+        $this->created = $created;
+        $this->dateViewed = $dateViewed;
+        $this->daysBeforeExpiration = $daysBeforeExpiration;
+        $this->demandModifier = $demandModifier;
+        $this->department = $department;
+        $this->ebayAuction = $ebayAuction;
+        $this->ebayAuctionDuration = $ebayAuctionDuration;
+        $this->ebayBuyNowPrice = $ebayBuyNowPrice;
+        $this->ebayCategoryId = $ebayCategoryId;
+        $this->ebayItemDescr = $ebayItemDescr;
+        $this->ebayItemSubtitle = $ebayItemSubtitle;
+        $this->ebayItemTitle = $ebayItemTitle;
+        $this->ebayReservePrice = $ebayReservePrice;
+        $this->ebayStartPrice = $ebayStartPrice;
+        $this->ebayStore = $ebayStore;
+        $this->externalId = $externalId;
+        $this->feedDescription = $feedDescription;
+        $this->feedName = $feedName;
+        $this->froogleProductFeed = $froogleProductFeed;
+        $this->giftCertAuthCode = $giftCertAuthCode;
+        $this->giftCertEmail = $giftCertEmail;
+        $this->giftCertExpDate = $giftCertExpDate;
+        $this->giftCertFrom = $giftCertFrom;
+        $this->giftCertMsg = $giftCertMsg;
+        $this->giftCertOrigAmt = $giftCertOrigAmt;
+        $this->giftCertRecipient = $giftCertRecipient;
+        $this->imageUrl = $imageUrl;
+        $this->internalId = $internalId;
+        $this->isAvailable = $isAvailable;
+        $this->isDropShipItem = $isDropShipItem;
+        $this->isFeatured = $isFeatured;
+        $this->isInactive = $isInactive;
+        $this->isOnline = $isOnline;
+        $this->isSpecialOrderItem = $isSpecialOrderItem;
+        $this->issueProduct = $issueProduct;
+        $this->isTaxable = $isTaxable;
+        $this->isVsoeBundle = $isVsoeBundle;
+        $this->itemUrl = $itemUrl;
+        $this->lastModifiedDate = $lastModifiedDate;
+        $this->lastQuantityAvailableChange = $lastQuantityAvailableChange;
+        $this->leadTime = $leadTime;
+        $this->location = $location;
+        $this->manufacturer = $manufacturer;
+        $this->matrix = $matrix;
+        $this->matrixChild = $matrixChild;
+        $this->metaTagHtml = $metaTagHtml;
+        $this->minimumQuantity = $minimumQuantity;
+        $this->mpn = $mpn;
+        $this->name = $name;
+        $this->nexTagCategory = $nexTagCategory;
+        $this->nexTagProductFeed = $nexTagProductFeed;
+        $this->numberAllowedDownloads = $numberAllowedDownloads;
+        $this->offerSupport = $offerSupport;
+        $this->onlineCustomerPrice = $onlineCustomerPrice;
+        $this->onSpecial = $onSpecial;
+        $this->overallQuantityPricingType = $overallQuantityPricingType;
+        $this->pageTitle = $pageTitle;
+        $this->parent = $parent;
+        $this->preferredLocation = $preferredLocation;
+        $this->preferredStockLevel = $preferredStockLevel;
+        $this->preferredStockLevelDays = $preferredStockLevelDays;
+        $this->price = $price;
+        $this->pricingGroup = $pricingGroup;
+        $this->purchaseUnit = $purchaseUnit;
+        $this->quantityAvailable = $quantityAvailable;
+        $this->quantityBackOrdered = $quantityBackOrdered;
+        $this->quantityCommitted = $quantityCommitted;
+        $this->quantityOnHand = $quantityOnHand;
+        $this->quantityOnOrder = $quantityOnOrder;
+        $this->quantityPricingSchedule = $quantityPricingSchedule;
+        $this->reorderPoint = $reorderPoint;
+        $this->revRecSchedule = $revRecSchedule;
+        $this->safetyStockLevel = $safetyStockLevel;
+        $this->safetyStockLevelDays = $safetyStockLevelDays;
+        $this->salesDescription = $salesDescription;
+        $this->saleUnit = $saleUnit;
+        $this->searchKeywords = $searchKeywords;
+        $this->seasonalDemand = $seasonalDemand;
+        $this->serialNumber = $serialNumber;
+        $this->shippingRate = $shippingRate;
+        $this->shoppingDotComCategory = $shoppingDotComCategory;
+        $this->shoppingProductFeed = $shoppingProductFeed;
+        $this->shopzillaCategoryId = $shopzillaCategoryId;
+        $this->shopzillaProductFeed = $shopzillaProductFeed;
+        $this->softDescriptor = $softDescriptor;
+        $this->stockDescription = $stockDescription;
+        $this->stockUnit = $stockUnit;
+        $this->storeDescription = $storeDescription;
+        $this->subType = $subType;
+        $this->taxCode = $taxCode;
+        $this->thumbnailUrl = $thumbnailUrl;
+        $this->totalValue = $totalValue;
+        $this->trackLandedCost = $trackLandedCost;
+        $this->type = $type;
+        $this->unitsType = $unitsType;
+        $this->urlComponent = $urlComponent;
+        $this->useBins = $useBins;
+        $this->useMarginalRates = $useMarginalRates;
+        $this->vendor = $vendor;
+        $this->vsoeDeferral = $vsoeDeferral;
+        $this->vsoeDelivered = $vsoeDelivered;
+        $this->vsoePermitDiscount = $vsoePermitDiscount;
+        $this->vsoePrice = $vsoePrice;
+        $this->weight = $weight;
+        $this->customFieldList = $customFieldList;
+    }
+}?>

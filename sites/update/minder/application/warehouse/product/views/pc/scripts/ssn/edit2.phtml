@@ -1,0 +1,103 @@
+<?php echo $this->render('header.phtml'); ?>
+<h2>EDIT : <?php echo $this->escape($this->ssnId); ?></h2>
+
+<?php echo $this->messenger()->all(); ?>
+
+<table border="0" cellpadding="0" cellspacing="0">
+    <tr><td>
+        <?php
+        echo $this->render('/ssn/ssn-issn.phtml');
+        ?>
+    </td></tr>
+    <tr><td>
+        <?php echo $this->ssnEditForm; ?>
+    </td></tr>
+    <tr><td>
+        <h2>History List</h2>
+        <div id="history_list">
+
+        </div>
+    </td></tr>
+</table>
+
+
+
+
+<link rel="stylesheet" href="<?php echo $this->baseUrl();?>/scripts/ui/themes/base/jquery.ui.all.css" />
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/ui/jquery.ui.core.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/ui/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/ui/jquery.ui.position.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/ui/jquery.ui.autocomplete.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/minder2.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/registry.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/model.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/controller.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/builder.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Model/dataRow.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/element.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/Element/formTab.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/Element/multi.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/Element/dropDown.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/Element/comboBox.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/Element/datePicker.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/Element/toolButton.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/editForm.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl();?>/scripts/Minder2/Controller/EditForm/builder.js"></script>
+
+<script type="text/javascript">
+    $(function(){
+        var
+            ssnEditModel,
+            ssnEditForm = Minder2.Builder.getEditForm('SSN');
+
+        ssnEditForm.saveAndReturn = function() {
+            this.block('<?php echo $this->SysScreenWaitPrompt('Saving Changes...');?>');
+            this.save({
+                success: function(response) {
+                    this.unblock();
+                    showMessage(['Record saved successfully']);
+                    location.href = '<?php echo $this->url(array('action' => 'index', 'controller' => 'ssn2'));?>';
+                },
+                failed: function(response) {
+                    this.unblock();
+                }
+            });
+        };
+
+        ssnEditForm.saveAndPrintAll = function() {
+            this.block('<?php echo $this->SysScreenWaitPrompt('Saving Changes...');?>');
+            this.callRemote(
+                'updateAndPrintAll',
+                {'data': this._getDataToSave()},
+                function(response){
+                    this.unblock();
+
+                    if (response.warnings)
+                        showWarnings(response.warnings);
+
+                    if (response.messages)
+                        showMessage(response.messages);
+                },
+                function(response) {
+                    this.unblock();
+                },
+                this);
+        };
+
+        ssnEditModel = new Minder2.Model.DataRow('<?php echo $this->jsDataRowTableNameAdapter($this->foundSsn);?>', <?php echo $this->jsDataRowMetadataAdapter($this->foundSsn);?>);
+        ssnEditModel.setData(<?php echo json_encode($this->foundSsn->toArray()); ?>, true);
+        Minder2.Registry.registerEditModel('SSN', ssnEditModel);
+        loadHistoryLines();
+
+    });
+
+    function loadHistoryLines() {
+        $('#history_list').load('<?php echo $this->url(array('action' => 'history', 'controller' => 'ssn', 'module' => 'warehouse')); ?>');
+    }
+
+</script>
+
+
+<?php echo $this->autoloadScript();?>
+
+<?php echo $this->render('footer.phtml');

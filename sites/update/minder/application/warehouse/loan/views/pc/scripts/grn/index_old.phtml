@@ -1,0 +1,292 @@
+<?php echo $this->render('header.phtml');
+    $attributes = array('autocomplete' => 'off', 'onkeyup' => 'checkKeys(event)', 'style' => 'width: 15ex;');
+?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <h2><?php echo $this->escape($this->pageTitle) ?></h2>
+    <ul class="toolbar">
+        <li>
+        <table >
+        <tr>
+            <td><label for='grn'>GRN #&nbsp;</label></td>
+            <td><?php echo $this->formText('grn',
+                                           selectFilterValue('grn', $this->conditions),
+                                           $attributes);?></td>
+            <td><label for='grn_date'>GRN date&nbsp;</label></td>
+            <td><?php echo $this->formText('grn_date',
+                                           selectFilterValue('grn_date', $this->conditions),
+                                           $attributes);?></td>
+            <td><label for='awb_con'>AWB Connote #&nbsp;</label></td>
+            <td><?php echo $this->formText('awb_consignment_no',
+                                           selectFilterValue('awb_consignment_no', $this->conditions),
+                                           $attributes);?></td>
+            <td><label for='return_id'>Supplier ID&nbsp;</label></td>
+            <td><?php echo $this->formSelectStrict('return_id',
+                                                   selectFilterValue('return_id', $this->conditions),
+                                                   $attributes, $this->supplierIdList);?></td>
+            
+            <td><label for='return_id'>Status&nbsp;</label></td>
+            <td><?php echo $this->formSelectStrict('status',
+                                                   selectFilterValue('status', $this->conditions),
+                                                   $attributes, $this->statusList);?></td>
+        </tr>
+        <tr>
+            <td><label for='order_no'>Order #&nbsp;</label></td>
+            <td><?php echo $this->formText('order_no',
+                                           selectFilterValue('order_no', $this->conditions),
+                                           $attributes);?></td>
+            <td><label for='carrier'>Carrier&nbsp;</label></td>
+            <td><?php echo $this->formSelectStrict('carrier',
+                                                   selectFilterValue('carrier', $this->conditions),
+                                                   $attributes, array_merge(array('' => ''), $this->carrierList));?></td>
+            <td><label for='container'>Container #&nbsp;</label></td>
+            <td><?php echo $this->formText('container_no',
+                                           selectFilterValue('container_no', $this->conditions),
+                                           $attributes);?></td>
+            <td><label for='owner_id'>Owner ID&nbsp;</label></td>
+            <td><?php echo $this->formSelectStrict('owner_id',
+                                                   selectFilterValue('owner_id', $this->conditions),
+                                                   $attributes, $this->ownerIdList);?></td>
+            
+            <td><label for='owner_id'>Type&nbsp;</label></td>
+            <td><?php echo $this->formSelectStrict('type',
+                                                   selectFilterValue('type', $this->conditions),
+                                                   $attributes, $this->typeList);?></td>
+        </tr>
+        <tr>
+            <td><label for='grn'>Vessel #&nbsp;</label></td>
+            <td><?php echo $this->formText('vessel', selectFilterValue('vessel', $this->conditions), $attributes);?></td>
+        </tr>
+        </table>
+        </li>
+    </ul>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SEARCH', array('onclick' => 'frmSubmit()')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+    </ul>
+
+
+    <div id="tabs">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <b>
+                            <div style="float:left;">
+                                Selected: <span  id="selected_num">0</span>
+                            </div>
+                        </b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', '', array()); ?>
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+        <table id="grn_table" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+                <th>
+                <?php echo $this->formCheckbox('select_all',
+                                               '',
+                                               array('onclick' => 'selectAll(this)'));?>
+                </th>
+<?php
+    foreach ($this->headers as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->grns) > 0) {
+        for ($i = 0; $i < count($this->grns); $i++) {
+            $line = $this->grns[$i];
+            echo '<tr>';
+            echo '<th class="line">';
+            echo $this->formCheckbox($this->escape($line->id),
+                                    selectFilterValue($this->escape($line->id), $this->conditions) ,
+                                    array("class" => 'line_selector',
+                                          "value" => $this->escape($line->id),
+                                          "onclick" => "showSelected(this, 'auto')"
+                                    ),
+                                    array($this->escape($line->id), 'off'));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                $val = $line->items[$propertyName];
+                echo '<td><a href="' . $this->url(array('action' => 'show',
+                                                        'controller' => 'grn',
+                                                        'module' => 'warehouse',
+                                                        'grn_no' => $line->id),
+                                                        '',
+                                                        true) . '">'. $this->escape($val) . '</a></td>'."";
+            }
+            echo "</tr>\n";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo '<td/>';
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">Total
+            <?php echo $this->numRecords . " records. ";?>
+            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno);?>
+        </div>
+    </div>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: TXT', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: XML', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'PRINT LABEL', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+    </ul>
+</form>
+<script type="text/javascript">
+<!--
+var checkOnOff;
+var cacheValue = 50;
+$(document).ready( function (){
+        $.ajaxSetup({async: false,
+                     complete: onAjaxSuccess,
+                     error: onAjaxError,
+                     beforeSend: onAjaxBeforeSend});
+        $("#grn_table").tablesorter({headers: null, sortList: null, widgets: ['zebra']});
+        $('#grn_table').dragCols({
+            'drop': savePosition,
+            'params': ['<?php echo $this->url(array('module'    => 'warehouse',
+                                                   'controller' => 'settings',
+                                                   'action'     => 'save-position')) ?>', 'grn', 'index']
+        });
+        $("#grn_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#select_complete").bind("click", selectWholeTable);
+        showSelected($('#select_all').get(0), "init");
+<?php
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'grn',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithoutDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+});
+
+function limitChanged()
+{
+    frmSubmit();
+    return true;
+}
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function frmClear()
+{
+    $('input:text').each(function() {
+        this.value = '';
+        });
+    $('form select').each(function() {
+        if (this.id != 'show_by' && this.id != 'pageselector') {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+function selectWholeTable()
+{
+    var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+    var checkOnOff = this.checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    calcOther(this, $($(this).parent().parent()[0]));
+    return true;
+}
+
+function checkKeys(e)
+{
+    if (e.keyCode == 13) {
+        frmSubmit();
+    }
+    return true;
+}
+
+function calcOther(element, method)
+{
+    var countEl = 0;
+    if ('auto' == method) {
+        var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = element.checked;
+    } else if ('init' == method) {
+        var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = 'init';
+    } else {
+        var container_id = '#' + $(method)[0].id;
+        var method = element.checked;
+    }
+    $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'grn', 'module' => 'warehouse')); ?>',
+             { field: 'QTY',
+               inAction: '<?php echo 'index'; ?>',
+               activeTab: container_id,
+               method: method,
+               id: element.id,
+               value: element.value }, function(json) {
+                   var answer = eval(json);
+                   $("#selected_num", container_id).text(answer.selected_num);
+               }
+    );
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

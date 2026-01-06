@@ -1,0 +1,717 @@
+<?php echo $this->render('header.phtml'); ?>
+<div id="flash_error">
+    <?php echo $this->messenger()->all() ?> 
+</div>
+<form name="main" id="main_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'location-generate'), null, true); ?>" method="post">
+<div id="update_form" style="width:99%;">
+        <table>
+            <tr>
+                <th>
+                    <b>LOCATION GENERATE:</b>
+                </th>
+            </tr>
+            <tr>
+                <th style="align:right">Aisle: [A] to [Z]</th>
+                <th style="align:right">From: </th>
+                <td><?php echo $this->formText('aisle_from', $this->aisleFrom, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">To: </th>
+                <td><?php echo $this->formText('aisle_to', $this->aisleTo, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Step:</th>
+                <td><?php echo $this->formText('aisle_increment', $this->aisleIncrement, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Default step:</th>
+                <td><?php echo $this->formText('aisle_increment_default', $this->aisleDefaultInc, array('style' => 'width:10ex', 'disabled' => 'disabled')); ?></td>
+                <th style="align:right">Sequence:</th>
+                <td><?php echo $this->formText('aisle_sequence', $this->aisleSequnce, array('style' => 'width:10ex')); ?></td>
+            </tr>
+            <tr>
+                <th style="align:right">Bay: [1] to [99]</th>
+                <th style="align:right">From: </th>
+                <td><?php echo $this->formText('bay_from', $this->bayFrom, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">To: </th>
+                <td><?php echo $this->formText('bay_to', $this->bayTo, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Step:</th>
+                <td><?php echo $this->formText('bay_increment', $this->bayIncrement, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Default step:</th>
+                <td><?php echo $this->formText('bay_increment_default', $this->bayDefaultInc, array('style' => 'width:10ex', 'disabled' => 'disabled')); ?></td>
+                <th style="align:right">Sequence:</th>
+                <td><?php echo $this->formText('bay_sequence', $this->baySequnce, array('style' => 'width:10ex')); ?></td>
+            </tr>
+            <tr>
+                <th style="align:right">Shelf: [1] to [99]</th>
+                <th style="align:right">From: </th>
+                <td><?php echo $this->formText('shelf_from', $this->shelfFrom, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">To: </th>
+                <td><?php echo $this->formText('shelf_to', $this->shelfTo, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Step:</th>
+                <td><?php echo $this->formText('shelf_increment', $this->shelfIncrement, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Default step:</th>
+                <td><?php echo $this->formText('shelf_increment_default', $this->shelfDefaultInc, array('style' => 'width:10ex', 'disabled' => 'disabled')); ?></td>
+                <th style="align:right">Sequence:</th>
+                <td><?php echo $this->formText('shelf_sequence', $this->shelfSequnce, array('style' => 'width:10ex')); ?></td>
+            </tr>
+            <tr>
+                <th style="align:right">Position: [1] to [99]</th>
+                <th style="align:right">From: </th>
+                <td><?php echo $this->formText('position_from', $this->positionFrom, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">To: </th>
+                <td><?php echo $this->formText('position_to', $this->positionTo, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Step:</th>
+                <td><?php echo $this->formText('position_increment', $this->positionIncrement, array('style' => 'width:10ex')); ?></td>
+                <th style="align:right">Default step:</th>
+                <td><?php echo $this->formText('position_increment_default', $this->positionDefaultInc, array('style' => 'width:10ex', 'disabled' => 'disabled')); ?></td>
+                <th style="align:right">Sequence:</th>
+                <td><?php echo $this->formText('position_sequence', $this->positionSequnce, array('style' => 'width:10ex')); ?></td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+        </table>
+
+        <div id='generator-tabs' class="ui-tabs-container">
+        <ul class="ui-tabs-nav">
+            <li><a href="#other_inputs"><b><span>OTHER INPUTS:</span></b></a></li>
+            <li><a href="#check_digits"><b><span>CHECK DIGITS:</span></b></a></li>
+            <li><a href="#sequences"><b><span>SEQUENCES:</span></b></a></li>
+        </ul>
+
+        <div id="other_inputs" class="ui-tabs-panel" style="min-width: 120ex;">
+            <h3>OTHER INPUTS:</h3>
+            <div style="overflow: auto; height: 20em;">
+                <table>
+                    <tbody>
+                    <tr>
+                        <th><label for="LOCN_NAME">LOCN_NAME</label></th>
+                        <td colspan="4"><input type="text" autocomplete="off" value="<?php echo $this->locnName; ?>" id="LOCN_NAME" name="LOCN_NAME" class="ac_input" style="width: 100%"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_METRIC">LOCN_METRIC</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnMetric; ?>" id="LOCN_METRIC" name="LOCN_METRIC" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LOCN_HGHT">LOCN_HGHT</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnHght; ?>" id="LOCN_HGHT" name="LOCN_HGHT" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="PARENT_LOCN_ID">PARENT_LOCN_ID</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->parentLocnId; ?>" id="PARENT_LOCN_ID" name="PARENT_LOCN_ID" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LOCN_TYPE">LOCN_TYPE</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnType; ?>" id="LOCN_TYPE" name="LOCN_TYPE" class="ac_input"/></td>
+                    <tr>
+                        <th><label for="CC_C">CC_C</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->ccC; ?>" id="CC_C" name="CC_C" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="TOG_C">TOG_C</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->togC; ?>" id="TOG_C" name="TOG_C" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_STAT">LOCN_STAT</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnStat; ?>" id="LOCN_STAT" name="LOCN_STAT" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="MOVE_STAT">MOVE_STAT</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->moveStat; ?>" id="MOVE_STAT" name="MOVE_STAT" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="REPLENISH">REPLENISH</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->replenish; ?>" id="REPLENISH" name="REPLENISH" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="PACK_T">PACK_T</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->packT; ?>" id="PACK_T" name="PACK_T" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="STORE_TYPE">STORE_TYPE</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->storeType; ?>" id="STORE_TYPE" name="STORE_TYPE" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="STORE_AREA">STORE_AREA</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->storeArea; ?>" id="STORE_AREA" name="STORE_AREA" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="STORE_METH">STORE_METH</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->storeMeth; ?>" id="STORE_METH" name="STORE_METH" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="PERM_LEVEL">PERM_LEVEL</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->permLevel; ?>" id="PERM_LEVEL" name="PERM_LEVEL" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LABEL_DATE">LABEL_DATE</label></th>
+                        <td><input type="text" class="" autocomplete="off" value="<?php echo $this->labelDate; ?>" id="LABEL_DATE" name="LABEL_DATE"/></td>
+                        <td width="10"/>
+                        <th><label for="LAST_AUDITED_DATE">LAST_AUDITED_DATE</label></th>
+                        <td><input type="text" class="" autocomplete="off" value="<?php echo $this->lastAuditedDate; ?>" id="LAST_AUDITED_DATE" name="LAST_AUDITED_DATE"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="PROD_ID">PROD_ID</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->prodId; ?>" id="PROD_ID" name="PROD_ID" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="INSTANCE_ID">INSTANCE_ID</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->instanceId; ?>" id="INSTANCE_ID" name="INSTANCE_ID" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="MAX_QTY">MAX_QTY</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->maxQty; ?>" id="MAX_QTY" name="MAX_QTY" class="ac_input"/></td>
+                        <td width="10"/><th><label for="MIN_QTY">MIN_QTY</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->minQty; ?>" id="MIN_QTY" name="MIN_QTY" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="REORDER_QTY">REORDER_QTY</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->recorderQty; ?>" id="REORDER_QTY" name="REORDER_QTY" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="AISLE_SEQ">AISLE_SEQ</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->aisleSeq; ?>" id="AISLE_SEQ" name="AISLE_SEQ" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="BAY_SEQ">BAY_SEQ</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->baySeq; ?>" id="BAY_SEQ" name="BAY_SEQ" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="SHELF_SEQ">SHELF_SEQ</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->shelfSeq; ?>" id="SHELF_SEQ" name="SHELF_SEQ" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="COMPARTMENT_SEQ">COMPARTMENT_SEQ</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->compartmentSeq; ?>" id="COMPARTMENT_SEQ" name="COMPARTMENT_SEQ" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LAST_UPDATE_DATE">LAST_UPDATE_DATE</label></th>
+                        <td><input type="text" class="" autocomplete="off" value="<?php echo $this->lastUpdateDate; ?>" id="LAST_UPDATE_DATE" name="LAST_UPDATE_DATE"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LAST_UPDATE_BY">LAST_UPDATE_BY</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->lastUpdateBy; ?>" id="LAST_UPDATE_BY" name="LAST_UPDATE_BY" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="PUTAWAY_QTY">PUTAWAY_QTY</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->putawayQty; ?>" id="PUTAWAY_QTY" name="PUTAWAY_QTY" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_OWNER">LOCN_OWNER</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnOwner; ?>" id="LOCN_OWNER" name="LOCN_OWNER" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="CURRENT_WH_ID">CURRENT_WH_ID</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->currentWhId; ?>" id="CURRENT_WH_ID" name="CURRENT_WH_ID" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="MOVEABLE_LOCN">MOVEABLE_LOCN</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->moveableLocn; ?>" id="MOVEABLE_LOCN" name="MOVEABLE_LOCN" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="SSN_TRACK">SSN_TRACK</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->ssnTrack; ?>" id="SSN_TRACK" name="SSN_TRACK" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_SEQ">LOCN_SEQ</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnSeq; ?>" id="LOCN_SEQ" name="LOCN_SEQ" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="TEMPERATURE_ZONE">TEMPERATURE_ZONE</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->temperatureZone; ?>" id="TEMPERATURE_ZONE" name="TEMPERATURE_ZONE" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_TARE_WEIGHT">LOCN_TARE_WEIGHT</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnTareWeight; ?>" id="LOCN_TARE_WEIGHT" name="LOCN_TARE_WEIGHT" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LOCN_TARE_WEIGHT_UOM">LOCN_TARE_WEIGHT_UOM</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnTareWeightUom; ?>" id="LOCN_TARE_WEIGHT_UOM" name="LOCN_TARE_WEIGHT_UOM" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_INT_DIMENSION_X">LOCN_INT_DIMENSION_X</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnIntDimensionX; ?>" id="LOCN_INT_DIMENSION_X" name="LOCN_INT_DIMENSION_X" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LOCN_INT_DIMENSION_Y">LOCN_INT_DIMENSION_Y</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnIntDimensionY; ?>" id="LOCN_INT_DIMENSION_Y" name="LOCN_INT_DIMENSION_Y" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_INT_DIMENSION_Z">LOCN_INT_DIMENSION_Z</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnIntDimensionZ; ?>" id="LOCN_INT_DIMENSION_Z" name="LOCN_INT_DIMENSION_Z" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LOCN_DIMENSION_UOM">LOCN_DIMENSION_UOM</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnIntDimensionUom; ?>" id="LOCN_DIMENSION_UOM" name="LOCN_DIMENSION_UOM" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_OUT_DIMENSION_X">LOCN_OUT_DIMENSION_X</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnOutDimensionX; ?>" id="LOCN_OUT_DIMENSION_X" name="LOCN_OUT_DIMENSION_X" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="LOCN_OUT_DIMENSION_Y">LOCN_OUT_DIMENSION_Y</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnOutDimensionY; ?>" id="LOCN_OUT_DIMENSION_Y" name="LOCN_OUT_DIMENSION_Y" class="ac_input"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_OUT_DIMENSION_Z">LOCN_OUT_DIMENSION_Z</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnOutDimensionZ; ?>" id="LOCN_OUT_DIMENSION_Z" name="LOCN_OUT_DIMENSION_Z" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th><label for="ZONE_C">ZONE_C</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->zoneC; ?>" id="ZONE_C" name="ZONE_C" class="ac_input"/></td>
+
+                    </tr>
+                    <tr>
+                        <th><label for="LOCN_REPRINT">LOCN_REPRINT</label></th>
+                        <td><input type="text" autocomplete="off" value="<?php echo $this->locnReprint; ?>" id="LOCN_REPRINT" name="LOCN_REPRINT" class="ac_input"/></td>
+                        <td width="10"/>
+                        <th></th>
+                        <td></td>
+
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <ul class="toolbar">
+                <li><?php echo $this->formSubmit('action', 'GENERATE', array('onClick' => '')); ?></li>
+                <li><?php echo $this->formButton('action', 'CLEAR', array('onClick' => ' frmClear();')); ?></li>
+            </ul>
+        </div>
+        <div id="check_digits" class="ui-tabs-panel" style="min-width: 120ex;">
+            <h3>CHECK DIGITS:</h3>
+            <table style="min-width: 120ex;">
+                <tr>
+                    <th style="width: 30ex;">Select Check Digit Length</th>
+                    <td style="width: 10ex;"><label><input type="radio" name="checkDigitLength" value="1" <?php echo ($this->checkDigitLength == 1) ? 'checked' : '';?>> 1</label></td>
+                    <td style="width: 10ex;"><label><input type="radio" name="checkDigitLength" value="2" <?php echo ($this->checkDigitLength == 2) ? 'checked' : '';?>> 2</label> </td>
+                    <td style="width: 10ex;"><label><input type="radio" name="checkDigitLength" value="3" <?php echo ($this->checkDigitLength == 3) ? 'checked' : '';?>> 3</label> </td>
+                    <td style="width: 10ex;"><label><input type="radio" name="checkDigitLength" value="4" <?php echo ($this->checkDigitLength == 4) ? 'checked' : '';?>> 4</label> </td>
+                </tr>
+            </table>
+
+            <ul class="toolbar">
+                <li><?php echo $this->formButton('action', 'GENERATE-CHECK-DIGITS', array('content' => 'GENERATE', 'type' => 'submit')); ?></li>
+                <li><?php echo $this->formButton('action', 'APPLY-CHECK-DIGITS', array('content' => 'APPLY', 'type' => 'submit')); ?></li>
+                <li><?php echo $this->formButton('action', 'CLEAR', array('content' => 'CLEAR', 'type' => 'submit')); ?></li>
+            </ul>
+        </div>
+        <div id="sequences" class="ui-tabs-panel" style="min-width: 120ex;">
+            <h3>SEQUENCES:</h3>
+            <table>
+                <tr>
+                    <th style="white-space: nowrap; width: 30ex;">LOCN_ID starts from:</th>
+                    <td style="white-space: nowrap; width: 20ex;"><?php echo $this->formText('locnIdStartsFrom', $this->locnIdStartsFrom);?></td>
+                    <th style="white-space: nowrap; width: 20ex;">LOCN_ID ends with:</th>
+                    <td style="white-space: nowrap; width: 20ex;"><?php echo $this->formText('locnIdEndsWith', $this->locnIdEndsWith);?></td>
+                </tr>
+            </table>
+            <br />
+            <table>
+                <tr>
+                    <th style="white-space: nowrap; width: 30ex;">Apply sequence to</th>
+                    <td style="white-space: nowrap; width: 20ex;"><label><input type="radio" name="applyTo" value="picking" <?php echo ($this->applyTo == 'picking') ? 'checked' : '';?>> Picking Sequence</label></td>
+                    <td style="white-space: nowrap; width: 20ex;"><label><input type="radio" name="applyTo" value="alt" <?php echo ($this->applyTo == 'alt') ? 'checked' : '';?>> Alternate Barcode ID</label></td>
+                </tr>
+            </table>
+            <br />
+            <table>
+                <tr>
+                    <th style="white-space: nowrap; width: 30ex;">Aisle [A] to [Z]</th>
+                    <th style="white-space: nowrap">
+                        <label>From: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[aisle][from]', $this->seq['aisle']['from'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>To: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[aisle][to]', $this->seq['aisle']['to'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[aisle][step]', $this->seq['aisle']['step'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Default Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[aisle][def]', 1, array('disabled' => 'disabled', 'style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Sequence: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[aisle][type]', $this->seq['aisle']['type'], array('style' => 'width:10ex;'));?>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="white-space: nowrap">Bay [A] to [Z]</th>
+                    <th style="white-space: nowrap">
+                        <label>From: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[bay][from]', $this->seq['bay']['from'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>To: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[bay][to]', $this->seq['bay']['to'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[bay][step]', $this->seq['bay']['step'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Default Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[bay][def]', 1, array('disabled' => 'disabled', 'style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Sequence: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[bay][type]', $this->seq['bay']['type'], array('style' => 'width:10ex;'));?>
+                    </td>
+                </tr>
+                <?php if (!$this->disableSubBay) {?>
+                    <tr>
+                        <th style="white-space: nowrap">Sub Bay [A] to [Z]</th>
+                        <th style="white-space: nowrap">
+                            <label>From: </label>
+                        </th>
+                        <td>
+                            <?php echo $this->formText('seq[sub][from]', $this->seq['sub']['from'], array('style' => 'width:10ex;'));?>
+                        </td>
+                        <th style="white-space: nowrap">
+                            <label>To: </label>
+                        </th>
+                        <td>
+                            <?php echo $this->formText('seq[sub][to]', $this->seq['sub']['to'], array('style' => 'width:10ex;'));?>
+                        </td>
+                        <th style="white-space: nowrap">
+                            <label>Step: </label>
+                        </th>
+                        <td>
+                            <?php echo $this->formText('seq[sub][step]', $this->seq['sub']['step'], array('style' => 'width:10ex;'));?>
+                        </td>
+                        <th style="white-space: nowrap">
+                            <label>Default Step: </label>
+                        </th>
+                        <td>
+                            <?php echo $this->formText('seq[sub][def]', 1, array('disabled' => 'disabled', 'style' => 'width:10ex;'));?>
+                        </td>
+                        <th style="white-space: nowrap">
+                            <label>Sequence: </label>
+                        </th>
+                        <td>
+                            <?php echo $this->formText('seq[sub][type]', $this->seq['sub']['type'], array('style' => 'width:10ex;'));?>
+                        </td>
+                    </tr>
+                <?php } ?>
+                <tr>
+                    <th style="white-space: nowrap">Shelf [A] to [Z]</th>
+                    <th style="white-space: nowrap">
+                        <label>From: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[sh][from]', $this->seq['sh']['from'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>To: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[sh][to]', $this->seq['sh']['to'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[sh][step]', $this->seq['sh']['step'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Default Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[sh][def]', 1, array('disabled' => 'disabled', 'style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Sequence: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[sh][type]', $this->seq['sh']['type'], array('style' => 'width:10ex;'));?>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="white-space: nowrap;">Position [A] to [Z]</th>
+                    <th style="white-space: nowrap">
+                        <label>From: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[pos][from]', $this->seq['pos']['from'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>To: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[pos][to]', $this->seq['pos']['to'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[pos][step]', $this->seq['pos']['step'], array('style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Default Step: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[pos][def]', 1, array('disabled' => 'disabled', 'style' => 'width:10ex;'));?>
+                    </td>
+                    <th style="white-space: nowrap">
+                        <label>Sequence: </label>
+                    </th>
+                    <td>
+                        <?php echo $this->formText('seq[pos][type]', $this->seq['pos']['type'], array('style' => 'width:10ex;'));?>
+                    </td>
+                </tr>
+                <tr>
+                    <th>LOCN_ID2 / LOCN_SEQ Format</th>
+                    <td colspan="10">
+                        <?php echo $this->formText('sequenceFormat', $this->altFormat, array('style' => "width:100%;"));?>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="11">&nbsp;</td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td colspan="10">
+                        <?php echo $this->formCheckbox('updateOtherInputs', $this->updateOtherInputs, array('style' => "width:100%;", 'checked' => $this->updateOtherInputs));?>
+                        <label for='updateOtherInputs'>Also update OTHER INPUTS.</label>
+                    </td>
+                </tr>
+                <tr>
+                    <th>LOCN_NAME Format</th>
+                    <td colspan="10">
+                        <?php echo $this->formText('altLocnNameFormat', $this->altLocnNameFormat, array('style' => "width:100%;"));?>
+                    </td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td colspan="10">
+                        <?php echo $this->formRadio('generatorForAltLocnName', $this->generatorForAltLocnName , array('style' => "margin-right:5px;", 'label_style' => "margin-right:20px;"), array('SEQ' => 'Use SEQUENCE generator', 'LOCN' => 'Use LOCATION generator',), '');?>
+                    </td>
+                </tr>
+            </table>
+
+            <ul class="toolbar">
+                <li><?php echo $this->formButton('action', 'GENERATE-SEQUENCE', array('content' => 'GENERATE', 'type' => 'submit')); ?></li>
+                <li><?php echo $this->formButton('action', 'APPLY-SEQUENCE', array('content' => 'APPLY', 'type' => 'submit')); ?></li>
+            </ul>
+        </div>
+    </div>
+        <div style="display:inline-block; width: 100%">
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <br />
+            </div>
+            <?php
+            switch ($this->activeTab) {
+                case 'check_digits':
+                    echo $this->render('admin/location-generate-cd.phtml');
+                    break;
+                default:
+                    echo $this->render('admin/location-generate-def.phtml');
+            }
+            ?>
+        </div>
+</form>
+
+<script>
+<!--
+
+$(document).ready(function(){
+    $("#generator-tabs").find('> ul').tabs().tabs('select', '<?php echo $this->activeTab;?>');
+    $("#lines").tablesorter({headers: {0: {sorter:false}}, widgets: ['zebra']});
+    
+    $('#LABEL_DATE').datepicker({dateFormat: 'yy-mm-dd'});
+//    $('#LAST_UPDATE_BY').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#LAST_UPDATE_DATE').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#LAST_AUDITED_DATE').datepicker({dateFormat: 'yy-mm-dd'});
+    
+})
+
+function frmClear()
+{
+    $("#aisle_from")[0].value           = '';
+    $("#aisle_to")[0].value             = '';
+    $("#aisle_increment")[0].value      = '';
+    $("#bay_from")[0].value             = '';
+    $("#bay_to")[0].value               = '';
+    $("#bay_increment")[0].value        = '';
+    $("#shelf_from")[0].value           = '';
+    $("#shelf_to")[0].value             = '';
+    $("#shelf_increment")[0].value      = '';
+    $("#position_from")[0].value        = '';
+    $("#position_to")[0].value          = '';
+    $("#position_increment")[0].value   = '';
+//    $("#zone_from")[0].value            = '';
+    
+    return false;
+}
+function chekFileds() {
+
+    var aisle_from = $("#aisle_from")[0].value;        
+    var aisle_to   = $("#aisle_to")[0].value;
+    
+    var bay_from   = $("#bay_from")[0].value;        
+    var bay_to     = $("#bay_to")[0].value;
+    
+    var shelf_from = $("#shelf_from")[0].value;        
+    var shelf_to   = $("#shelf_to")[0].value;
+    
+    var position_from = $("#position_from")[0].value;        
+    var position_to   = $("#position_to")[0].value;
+    
+    
+    if(aisle_from == '') {
+        showAlert();
+        $("#aisle_from").focus();
+        return false;    
+    }
+    if(aisle_to == '') {
+        showAlert();
+        $("#aisle_to").focus();
+        return false;    
+    }
+    
+    if(bay_from == '') {
+        showAlert();
+        $("#bay_from").focus();
+        return false;    
+    }
+    if(bay_to == '') {
+        showAlert();
+        $("#bay_to").focus();
+        return false;    
+    }
+    
+    if(shelf_from == '') {
+        showAlert();
+        $("#shelf_from").focus();
+        return false;    
+    }
+    if(shelf_to == '') {
+        showAlert();
+        $("#shelf_to").focus();
+        return false;    
+    }
+    
+    if(position_from == '') {
+        showAlert();
+        $("#position_from").focus();
+        return false;    
+    }
+    if(position_to == '') {
+        showAlert();
+        $("#position_to").focus();
+        return false;    
+    }
+        
+    var aisle_sequence      = $("#aisle_sequence")[0].value;
+    var bay_sequence        = $("#bay_sequence")[0].value;
+    var shelf_sequence      = $("#shelf_sequence")[0].value;
+    var position_sequence   = $("#position_sequence")[0].value;
+    
+    if(aisle_sequence == "A") {
+        if(!isNaN(parseInt(aisle_from))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#aisle_from").focus();
+            return false;
+        }
+        if(!isNaN(parseInt(aisle_to))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#aisle_to").focus();
+            return false;
+        }
+    } else {
+        if(isNaN(parseInt(aisle_from))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#aisle_from").focus();
+            return false;
+        }
+        if(isNaN(parseInt(aisle_to))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#aisle_to").focus();
+            return false;
+        }
+    }
+    
+    if(bay_sequence == "A") {
+        if(!isNaN(parseInt(bay_from))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#bay_from").focus();
+            return false;
+        }
+        if(!isNaN(parseInt(bay_to))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#bay_to").focus();
+            return false;
+        }
+    } else {
+        if(isNaN(parseInt(bay_from))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#bay_from").focus();
+            return false;
+        }
+        if(isNaN(parseInt(bay_to))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#bay_to").focus();
+            return false;
+        }
+    }
+    
+    if(shelf_sequence == "A") {
+        if(!isNaN(parseInt(shelf_from))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#shelf_from").focus();
+            return false;
+        }
+        if(!isNaN(parseInt(shelf_to))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#shelf_to").focus();
+            return false;
+        }
+    } else {
+         if(isNaN(parseInt(shelf_from))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#shelf_from").focus();
+            return false;
+        }
+        if(isNaN(parseInt(shelf_to))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#shelf_to").focus();
+            return false;
+        }
+    }
+    
+    if(position_sequence == "A") {
+        if(!isNaN(parseInt(position_from))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#position_from").focus();
+            return false;
+        }
+        if(!isNaN(parseInt(position_to))) {
+            alert("Invalid type of value. Must be alfa");
+            $("#position_to").focus();
+            return false;
+        }
+    } else {
+        if(isNaN(parseInt(position_from))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#position_from").focus();
+            return false;
+        }
+        if(isNaN(parseInt(position_to))) {
+            alert("Invalid type of value. Must be numeric");
+            $("#position_to").focus();
+            return false;
+        }
+    }
+     
+    
+    return true;        
+}
+
+function showAlert() {
+    alert('Input value, please.');
+}
+
+-->
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

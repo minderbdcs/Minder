@@ -1,0 +1,180 @@
+<?php
+
+function sendGRNDTransaction($link)
+{
+    // Set default just in case the value wasn't provided
+    $docketNo = isset($_POST['docket_no']) ? $_POST['docket_no'] : '';
+    $type = isset($_POST['type']) ? $_POST['type'] : '';
+    $ndtype = ($type == "LP" ? "LD" : $type);
+    $orderNo = isset($_POST['order_no']) ? $_POST['order_no'] : '';
+    $lineNo = isset($_POST['line_no']) ? $_POST['line_no'] : '';
+    $carrier = isset($_POST['carrier']) ? $_POST['carrier'] : '';
+    $vehReg = isset($_POST['veh_reg']) ? $_POST['veh_reg'] : '';
+    $pkgs = isset($_POST['pkgs']) ? $_POST['pkgs'] : '';
+    $container = (isset($_POST['container']) && ($_POST['container'] == 'y')) ? 'Y' : 'N';
+    
+    $palletType = isset($_POST['pallet_type']) ? $_POST['pallet_type'] : 'NONE';
+    $palletQty = isset($_POST['pallet_qty']) ? $_POST['pallet_qty'] : '0';
+    $receivedQty = isset($_POST['pkgs']) ? $_POST['pkgs'] : '';
+    $shippedDate = $_POST['shipped_date'] ? $_POST['shipped_date'] : '';
+    $problem = isset($_POST['problem']) ? $_POST['problem'] : '';
+    $hirePallets = isset($_POST['hire_pallets']) ? $_POST['hire_pallets'] : '';
+    $hireQty = isset($_POST['hire_qty']) ? $_POST['hire_qty'] : '';
+    $hirePackaging = isset($_POST['hire_packaging']) ? $_POST['hire_packaging'] : '';
+    $hirePackagingType = isset($_POST['hire_packaging_type']) ? $_POST['hire_packaging_type'] : '';
+    $packagingCrateQty = isset($_POST['packaging_crate_qty']) ? $_POST['packaging_crate_qty'] : '';
+    $hasShippedDate = 'n';
+    $shippedDate = '';
+    if (isset($_POST['shipped_date']) && $_POST['shipped_date'] == 'y') {
+        $hasShippedDate = 'y';
+        $shipped_date = $_POST['shipped_year'] . $_POST['shipped_month'] . $_POST['shipped_day'];
+    }
+
+    $dbTran = ibase_trans(IBASE_DEFAULT, $link);
+    
+    // If this is a load without an order number then generate the next one and set the line number
+    if (($type == "LD") and ($orderNo == "")) {
+        $query = "SELECT LOAD_ID FROM GET_LOAD_NO ";
+        if (!($Result = ibase_query($link, $query))) {
+            return 'Unable to read order!';
+        }
+        if (($Row = ibase_fetch_row($Result))) {
+            $orderNo =  $Row[0];
+            ibase_free_result($Result); 
+            unset($Result); 
+        }
+    
+        //calc the next load
+        $lineNo = "1";
+    }
+
+
+    // Get the information for dotransaction
+    list($user, $device) = explode("|", $_COOKIE["LoginUser"]);
+    $type = 'GRND';
+    $code = 'B';
+    $object = $_POST['docket_no'];
+    if ($hasShippedDate == 'y') {
+        $object = '|' . $shippedDate;
+    }
+    $location = $carrier;
+    $subLocation = $vehReg;
+    $reference = $type . '|'
+               . $orderNo . '|'
+               . $lineNo . '|'
+               . $container . '|'
+               . $hirePallets. '|'
+               . $hireQty . '|'
+               . $hirePackaging . '|'
+               . $hirePackagingType . '|'
+               . $packagingCrateQty ;
+    $source = 'SSBSSKSSS';
+    $qty = $pkgs;
+
+    
+    
+    $mesg = dotransaction_response($type, $code, $object, $location, $subLocation, $reference, $qty, $source, $user, $device);
+    echo '<pre>';
+    echo "type = $type\n";
+    echo "code = $code\n";
+    echo "object = $object\n";
+    echo "location = $location\n";
+    echo "subLocation = $subLocation\n";
+    echo "reference = $reference\n";
+    echo "qty = $qty\n";
+    echo "source = $source\n";
+    echo "user = $user\n";
+    echo "device = $device\n";
+    echo "mesg = $mesg\n";
+
+    
+    print urldecode($mesg);
+    print urldecode(urldecode($mesg));
+    list($dummy1, $grn , $dummy2, $tranLoad, $dummy3, $message) = explode(":", urldecode($mesg));
+    echo "dummy1 = $dummy1\n";
+    echo "grn = $grn\n";
+    echo "dummy2 = $dummy2\n";
+    echo "tranLoad = $tranLoad\n";
+    echo "dummy3 = $dummy3\n";
+    echo "message = $message\n";
+    echo '<pre>';
+    exit(0);
+
+    //commit
+    ibase_commit($dbTran);
+    
+    $passed = "$received_qty|$type|$order_no|$line_no";
+    $passed .= "|$carrier|$veh_reg|$container|$pallet_type";
+    $passed .= "|$pallet_qty|$docket_no|$grn|$problem||" ;
+    setcookie("BDCSData","$passed", time()+11186400, "/");
+    if ($problem != "") {
+        $tran_qty = 0;
+        $tran_ref_x = "|" . $problem;
+        if (strlen($tran_ref_x) > 80) {
+            $tran_ref_x = substr($tran_ref_x, 0, 80);
+        }
+        $my_object = substr($tran_ref_x,0,30);
+        $location = substr($tran_ref_x,30,10);
+        $my_sublocn = $grn;
+        $my_ref = substr($tran_ref_x,40,40) ;
+    
+        $my_message = "";
+        include("transaction.php");
+        $my_message = dotransaction_response("GRNC", "C", $my_object, $location, $my_sublocn, $my_ref, $tran_qty, $my_source, $tran_user, $tran_device);
+        if ($my_message > "") {
+            list($my_mess_field, $my_mess_label) = explode("=", $my_message);
+            $my_responsemessage = urldecode($my_mess_label) . " ";
+        } else {
+            $my_responsemessage = "";
+        }
+        if ($my_responsemessage <> "Processed successfully ") {
+            return $my_message;
+        }
+    }
+    return null;
+
+/*
+    //want to go to verify
+    switch ($type ) {
+        case "PO":
+        case "WO":
+        case "TR":
+        case "RA":
+            if (($order_no <> "") and ($line_no <> "")) {
+                header("Location: verifyPO.php" );
+            } else {
+                header("Location: getPO.php" );
+            }
+            break;
+        case "LD":
+            header("Location: verifyLD.php" );
+            break;
+        case "LP":
+            $query = "select default_receive_weights from control";
+    
+            $wk_receive_weights =  "F";
+            if (!($Result = ibase_query($link, $query))) {
+                return 'Unable to Read Control';
+            } elseif (($Row = ibase_fetch_row($Result))) {
+                $wk_receive_weights =  $Row[0];
+            }
+            //release memory
+            if (isset($Result)) {
+                ibase_free_result($Result); 
+            }
+        
+            if ($wk_receive_weights == "F") {
+                header("Location: verifyLP.php" );
+            } else {
+                header("Location: verifyLPweight.php" );
+            }
+            break;
+    
+    }
+*/
+}
+
+
+function sendGRNXTransaction($link)
+{
+}

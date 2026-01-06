@@ -1,0 +1,29 @@
+<?php
+echo $this->render('header.phtml');
+?>
+<h2>Demo - Add new Purchase Order</h2>
+<?php
+if ($this->added) {
+
+} else {
+?>
+<form action="" method="post">
+<ul class="toolbar">
+    <li>
+<?php echo $this->formNote('qty', 'Enter Qty:');?>
+    </li>
+    <li>
+<?php echo $this->formText('qty', 0, array());?>
+    </li>
+    <li>
+<?php echo $this->formSubmit('action', 'ADD', array());?>
+    </li>
+</ul>
+</form>
+<?php
+}
+?>
+
+<?php
+echo $this->render('footer.phtml');
+?>

@@ -1,0 +1,278 @@
+/*
+This is the core stype of the whm site
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 1em;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h1 {
+font-size: 1.1em;
+margin-left: -2%;
+text-align: left;
+}
+h2 {
+font-size: 1.2em;
+margin-left: -20%;
+}
+h3 {
+font-size: 1em;
+line-height: 1.16;
+text-decoration: blink;
+margin-left: -10%;
+}
+h4 {
+font-size: 1em;
+line-height: 1.16em;
+position: absolute;
+left: 10px;
+top: 5px;
+}
+h5 {
+font-size: 1em;
+}
+a:link {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:visited {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:hover {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:active {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+input.default,input[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.sel5,input.sel5[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.nomatch {
+color: white;
+background-color: red  ;
+}
+input.match {
+color: white;
+background-color: green  ;
+}
+input.message,input.message[type="text"] {
+color: red ;
+background-color: yellow;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 0.6666em;
+}
+input.sel15,input.sel15[type="text"] {
+color: white ;
+background-color: lightslategrey;
+}
+input.sel16,input.sel16[type="text"] {
+font-size:.8em;
+color: blue ;
+background-color: cyan ;
+}
+input.noread {
+color: black ;
+background-color: gainsboro  ;
+}
+.product {
+/* width: 80pt; */
+width: 6.6em;
+}
+input.submit:focus {
+outline: red 2px;
+color: blue ;
+}
+select.sel1 {
+width: 20%;
+}
+select.sel2 {
+width: 35%;
+}
+select.sel3 {
+/* width: 128pt; */
+width: 10.6em;
+}
+select.sel4 {
+/* width: 30pt; */
+width: 2.5em;
+}
+select.sel5 {
+/* width: 35pt; */
+width: 2.9em;
+}
+select.sel6 {
+width: 40%;
+}
+select.sel7 {
+/* width: 35pt; */
+width: 2.9em;
+}
+select.sel8 {
+/* width: 110pt; */
+width: 9.0em;
+}
+select.sel9 {
+/* width: 90pt; */
+width: 7.5em;
+}
+select:focus {
+outline: 2px #ff7d00 ;
+color: red ;
+}
+/* select {
+display: block;
+width: 55%;
+} */
+table {
+  border-collapse: collapse;
+}
+th td {
+  text-decoration: none;
+  display: block;
+  text-align: left;
+  font-family: Arial, Helvetia, Verdana, Sans-serif;
+  font-size: 0.5em;
+}
+button {
+display: block;
+color: black ;
+background-color: cyan;
+font-size: 0.9166em;
+width: 4.1666em;
+height: 2.75em;
+margin-top: 1%;
+margin-bottom: 1%;
+margin-right: 1%;
+margin-left: 1%;
+}
+#col1 {
+position: absolute;
+left: 4px;
+top: 13.3333em;
+}
+#col2 {
+position: absolute;
+left: 8.1250em;
+top: 13.3333em;
+}
+#col4 {
+position: absolute;
+left: 4.25em;
+top: 14em;
+}
+#col3 {
+position: absolute;
+left: 2px;
+top: 5px;
+width: 16.6666em;
+}
+#col5 {
+position: absolute;
+left: 4.8125em;
+top: 11.1666em;
+font-size: 1.5em;
+}
+#col6 {
+position: absolute;
+left: 7.0833em;
+top: 6.5em;
+}
+#col7 {
+position: absolute;
+left: 2pt;
+top: 5.8333em;
+font-size: 1.6em;
+}
+#col9 {
+position: absolute;
+left: 4px;
+top: 6.1666em;
+}
+#col10 {
+position: absolute;
+left: 8.1250em;
+top: 8.3333em;
+}
+#col11 {
+position: absolute;
+left: 4px;
+top: 14.5833em;
+}
+#col12 {
+position: absolute;
+left: 8.1250em;
+top: 14.5833em;
+}
+#col13 {
+position: absolute;
+left: 9.1666em;
+top: 98%
+}
+#col14 {
+position: absolute;
+top: 98%
+}
+#col15 {
+position: absolute;
+top: 114%
+}
+#search1 {
+position: absolute;
+left: 13.3333em;
+top: 13%
+}
+#col16 {
+position: absolute;
+left: 2px;
+top: 5px;
+width: 16.6666em;
+}
+#col17 {
+left: 5pt;
+}
+#getcancel1 {
+position: absolute;
+width: 12.5em;
+left: 2pt;
+top: 6.6666em;
+}
+#getcomplete2 {
+position: absolute;
+left: 2pt;
+top: 7.5em;
+width: 12.5em;
+}
+.pgeven{
+height: 1em;
+width: 20em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+color: blue;
+background-color: greenyellow;
+}
+.pgodd{
+height: 1em;
+width: 20em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+color: black;
+background-color: white;
+}

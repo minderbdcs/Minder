@@ -1,0 +1,66 @@
+<?php
+
+$prevPage = $this->navigation['pageselector'] - 1;
+$prevEnabled = $prevPage > -1;
+$nextPage = $this->navigation['pageselector'] + 1;
+$nextEnabled = $nextPage < count($this->pages);
+?>
+
+<div style="display:inline-block">
+    <label for='show_by'>View By : </label>
+    <?php echo $this->formSelect('show_by',
+        $this->navigation['show_by'],
+        array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+        array(  5 => 5,
+            10 => 10,
+            15 => 15,
+            20 => 20,
+            30 => 30,
+            40 => 40,
+            50 => 50,
+            100 => 100));?>
+    <label for='page'>Page : </label>
+    <?php echo $this->formSelect('pageselector',
+        $this->navigation['pageselector'],
+        array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+        $this->pages); ?>
+</div>
+<br/>
+<br/>
+<table class="withborder">
+    <tr>
+        <?php
+        $counter = 0;
+        foreach ($this->data as $location) {
+            $counter++;
+            $color = ($location->hadCheckDigit) ? 'lightyellow' : 'palegreen';
+        ?>
+        <td style="background-color: <?php echo $color;?>; text-align: center; padding: 8px;">
+            <span><?php echo $location->items['WH_ID'] . $location->items['LOCN_ID'];?></span>
+            <br/>
+            <span><b><?php echo $location->items['LOCN_CHECK_DIGITS'];?></b></span>
+        </td>
+        <?php
+            if ($counter > 9) {
+                $counter = 0;
+                echo '</tr><tr>';
+            }
+        }
+        ?>
+
+    </tr>
+</table>
+<br/>
+<ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <li id='rec_counter' style="display: inline;">
+        <div>Total
+            <?php echo $this->numRecords . " records. "; ?>
+            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+        </div>
+    </li>
+</ul>
+<ul class="toolbar">
+    <li><button type="submit" name="pageselector" class="green-button" value="<?php echo $prevPage;?>" <?php echo ($prevEnabled) ? '' : 'disabled'; ?>>PREV PAGE</button></li>
+    <li><button type="submit" name="pageselector" class="green-button" value="<?php echo $nextPage;?>" <?php echo ($nextEnabled) ? '' : 'disabled'; ?>>NEXT PAGE</button></li>
+</ul>

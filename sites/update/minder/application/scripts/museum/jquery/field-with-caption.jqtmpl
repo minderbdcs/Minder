@@ -1,0 +1,1 @@
+<span>{{= $item.data.getSetting("_CAPTION")}} <span title="{{= $item.data.getTitle()}}">{{= $item.data.getValue()}}</span> </span>

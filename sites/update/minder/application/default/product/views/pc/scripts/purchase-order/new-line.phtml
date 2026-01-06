@@ -1,0 +1,212 @@
+<?php echo $this->render('header.phtml');
+      echo $this->messenger()->all();
+
+      $params =   array();
+    
+?>
+
+<form action="<?php echo $this->url(); ?>" method="post">
+    <h1>NEW PURCHASE LINE</h1>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" /></li>
+        <li><input type="submit" name="action" value="CANCEL" /></li>
+    </ul>
+    <table class="summary"style="width:99%">
+        <tr>
+            <th>PUCRCHASE_ORDER</th>
+            <td><?php echo $this->formText('purchase_order', $this->purchaseOrderNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE</th>
+            <td><?php echo $this->formText('po_line', $this->purchaseOrderLineNo,  array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PROD_ID</th>
+            <td><?php echo $this->formSelect('prod_id', $this->prodId, array_merge($params, array('onchange' => 'loadProductShortDescription()')), $this->productList) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_DESCRIPTION</th>
+            <td><?php echo $this->formText('po_line_description', $this->poLine,  $params) ?></td>
+        </tr>
+        <tr>
+            <th>ORIGINAL_QTY</th>
+            <td><?php echo $this->formText('original_qty', $this->originalQty, array_merge(array('onchange' => 'calculateTotal();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_QTY</th>
+            <td><?php echo $this->formText('po_line_qty', $this->poLineQty,  $params) ?></td>
+        </tr>
+        <tr>
+            <th>UNIT_PRICE</th>
+            <td><?php echo $this->formText('unit_price', $this->unitPrice, array_merge(array('onchange' => 'calculateTotal();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_DISCOUNT</th>
+            <td><?php echo $this->formText('po_line_discount', $this->poLineDiscount, array_merge(array('onchange' => 'calculateTotal();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_TOTAL</th>
+            <td><?php echo $this->formText('po_line_total', $this->poLineTotal,  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_CURRENCY</th>
+            <td><?php echo $this->formSelect('po_currency', $this->poCurrency, $params, $this->currencyList) ?></td></td>
+        </tr>
+        <tr>
+            <th>GST_RATE</th>
+            <td><?php echo $this->formText('gst_rate', $this->gstRate,  array_merge(array('onchange' => 'calculateGst();'), $params)) ?></td>
+        </tr>
+        <tr>
+            <th>GST_VALUE</th>
+            <td><?php echo $this->formText('gst_value', $this->gstValue, $params) ?></td>
+        </tr>
+        <!--
+        <tr>
+            <th>GST_CODE</th>
+            <td><?php echo $this->formText('gst_code', $this->gstCode,  $params) ?></td>
+        </tr>
+        -->
+        <tr>
+            <th>UOM_ORDER</th>
+            <td><?php echo $this->formSelect('uom_order', 'EA', $params, $this->uomOrderList) ?></td>
+        </tr>
+        <tr>
+            <th>EARLIEST_DATE</th>
+            <td><?php echo $this->formText('earliest_date', $this->earliestDate,  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_DUE_DATE</th>
+            <td><?php echo $this->formText('po_line_due_date', $this->poLineDueDate, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_STATUS</th>
+            <td><?php echo $this->formSelect('po_line_status', $this->poLineStatus, $params, $this->poLineStatusList) ?></td>
+        </tr>
+        <tr>
+            <th>REQUISITION_NO</th>
+            <td><?php echo $this->formText('requisition_no', $this->requisitionNo, $params) ?></td>
+        </tr>
+        <tr>
+            <th>COMMENTS</th>
+            <td><?php echo $this->formText('comments', $this->comments,  $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_EXTERNAL_NOTES</th>
+            <td><?php echo $this->formText('po_line_external_notes', $this->poNotes, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_OPTIONS</th>
+            <td><?php echo $this->formText('po_line_options', $this->poOptions, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_QTY_F</th>
+            <td><?php echo $this->formText('po_line_qty_f', $this->lineQtyF, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_LOTNO_LIST</th>
+            <td><?php echo $this->formText('po_line_lotno_list', $this->lineLotno, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_STATUS_TF</th>
+            <td><?php echo $this->formText('po_line_status_tf', $this->statusTf, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_CUSTOMER_ID</th>
+            <td><?php echo $this->formText('po_line_customer_id', $this->customerId, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE_CUSTOMER_NAME</th>
+            <td><?php echo $this->formText('po_line_customer_name', $this->customerName, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LEGACY_RECV_ID</th>
+            <td><?php echo $this->formText('po_legacy_recv_id', $this->recvId, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_REVISION_STATUS</th>
+            <td><?php echo $this->formText('po_revision_status', $this->revisionStatus, $params) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LEGACY_LINE</th>
+            <td><?php echo $this->formText('po_legacy_line', $this->legacyLine, $params) ?></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_DATE</th>
+            <td><?php echo $this->formText('last_update_date', $this->updateDate, $params) ?></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_BY</th>
+            <td><?php echo $this->formText('last_update_by', $this->updateBy, $params) ?></td>
+        </tr>
+        
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" /></li>
+        <li><input type="submit" name="action" value="CANCEL" /></li>
+    </ul>
+</form>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $('#earliest_date').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#po_line_due_date').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#last_update_date').datepicker({dateFormat: 'yy-mm-dd'});
+      
+    });
+    
+    function calculateTotal(){
+        
+        var originalQty =   parseFloat($('#original_qty').val());
+        var unitPrice   =   parseFloat($('#unit_price').val());
+        var lineDiscount=   parseFloat($('#po_line_discount').val());
+      
+        if(isNaN(originalQty)){
+           originalQty = 0;
+        }
+        if(isNaN(unitPrice)){
+           unitPrice   = 0; 
+        }
+        if(isNaN(lineDiscount)){
+           lineDiscount   = 0; 
+        }
+        var total       = originalQty * unitPrice * (1 - lineDiscount);
+        
+        $('#po_line_total').val(total);
+        
+        // calculate GST VALUE
+        calculateGst();     
+    }
+    
+    function calculateGst(){
+        
+        var poLineTotal =   parseFloat($('#po_line_total').val());   
+        var gstRate     =   parseFloat($('#gst_rate').val());
+        
+        if(isNaN(poLineTotal)){
+            poLineTotal = 0;
+        }
+        if(isNaN(gstRate)){
+            gstRate = 0;
+        }
+        
+        var gstValue = poLineTotal * gstRate  / 100;
+        
+        $('#gst_value').val(gstValue);    
+           
+    }
+    
+    function loadProductShortDescription(){
+        
+        var prodId  =   $('#prod_id').val();
+        
+        $.getJSON('<?php echo $this->url(array('action' => 'search', 'controller' => 'purchase-order', 'module' => 'default')); ?>',{
+            field_name:     'prod_id',
+            field_value:    prodId     
+        }, function(json){
+            $('#po_line_description').val(json.short_desc);
+        });    
+    }
+    
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

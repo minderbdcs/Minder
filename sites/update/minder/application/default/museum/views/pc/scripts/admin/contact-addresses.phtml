@@ -1,0 +1,293 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array();
+    $attributesForSelect = array();
+?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <h2><?php echo $this->pageTitle; ?></h2>
+    <ul class="toolbar">
+        <li>
+            <b>ADDRESSES:</b> <?php echo $this->personObj->id; ?>
+        </li>
+        <li>
+            <table>
+                <tr>
+                    <th class='right' style="width:20%"><b>Name/First&nbsp;</b></th>
+                    <td style="width:30%">
+                        <?php
+                            echo $this->formNote('first_name_srch',
+                                                 $this->personObj->items['FIRST_NAME'],
+                                                 $attributes);
+                        ?>
+                    </td>
+                    <th class='right' style="width:20%"><b>Name/Last&nbsp;</b></th>
+                    <td style="width:30%">
+                        <?php
+                            echo $this->formNote('last_name_srch',
+                                                 $this->personObj->items['LAST_NAME'],
+                                                 $attributes);
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="right" style="width:20%"><b>Contact First Name&nbsp;</b></th>
+                    <td style="width:30%">
+                        <?php
+                            echo $this->formNote('contact_first_name_srch',
+                                                 $this->personObj->items['CONTACT_FIRST_NAME'],
+                                                   $attributes);
+                        ?>
+                    </td>
+                    <th class="right" style="width:20%"><b>Contact Last Name&nbsp;</b></th>
+                    <td style="width:30%">
+                        <?php
+                            echo $this->formNote('contact_last_name_srch',
+                                                 $this->personObj->items['CONTACT_LAST_NAME'],
+                                                 $attributes);
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th class='right' style="width:20%"><b>Company ID&nbsp;</b></th>
+                    <td style="width:30%">
+                        <?php
+                            echo $this->formNote('company_id_srch',
+                                                 $this->personObj->items['COMPANY_ID'],
+                                                 $attributes);
+                        ?>
+                    </td>
+                    <th class='right' style="width:20%"><b>Contact Type&nbsp;</b></th>
+                    <td style="width:30%">
+                        <?php
+                            echo $this->formNote('person_type_srch',
+                                                 $this->personObj->items['PERSON_TYPE'],
+                                                 $attributes);
+                        ?>
+                    </td>
+                </tr>
+            </table>
+        </li>
+    </ul>
+    <hr />
+    <ul class="toolbar">
+        <li>
+            <?php //'disabled' => 'disabled' ?>
+            <?php echo $this->formSubmit('action', 'ADD ADDRESS', array('onclick' => 'frmSubmit()')); ?>
+            <?php echo $this->formSubmit('action', 'DELETE ADDRESS', array('onclick' => 'return goDelete();')); ?>
+            <?php echo $this->formSubmit('action', 'EDIT CONTACT', array('onclick' => 'frmSubmit()')); ?>
+            <?php echo $this->formSubmit('action', 'RETURN', array('onclick' => 'frmSubmit()')); ?>
+        </li>
+    </ul>
+    <hr />
+            <div style="text-transform: uppercase; font-weight: bold;">
+                <div style="float:left">RESULTS List</div>
+                <div id="pages" style="position: relative; left: 10ex; font-weight: none;text-transform: none;">
+                    <label for='show_by'>View By : </label>
+                    <?php echo $this->formSelect('show_by',
+                                                 $this->showBy,
+                                                 array('onchange' => 'frmSubmit()'),
+                                                 array(5 => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                     100 => 100));
+                    ?>
+                    <label for='pageselector'>Page : </label>
+                    <?php echo $this->formSelectStrict('pageselector',
+                                                       $this->pageSelector,
+                                                       array('onchange' => 'frmSubmit()'),
+                                                       $this->pages);
+                    ?>
+                </div>
+            </div>
+    <hr/>
+    <div id="selected_num">
+        Selected: 0
+    </div>
+        <table id="addresses" class="withborder tablesorter">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all_addresses',
+                                                'off',
+                                                array('onclick' => 'selectAllAddresses(this)'),
+                                                array('on', 'off'));?>
+            </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->addresses) > 0) {
+        for ($i = 0; $i < count($this->addresses); $i++) {
+            $addressLine = $this->addresses[$i];
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox('record_id[]',
+                                     'off' ,
+                                     array('class' => 'person_checkbox',
+                                           'value' => $this->escape($addressLine->id),
+                                           'id'    => 'person_id_' . $this->escape($addressLine->id),
+                                           'onclick' => 'showSelected(this)' ),
+                                     array($this->escape($addressLine->id), 'on'));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                $val = $addressLine->items[$propertyName];
+                $urlEdit = $this->url(array('module'      => 'default',
+                                            'controller'  => 'admin',
+                                            'action'      => 'contact-edit-address',
+                                            'start_item'  => $this->startItem,
+                                            'show_by'     => $this->showBy),
+                                            '',
+                                            true);
+                echo '<td><a href="'. $urlEdit .
+                          '/edit_record_id/' . $addressLine->id .
+                          '" onclick="return goEdit(\'' . $addressLine->id . '\')">'.
+                          $this->escape($val) . '</a></td>' . "";
+            }
+            echo "</tr>\n";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo '<td/>';
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                <?php echo $this->numRecords . " records. ";?>
+                <?php echo "Show from " . ($this->startItem + 1); ?>
+                <?php echo " to " . ($this->startItem + $this->maxno);?>
+                </div>
+            </li>
+        </ul>
+    <div id="filter" style="display:none">
+        <input type="text" value="<?php echo $this->startItem; ?>" class="flt" id="old_start_item" name="old_start_item" />
+        <input type="text" value="<?php echo $this->showBy; ?>" class="flt" id="old_show_by" name="old_show_by" />
+        <input type="text" value="<?php echo $this->personObj->id; ?>" name="edit_person_id" id="edit_person_id" />
+    </div>
+</form>
+<script type="text/javascript">
+<!--
+var checkOnOff;
+var selectedNum = 0;
+var formUrl='';
+var cacheValue = 50;
+$(document).ready(function(){
+    $('#addresses').tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+    $('#first_name_srch').autocomplete('<?php echo $this->url(array('module'     => 'default',
+                                                                    'controller' => 'admin',
+                                                                    'action'     => 'lookup')); ?>/',
+                                    {matchSubset: 1,
+                                     matchContains: 1,
+                                     cacheLength: cacheValue,
+                                     formatItem: formatItemWithoutDesc,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'first_name_srch'}});
+    $('#last_name_srch').autocomplete('<?php echo $this->url(array('module'     => 'default',
+                                                                   'controller' => 'admin',
+                                                                   'action'     => 'lookup')); ?>/',
+                                    {matchSubset: 1,
+                                     matchContains: 1,
+                                     cacheLength: cacheValue,
+                                     formatItem: formatItemWithoutDesc,
+                                     selectFirst: 1,
+                                     extraParams: {field: 'last_name_srch'}});
+});
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function selectAllAddresses(self) {
+    var chk = $('#addresses input:checkbox');
+    var checkOnOff = $('#select_all_addresses').get(0).checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    if (checkOnOff) {
+        selectedNum = i-1;
+    } else {
+        selectedNum = 0;
+    }
+    $('#selected_num').get(0).innerHTML = 'Selected: ' + selectedNum;
+}
+
+function frmSubmit()
+{
+    document.forms.main.submit();
+    return true;
+}
+
+function showSelected(element)
+{
+    if (element.checked) {
+        selectedNum++;
+    } else {
+        selectedNum--;
+    }
+    if (selectedNum == 0) {
+        $('#select_all_addresses').get(0).checked = false;
+    } else if ( selectedNum == ($('#addresses input:checkbox').length - 1)) {
+        $('#select_all_addresses').get(0).checked = true;
+    }
+
+
+
+    $('#selected_num').get(0).innerHTML = 'Selected: ' + selectedNum;
+    return true;
+}
+
+function goDelete()
+{
+    var res = confirm('You try to delete ' + selectedNum + ' addresses. Are you really?');
+    if (res == true) {
+        document.forms.main.submit();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function goEdit(name)
+{
+    document.getElementById("edit_person_id").value = name;
+    frmSubmit();
+    return true;
+}
+
+function frmClear()
+{
+    $('form#main_form input:text').each(function() {
+        this.value = '';
+        });
+    $('form#main_form select').each(function() {
+        if (this.id != 'show_by' && this.id != 'pageselector') {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

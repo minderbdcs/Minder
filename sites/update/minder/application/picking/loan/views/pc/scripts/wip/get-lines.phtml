@@ -1,0 +1,132 @@
+<span style="display: none;" id="JSON"><?php echo json_encode(array('errors' =>  $this->errors));?></span>
+
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs);
+    $resultsForm->setFields($this->fields);
+?>
+
+<form name="lines_results" id="lines_results" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="lines_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div class="sys-screen-title" title="<?php echo $this->linesSysScreenName;?>">Lines List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by', 
+                                              $this->navigation['show_by'],
+                                              array(),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="lines_selected" class="selected_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->selectedLinesCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter await_approval_lines" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->linesSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->linesSelectionNamespace), $this->lines, $this->selectedLines);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total Order Lines Selected <span class="selected_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->orderLinesSelected; ?></span></td>
+                            <td>&nbsp;</td>
+                            <td>Total Product Codes Selected <span class="selected_prod_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->prodCodesSelected; ?></span></td>
+                            <td>Total ISSN's Selected <span class="selected_issns_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->issnsSelected; ?></span></td>
+                        </tr>
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records.</td>
+                            <td><?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                            <td>Total Product Codes Displayed <span class="total_prod_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->prodCodesTotal; ?></span></td>
+                            <td>Total ISSN's Displayed <span class="total_issns_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->issnsTotal; ?></span></td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <li><input type="submit" name="report_format" id="lines_report_csv_btn" class="order-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="lines_report_xls_btn" class="order-button" value="REPORT: XLS" onclick="return false;" /></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#lines_tabs #show_by, #lines_tabs #pageselector').change(function(){ getLines(); });
+        
+        $("#lines_tabs > ul").tabs();
+        
+        $('.await_approval_lines').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('#lines_report_csv_btn, #lines_report_xls_btn').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(
+                array(
+                    'module' => $this->linesReportModule, 
+                    'controller' => $this->linesReportController, 
+                    'action' => $this->linesReportAction, 
+                    'selection_namespace' => $this->linesSelectionNamespace,
+                    'selection_action' => $this->linesSelectionAction,
+                    'selection_controller' => $this->linesSelectionController
+                ),
+                null, 
+                true
+            );?>' + '/report_format/' + escape($(this).val());
+        });
+        
+        $('.row_selector.<?php echo $this->linesSelectionNamespace;?>, .select_all_rows.<?php echo $this->linesSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->linesSelectionModule, 'controller' => $this->linesSelectionController, 'action' => $this->linesSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#lines_tabs',
+                'selectionNamespace'  : '<?php echo $this->linesSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->linesSelectionAction;?>',
+                'selectionController' : '<?php echo $this->linesSelectionController;?>'
+            },
+            {
+                'onSuccess' : function(response) {
+                    if (response.messages && response.messages.length > 0) {
+                        showMessage(response.messages);
+                    }
+                    if (response.warnings && response.warnings.length > 0) {
+                        showWarnings(response.warnings);
+                    }
+                    
+                    $('.selected_prod_count.' + response.selectionNamespace).html(response.productsSelected);
+                    $('.selected_issns_count.' + response.selectionNamespace).html(response.issnsSelected);
+                }
+            }
+        );
+    });
+    
+    /* ]]> */
+</script>

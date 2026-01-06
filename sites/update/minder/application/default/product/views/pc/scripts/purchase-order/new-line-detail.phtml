@@ -1,0 +1,83 @@
+
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'new-line-detail'), null, true); ?>" method="post">
+    <h1>LINE DETAILS: ADD</h1>
+   
+    <table class="summary"style="width:99%">
+        <tr>
+            <th>PURCHASE_ORDER</th>
+            <td><?php echo $this->formText('purchase_order', $this->purchaseOrderNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PO_LINE</th>
+            <td><?php echo $this->formText('po_line', $this->purchaseLineNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>SSN_ID</th>
+            <td><?php echo $this->formText('ssn_id', null, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER1</th>
+            <td><?php echo $this->formText('psl_other1', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER2</th>
+            <td><?php echo $this->formText('psl_other2', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER_DATE3</th>
+            <td><?php echo $this->formText('psl_other_date3', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_OTHER_DATE4</th>
+            <td><?php echo $this->formText('psl_other_date4', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_STATUS</th>
+            <td><?php echo $this->formSelect('psl_status', 'IN', null, $this->pslStatusList) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_ORDER_QTY</th>
+            <td><?php echo $this->formText('psl_order_qty', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>PSL_RECEIVED_QTY</th>
+            <td><?php echo $this->formText('psl_received_qty', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_DATE</th>
+            <td><?php echo $this->formText('last_update_date', null, null) ?></td></td>
+        </tr>
+        <tr>
+            <th>LAST_UPDATE_BY</th>
+            <td><?php echo $this->formText('last_update_by', null, null) ?></td>
+        </tr>
+        <tr>
+            <th>DEVICE_ID</th>
+            <td><?php echo $this->formText('device_id', null, null) ?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" /></li>
+        <li><input type="submit" name="action" value="CANCEL" onclick="return cancelSaveLine();" /></li>
+    </ul>
+</form>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        $('#psl_other_date3').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#psl_other_date4').datepicker({dateFormat: 'yy-mm-dd'});
+        $('#last_update_date').datepicker({dateFormat: 'yy-mm-dd'});
+        
+    });
+    
+    function saveNewLine(){
+        
+    }
+    
+    function cancelSaveLine(){
+        $('#detail_line_form').hide();
+      
+        return false;
+    }
+   
+</script>

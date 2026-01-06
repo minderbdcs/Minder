@@ -1,0 +1,459 @@
+<?php echo $this->render('header.phtml'); ?>
+
+Import Map
+
+<?php
+echo $this->messenger()->all();
+?>
+
+<?php echo $this->mapForm; ?>
+
+<div id='new-map-fields-container' style="display: none;">
+
+    <div id="headers">
+        <ul class="toolbar">
+            <li>
+                <label for="moveinall">Unused fields <b><span id="leftside">0</span></b></label>
+                <input id="moveinall" type="submit" value="&gt;&gt;" onclick="return onMoveInAllBtnClick();">
+            </li>
+            <li>
+                <label for="moveoutall">Used fields <b><span id="rightside">0</span></b></label>
+                <input id="moveoutall" type="submit" value="&lt;&lt;" onclick="return onMoveOutAllBtnClick();">
+            </li>
+        </ul>
+    </div>
+
+    <div id="available-fields" class="field-list"></div>
+    <div id="mapped-fields" class="field-list"></div>
+    <div id="map" class="field-list"></div>
+    <ul class="toolbar" style="float: left; width: 100%">
+        <li><input type="submit" class="green-button" id="map_save_btn" value="SAVE MAP"></li>
+        <li><input type="submit" class="green-button" id="map_ignore_btn" value="ADD IGNORE"></li>
+        <li><input type="submit" class="green-button" id="map_cancel_btn" value="CANCEL"></li>
+    </ul>
+</div>
+
+<div id="map_container" style="width: 100%; float: left;">
+    <div style="border-top: 1px solid rgb(153, 153, 153); border-bottom: 1px solid rgb(153, 153, 153);">
+        <table style="width: 99%;">
+            <tbody><tr>
+                <td>
+                    <div style="float: left; font-weight: bold;">
+                        Selected: <span class="selected_num">0</span>
+                    </div>
+                </td>
+            </tr>
+        </tbody></table>
+    </div>
+
+    <?php echo $this->paginationControl($this->paginator, 'All', 'paginator.phtml');?>
+
+    <table id="map_list" class="withborder tablesorter">
+        <thead>
+            <tr>
+                <th><input type="checkbox" name="selectAll" value="" /></th>
+                <?php foreach ($this->importMapHeaders as $header) : ?>
+                    <th><?php echo $header?></th>
+                <?php endforeach; ?>
+            </tr>
+        </thead>
+        <tbody>
+        <?php if ($this->paginator->getTotalItemCount() > 0) :?>
+            <?php foreach ($this->paginator as $rowNo => $item) : ?>
+                    <?php
+                        $class = '';
+                        if (isset($this->currentItemAddr)) {
+                            if ($this->currentItemAddr->itemNo == ($rowNo + 1)
+                                && $this->currentItemAddr->pageNo == $this->paginator->getCurrentPageNumber())
+                                $class = 'rowselected';
+                        }
+                    ?>
+
+                    <tr row-id="<?php echo $item['RECORD_ID'];?>" page-no="<?php echo $this->paginator->getCurrentPageNumber();?>" row-no="<?php echo $rowNo + 1;?>" class="<?php echo $class;?>">
+                        <th><input class="row-selector" type="checkbox" name="selectedRows[]" value="<?php echo $item['RECORD_ID'];?>" /></th>
+                        <?php foreach ($this->importMapHeaders as $fieldName => $header) : ?>
+                            <td><?php echo isset($item[$fieldName]) ? $item[$fieldName] : '&nbsp'; ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+            <?php endforeach;?>
+        <?php else : ?>
+            <tr>
+            <?php foreach ($this->importMapHeaders as $header) : ?>
+                <td>&nbsp;</td>
+            <?php endforeach; ?>
+            </tr>
+        <?php endif; ?>
+
+        </tbody>
+    </table>
+
+    <div style="border-top: 1px solid rgb(153, 153, 153); border-bottom: 1px solid rgb(153, 153, 153);" id="num_rec">
+        Total <?php echo $this->paginator->getTotalItemCount();?> records. Show from <?php echo $this->paginator->getFirstVisibleItemNumber();?> to <?php echo $this->paginator->getLastVisibleItemNumber();?>
+    </div>
+
+    <ul class="toolbar">
+        <li><input type="submit" class="green-button" name="add_btn" value="ADD" /></li>
+        <li><input type="submit" class="green-button" name="delete_btn" value="DELETE" /></li>
+        <li><input type="submit" class="green-button" name="report_csv" value="REPORT:CSV" onclick="makeReport('CSV')"/></li>
+        <li><input type="submit" class="green-button" name="report_xls" value="REPORT:XLS" onclick="makeReport('XLS')"/></li>
+    </ul>
+</div>
+
+<div id="crud-form-container" style="float: left; width: 100%;<?php if (!isset($this->crudForm)) echo 'display:hidden;'; ?>">
+    <?php if (isset($this->crudForm)) {
+        echo $this->render('/import-map/get-crud-form.phtml');
+    } ?>
+</div>
+
+<script type="text/javascript">
+    var leftSide = 0;
+    var rightSide = 0;
+
+    function toAlpha(num) {
+        var result = '';
+        var valueShift = 0;
+        var base = 26;
+
+        do {
+            result = String.fromCharCode(65 + (num % base - valueShift)) + result;
+            num = Math.floor(num / base);
+
+            valueShift = 1;
+            base = 27;
+
+        } while (num > 0);
+
+        return result;
+    }
+
+    function onSearchMapBtnClick(evt) {
+        evt.preventDefault();
+
+        $('#import_map_search_form').attr('action', '<?php echo $this->url(array('action' => 'search-map'))?>').submit();
+    }
+
+    function onClearSearchBtnClick(evt) {
+        evt.preventDefault();
+
+        $('#import_map_search_form').attr('action', '<?php echo $this->url(array('action' => 'clear-map-search'))?>').submit();
+    }
+
+    function addIgnoreField() {
+        var dateTime = new Date();
+        var fieldName = 'IGNORE_' + dateTime.getTime();
+        $('#available-fields').minderFieldListAddField(fieldName, 'IGNORE').minderFieldListGetItem(fieldName).find('input').css('background-color', 'red');
+    }
+
+    function updateMap() {
+        $('#map').minderFieldListClear();
+        $.each($('#mapped-fields').minderFieldListGetFields(), function(index, item){
+            $('#map').minderFieldListAddField(item.name, toAlpha(index));
+        });
+    }
+
+    function onMapFieldsReady(result) {
+
+        if (result.messages && result.messages.length > 0)
+            showMessage(result.messages);
+
+        if (result.warnings && result.warnings.length > 0)
+            showWarnings(result.warnings);
+
+        if (result.errors && result.errors.length > 0) {
+            showErrors(result.errors);
+            $('#new-map-fields-container').hide();
+            return;
+        }
+
+        if (result.mapFields) {
+            $('#available-fields').minderFieldListAddFields(result.mapFields);
+            addIgnoreField();
+        }
+
+        updateCounter();
+    }
+
+    function onAvailableFieldsClick(evt) {
+        $('#mapped-fields').minderFieldListAddItem($(evt.target));
+        updateMap();
+        updateCounter();
+
+        if (evt.minderFieldListField !== null) {
+            if (/^IGNORE_(\d+)/.test(evt.minderFieldListField.name))
+                addIgnoreField();
+        }
+    }
+
+    function onMappedFieldsScroll(evt) {
+        $('#map').scrollTop($('#mapped-fields').scrollTop());
+    }
+
+    function onMapScroll(evt) {
+        $('#mapped-fields').scrollTop($('#map').scrollTop());
+    }
+
+    function onMappedFieldsClick(evt) {
+
+        if (evt.minderFieldListField !== null) {
+            if (/^IGNORE_(\d+)/.test(evt.minderFieldListField.name))
+                $(evt.target).remove();
+            else
+                $('#available-fields').minderFieldListAddItem($(evt.target));
+        } else {
+            $('#available-fields').minderFieldListAddItem($(evt.target));
+        }
+
+        updateMap();
+        updateCounter();
+    }
+
+    function onNewMapBtnClick(evt) {
+        evt.preventDefault();
+        $('#new-map-fields-container').show();
+    }
+
+    function onImportTableChange(evt) {
+        $('#available-fields, #mapped-fields, #map').minderFieldListClear();
+
+        $.post(
+            '<?php echo $this->url(array('action' => 'get-map-fields')); ?>',
+            $('#import_map_search_form').serializeArray(),
+            onMapFieldsReady,
+            'json'
+        );
+    }
+
+    function updateImportTable() {
+        $('#import_table').val($('#import_type option:selected').attr('description')).change();
+    }
+
+    function onImportTypeChange(evt) {
+        updateImportTable();
+    }
+
+    function onMapSaveBtnClick(evt) {
+        evt.preventDefault();
+
+        if ($('#import_filename').val() == '') {
+            showErrors(['"Import File Name": Value is required and can\'t be empty']);
+            return;
+        }
+
+        var searchForm = $('#import_map_search_form').attr('action', '<?php echo $this->url(array('action' => 'save-map'));?>');
+
+        var mappedFields = $('#map').minderFieldListGetFields();
+
+        if (mappedFields.length < 1) {
+            showWarnings(['No fields selected for Map. Please select one.']);
+            return;
+        }
+
+        $.each(mappedFields, function(index, item){
+            if (!(/^IGNORE_(\d+)/.test(item.name))) {
+                searchForm.append($('<input type="hidden" />').attr('name', 'fieldMap[' + item.name + ']').val(item.value));
+            }
+        });
+
+        searchForm.submit();
+    }
+
+    function onMapCancelButtonClick(evt) {
+        evt.preventDefault();
+        $('#new-map-fields-container').hide();
+
+        var fields = $('#mapped-fields').minderFieldListGetFields();
+
+        $('#map').minderFieldListClear();
+
+        $(fields).each(function(i) {
+            if (!(/^IGNORE_(\d+)/.test(fields[i].name))) {
+                $('#available-fields').minderFieldListAddField(fields[i].name, fields[i].value);
+            }
+        });
+
+        $('#mapped-fields').minderFieldListClear();
+
+        updateCounter();
+    }
+
+    function onPaginatorStateChange(evt) {
+        var searchForm = $('#import_map_search_form').attr('action', '<?php echo $this->url(array('action' => 'change-paginator-state'));?>');
+        searchForm.append($('<input type="hidden" />').attr('name', 'show_by').val($('#map_container select[name="show_by"]').val()));
+        searchForm.append($('<input type="hidden" />').attr('name', 'pageselector').val($('#map_container select[name="pageselector"]').val()));
+        searchForm.submit();
+    }
+
+    function loadCrudForm(rowId, pageNo, rowNo) {
+        $('#crud-form-container').load(
+            '<?php echo $this->url(array('action' => 'get-crud-form')); ?>',
+            {
+                'rowId'  : rowId,
+                'rowNo'  : rowNo,
+                'pageNo' : pageNo
+            },
+            function(response) {
+                $('#map_list tbody tr').removeClass('rowselected');
+                $('#map_list tbody tr[row-id="' + rowId + '"]').addClass('rowselected');
+            }
+        ).show();
+    }
+
+    function onMapListCellClick(evt) {
+        var selectedRow = $(evt.target).parent('tr[row-id]');
+        loadCrudForm(selectedRow.attr('row-id'), selectedRow.attr('page-no'), selectedRow.attr('row-no'));
+    }
+
+    function onSelectAllClick(evt) {
+        var $_target = $(evt.target);
+
+        if ($_target.attr('checked')) {
+            $('#map_list input.row-selector').attr('checked', 'checked');
+        } else {
+            $('#map_list input.row-selector').removeAttr('checked');
+        }
+        updateSelectedCount();
+    }
+
+    function updateSelectAllState() {
+        if ($('#map_list input.row-selector:not(:checked)').length > 0) {
+            $('#map_list input[name=selectAll]').removeAttr('checked');
+        } else {
+            $('#map_list input[name=selectAll]').attr('checked', 'checked');
+        }
+    }
+
+    function updateSelectedCount() {
+        $('#map_container .selected_num').html($('#map_list input.row-selector:checked').length);
+    }
+
+    function onRowSelectorClick(evt) {
+        updateSelectAllState();
+        updateSelectedCount();
+    }
+
+    function onMapContainerAddBtnClick(evt) {
+        evt.preventDefault();
+        loadCrudForm('new');
+    }
+
+    function onMapContainerDeleteBtnClick(evt) {
+        evt.preventDefault();
+
+        var $_selectedRows = $('#map_list input.row-selector:checked');
+
+        if ($_selectedRows.length < 1) {
+            showWarnings(['No rows selected. Please select one.']);
+            return;
+        }
+
+        if (confirm('You are trying to delete ' + $_selectedRows.length + ' record(s). Are you sure?')) {
+            var searchForm = $('#import_map_search_form').attr('action', '<?php echo $this->url(array('action' => 'delete-map-records'));?>');
+            $_selectedRows.each(function(index, item){
+                searchForm.append($('<input type="hidden">').attr('name', 'delete-rows[]').val($(item).val()));
+            });
+
+            searchForm.submit();
+        }
+
+    }
+
+    function onMapIgnoreBtnClick(evt) {
+        var dateTime    = new Date();
+        var fieldName   = 'IGNORE_' + dateTime.getTime();
+
+        $('#mapped-fields').minderFieldListAddField(fieldName, 'IGNORE').minderFieldListGetItem(fieldName).find('input').css('background-color', 'red');
+
+        updateMap();
+    }
+
+    function onMoveInAllBtnClick() {
+        var fields = $('#available-fields').minderFieldListGetFields();
+
+        $('#available-fields').minderFieldListClear();
+
+        var offset = $('#map').minderFieldListGetFieldsCount();
+
+        $(fields).each(function(i) {
+            if (!(/^IGNORE_(\d+)/.test(fields[i].name))) {
+                $('#mapped-fields').minderFieldListAddField(fields[i].name, fields[i].value);
+            }
+            else {
+                $('#mapped-fields').minderFieldListAddField(fields[i].name, fields[i].value).
+                    minderFieldListGetItem(fields[i].name).find('input').css('background-color', 'red');
+            }
+            $('#map').minderFieldListAddField(fields[i].name, toAlpha(offset + i));
+        });
+
+        addIgnoreField();
+
+        updateCounter();
+
+    }
+
+    function onMoveOutAllBtnClick() {
+        var fields = $('#mapped-fields').minderFieldListGetFields();
+
+        $('#map').minderFieldListClear();
+
+        $(fields).each(function(i) {
+            if (!(/^IGNORE_(\d+)/.test(fields[i].name))) {
+                $('#available-fields').minderFieldListAddField(fields[i].name, fields[i].value);
+            }
+        });
+
+        $('#mapped-fields').minderFieldListClear();
+
+        updateCounter();
+    }
+
+    function updateCounter() {
+        leftSide    = $('#available-fields').minderFieldListGetFieldsCount();
+        rightSide   = $('#mapped-fields').minderFieldListGetFieldsCount();
+
+        $('#leftside').text(leftSide);
+        $('#rightside').text(rightSide);
+    }
+
+    function makeReport(type) {
+        var selected = $('#map_list input.row-selector:checked');
+
+        if (selected && selected.length > 0) {
+            var ids = new Array();
+            $(selected).each(function(index) {
+                ids.push(this.value);
+            });
+            location.href = '<?php echo $this->url(array('action' => 'report'));?>/type/' + escape(type) + '/selected/' + ids;
+        }
+        else {
+            alert('Please select lines for report!');
+        }
+    }
+
+    $(document).ready(function(){
+        $('#search_map_btn').click(onSearchMapBtnClick);
+        $('#clear_btn').click(onClearSearchBtnClick);
+        $('#new_map_btn').click(onNewMapBtnClick);
+        $('#map_save_btn').click(onMapSaveBtnClick);
+        $('#map_ignore_btn').click(onMapIgnoreBtnClick);
+        $('#map_cancel_btn').click(onMapCancelButtonClick);
+        $('#available-fields').minderFieldList().bind('field-click', onAvailableFieldsClick);
+        $('#mapped-fields').minderFieldList().bind('field-click', onMappedFieldsClick).scroll(onMappedFieldsScroll);
+        $('#map').minderFieldList().scroll(onMapScroll);
+        $('#import_table').change(onImportTableChange);
+        $('#import_type').change(onImportTypeChange);
+        $('#map_list').tablesorter({headers: {0: {sorter:false}}});
+        $('#map_container select[name="show_by"], #map_container select[name="pageselector"]').change(onPaginatorStateChange);
+        $('#map_list tbody td').click(onMapListCellClick).css('cursor', 'pointer');
+
+        $('#map_list input[name=selectAll]').click(onSelectAllClick);
+        $('#map_list input.row-selector').click(onRowSelectorClick);
+        $('#map_container input[name="add_btn"]').click(onMapContainerAddBtnClick);
+        $('#map_container input[name="delete_btn"]').click(onMapContainerDeleteBtnClick);
+
+        updateImportTable();
+        updateSelectAllState();
+        updateSelectedCount();
+    });
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

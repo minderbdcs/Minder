@@ -1,0 +1,145 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all() ?>
+
+<h1><?php echo $this->pageTitle; ?></h1>
+<form name="main" id="main" action="" method="post">
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DISCARD", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+    </ul>
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Report Name:
+                </th>
+                <td>
+                    <?php echo $this->formText('name', $this->report->items['NAME'], array()); ?>
+                    Company:
+                    <?php echo $this->formSelect('company_id', '' , array(), $this->companyList) ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Description:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('description', $this->report->items['DESCRIPTION'], array('rows' => '5',
+                                                                                                          'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Query:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('query', $this->report->items['QUERY'], array('rows' => '10',
+                                                                                              'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Header:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('report_header',
+                                                   $this->report->items['REPORT_HEADER'],
+                                                   array('rows'  => '3',
+                                                         'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Footer:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('report_footer',
+                                                   $this->report->items['REPORT_FOOTER'],
+                                                   array('rows'  => '3',
+                                                         'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Frequency:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_frequency',
+                                                   $this->report->items['REPORT_FREQUENCY']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Output Format:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_output_format',
+                                                   $this->report->items['REPORT_OUTPUT_FORMAT']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Type:
+                </th>
+                <td>
+                    <?php echo $this->formSelect('report_type',
+                                                   $this->report->items['REPORT_TYPE'], 
+                                                   array(),
+                                                   $this->reportTypes); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report URI:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_uri',
+                                                   $this->report->items['REPORT_URI']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Format:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_format',
+                                                   $this->report->items['REPORT_FORMAT']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Menu Type:
+                </th>
+                <td>
+                    <?php echo $this->formSelect('report_menu_type',
+                                                   $this->report->items['REPORT_MENU_TYPE'],
+                                                   array(),
+                                                   $this->reportMenuTypes); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DISCARD", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+    </ul>
+</form>
+<script type="text/javascript">
+<!--
+function frmSubmit()
+{
+    document.forms.main.submit();
+    return true;
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

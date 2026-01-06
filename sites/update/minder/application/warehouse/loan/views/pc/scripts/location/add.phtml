@@ -1,0 +1,186 @@
+<?php echo $this->render('header.phtml');
+    $attributes = array('autocomplete' => 'off');
+
+?>
+<form name="main" action="" method="post">
+    <h2>NEW LOCATION: </h2>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+    </ul>
+
+    <div id="tabs">
+    <table class="summary">
+        <tr>
+            <th>Warehouse ID:</th>
+            <td><span class="mandatory"><?php echo $this->formSelect('wh_id', $this->locationObj->items['WH_ID'], array(), $this->warehouseList); ?></span></td>
+            <th>Replenishment Flag:</th>
+            <td><?php echo $this->formText('replenish', $this->locationObj->items['REPLENISH'], array());?></td>
+        </tr>
+        <tr>
+            <th>Location ID:</th>
+            <td>
+                <span class="mandatory"><?php echo $this->formText('locn_id', $this->locationObj->items['LOCN_ID'], array());?></span>
+            </td>
+            <th>Replen. Prod.ID:</th>
+            <td><?php echo $this->formSelect('prod_id', $this->locationObj->items['PROD_ID'], array(), $this->productIdList);?></td>
+        </tr>
+        <tr>
+            <th>Location Name:</th>
+            <td><?php echo $this->formText('locn_name', $this->locationObj->items['LOCN_NAME'], array());?></td>
+            <th>Replen. Maximum Qty:</th>
+            <td><?php echo $this->formText('max_qty', $this->locationObj->items['MAX_QTY'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Location Status:</th>
+            <td><?php echo $this->formText('locn_stat', $this->locationObj->items['LOCN_STAT'], array(), $this->locnStatList);?></td>
+            <th>Replen. Minimum Qty:</th>
+            <td><?php echo $this->formText('min_qty', $this->locationObj->items['MIN_QTY'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Transfer Status:</th>
+            <td>
+                <span class="mandatory">
+                <?php echo $this->formSelect('move_stat', $this->locationObj->items['MOVE_STAT'], array(), $this->moveStatList);?>
+                </span>
+            </td>
+            <th>Replen. ReOrder Qty:</th>
+            <td><?php echo $this->formText('reorder_qty', $this->locationObj->items['REORDER_QTY'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Storage Unit:</th>
+            <td><?php echo $this->formSelect('locn_type', $this->locationObj->items['LOCN_TYPE'], array(), $this->locnTypeList);?></td>
+            <th>Location Sequence:</th>
+            <td><?php echo $this->formText('locn_seq', $this->locationObj->items['LOCN_SEQ'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Storage Type Code:</th>
+            <td>
+                <span class="mandatory">
+                    <?php echo $this->formSelect('store_type', $this->locationObj->items['STORE_TYPE'], array(), $this->storeTypeList);?>
+                </span>
+            </td>
+            <th>Aisle Sequence:</th>
+            <td><?php echo $this->formText('aisle_seq', $this->locationObj->items['AISLE_SEQ'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Inventory Area Code:</th>
+            <td>
+                <span class="mandatory">
+                    <?php echo $this->formSelect('store_area', $this->locationObj->items['STORE_AREA'], array(), $this->storeAreaList);?>
+                </span>
+            </td>
+            <th>Bay Sequence:</th>
+            <td><?php echo $this->formText('bay_seq', $this->locationObj->items['BAY_SEQ'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Handling Method Code:</th>
+            <td><?php echo $this->formSelect('store_meth', $this->locationObj->items['STORE_METH'], array(), $this->storeMethList);?></td>
+            <th>Level Sequence:</th>
+            <td><?php echo $this->formText('shelf_seq', $this->locationObj->items['SHELF_SEQ'], array(), $this->costCenterList);?></td>
+        </tr>
+        <tr>
+            <th>Package Type Code:</th>
+            <td><?php echo $this->formSelect('pack_t', $this->locationObj->items['PACK_T'], array(), $this->packTypeList);?></td>
+            <th>Position Sequence:</th>
+            <td><?php echo $this->formText('compartment_seq', $this->locationObj->items['COMPARTMENT_SEQ'], array());?></td>
+        </tr>
+        <tr>
+            <th>Permission Level:</th>
+            <td><?php echo $this->formSelect('perm_level', $this->locationObj->items['PERM_LEVEL'], array(), $this->permLevelList);?></td>
+            <th>Put Away Qty:</th>
+            <td><?php echo $this->formText('putaway_qty', $this->locationObj->items['PUTAWAY_QTY'], array());?></td>
+        </tr>
+        <tr>
+            <th>Location Metric:</th>
+            <td><?php echo $this->formSelect('locn_metric', $this->locationObj->items['LOCN_METRIC'], array(), $this->locationMetricList);?></td>
+            <th>Location Owner:</th>
+            <td><?php echo $this->formText('locn_owner', $this->locationObj->items['LOCN_OWNER'], array());?></td>
+        </tr>
+        <tr>
+            <th>Location Height:</th>
+            <td><?php echo $this->formText('locn_hght', $this->locationObj->items['LOCN_HGHT'], array());?></td>
+            <th>Current WH_ID:</th>
+            <td><?php echo $this->formSelect('current_wh_id', $this->locationObj->items['CURRENT_WH_ID'], array(), $this->warehouseList);?></td>
+        </tr>
+        <tr>
+            <th>Temperature Zone:</th>
+            <td><?php echo $this->formSelect('temperature_zone', $this->locationObj->items['TEMPERATURE_ZONE'], array(), $this->temperatureZoneList);?></td>
+            <th>Moveable Location Flag:</th>
+            <td><?php echo $this->formText('moveable_locn', $this->locationObj->items['MOVEABLE_LOCN'], array());?></td>
+        </tr>
+        <tr>
+            <th>Zone ID:</th>
+            <td><?php echo $this->formSelect('zone_c', $this->locationObj->items['ZONE_C'], array(), $this->zoneList);?></td>
+            <th>Parent Location ID:</th>
+            <td><?php echo $this->formSelect('parent_locn_id', $this->locationObj->items['PARENT_LOCN_ID'], array(), $this->locationList);?></td>
+        </tr>
+        <tr>
+            <th>Cost Centre Code:</th>
+            <td><?php echo $this->formSelect('cc_c', $this->locationObj->items['CC_C'], array(), $this->costCenterList);?></td>
+            <th>SSN Tracking:</th>
+            <td><?php echo $this->formText('ssn_track', $this->locationObj->items['SSN_TRACK'], array());?></td>
+        </tr>
+        <tr>
+            <th>Turnover Group Code:</th>
+            <td><?php echo $this->formSelect('tog_c', $this->locationObj->items['TOG_C'], array(), $this->togList);?></td>
+            <th>Instance ID:</th>
+            <td><?php echo $this->formText('instance_id', $this->locationObj->items['INSTANCE_ID'], array());?></td>
+        </tr>
+        <tr>
+            <th>Location Label Printed:</th>
+            <td><?php echo $this->formText('label_date', $this->locationObj->items['LABEL_DATE'], array());?></td>
+            <th>Last Updated Date:</th>
+            <td><?php echo $this->formNote('last_update_date', $this->locationObj->items['LAST_UPDATE_DATE'], array());?></td>
+        </tr>
+        <tr>
+            <th>Last Audited Date:</th>
+            <td><?php echo $this->formText('last_audited_date', $this->locationObj->items['LAST_AUDITED_DATE'], array());?></td>
+            <th>Last Updated By:</th>
+            <td><?php echo $this->formNote('last_updated_by', $this->locationObj->items['LAST_UPDATE_BY'], array());?></td>
+        </tr>
+    </table>
+    </div>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+    </ul>
+</form>
+<script type="text/javascript">
+var cacheValue = 50;
+$(document).ready( function() {
+    $.ajaxSetup({async: false,
+                 complete: onAjaxSuccess,
+                 error: onAjaxError,
+                 beforeSend: onAjaxBeforeSend});
+    $("#table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+<?php
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'location',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+});
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+</script>
+<?php echo $this->render('footer.phtml');

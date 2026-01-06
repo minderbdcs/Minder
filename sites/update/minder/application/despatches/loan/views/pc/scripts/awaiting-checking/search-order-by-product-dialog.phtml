@@ -1,0 +1,183 @@
+<!-- search order by prod_id dialog -->
+<div style="display: none;" id="search_order_by_prod_id_dialog" title="Search for Order" class="flora">
+    <form action="#">
+        <p>Scanned Product(s): <span class="scanned_products"></span></p>
+        <h3>Found Orders:</h3>
+        <div style="overflow: auto;">
+            <table align="center" style="margin: 5px 0px;" width="100%">
+                <tbody class="order_list">
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+<!-- search order by prod_id dialog -->
+
+<script type="text/javascript">
+    $(document).ready(function () {
+//        initSearchOrderByProductDialog();
+    });
+
+//    function initSearchOrderByProductDialog() {
+//        var $searchOrderByProductDialog = getSearchOrderByProductDialog(),
+//            $ordersList = $searchOrderByProductDialog.find('.order_list'),
+//            buttonPane;
+//
+//        $searchOrderByProductDialog.dialog(
+//            {
+//                buttons: {
+//                    SELECT: function(evt){
+//                        evt.preventDefault();
+//                        searchOrderByProductDialogSelectOrder();
+//                    },
+//                    'HTML': false,
+//                    CANCEL: function(evt){
+//                        evt.preventDefault();
+//                        searchOrderByProductDialogCancel();
+//                    }
+//                },
+//                buttonStyle: 'green-button',
+//                insertHtml:  '&nbsp;',
+//                autoOpen  : false,
+//                width     : 400,
+//                height    : 260,
+//                resizable : false,
+//                modal     : false
+//            }
+//        ).unbind('dialogopen').bind('dialogopen', function(event, ui) {
+//                getSearchOrderByProductDialogState().active = true;
+//                $(this).show();
+//                $('#barcode').focus();
+//            }).unbind('dialogclose').bind('dialogclose', function(event, ui) {
+//                getSearchOrderByProductDialogState().active = false;
+//            });
+//
+//        buttonPane = $searchOrderByProductDialog.parents('.ui-dialog').find('.ui-dialog-buttonpane');
+//        buttonPane.find('::nth-child(2)').css('height', 'auto'); //workaround to remove unnecessary height property
+//        $ordersList.delegate('input', 'click', function(evt){
+//            var
+//                $target = $(evt.currentTarget);
+//
+//            getSearchOrderByProductDialogState().selectedOrder = $target.val();
+//            $('#barcode').focus();
+//        });
+//    }
+
+//    function showSearchOrderByProductDialog(prodId) {
+//        resetSearchOrderByProductDialog();
+//        updateSearchOrderByProductDialogView();
+//        getSearchOrderByProductDialog().dialog('open');
+//
+//        if (prodId) {
+//            searchOrderByProductDialogDoSearch(prodId);
+//        }
+//    }
+
+//    function searchOrderByProductDialogOnSelect(callback, namespace) {
+//        getSearchOrderByProductDialog().unbind('select.' + namespace).bind('select.' + namespace, callback);
+//    }
+
+//    function searchOrderByProductDialogSelectOrder() {
+//        var
+//            event = $.Event('select');
+//        event.selectedOrder = getSearchOrderByProductDialogState().selectedOrder;
+//        getSearchOrderByProductDialog().trigger(event);
+//        getSearchOrderByProductDialog().dialog('close');
+//    }
+//
+//    function searchOrderByProductDialogCancel() {
+//        getSearchOrderByProductDialog().dialog('close');
+//        resetSearchOrderByProductDialog();
+//        $('#barcode').focus();
+//    }
+
+//    function searchOrderByProductDialogDoSearch(prodId) {
+//        var
+//            state = getSearchOrderByProductDialogState();
+//
+//        state.lastProduct = prodId;
+//        if (state.scannedProducts.indexOf(prodId) < 0) {
+//            state.scannedProducts.push(prodId);
+//        }
+//
+//        $.post(
+//            '<?php //echo $this->url(array('action' => 'search-order-by-product', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>//',
+//            state,
+//            function(response){
+//                searchOrderByProductDialogSetFoundOrders(response.orders);
+//                updateSearchOrderByProductDialogView();
+//            },
+//            'json'
+//        );
+//
+//        searchOrderByProductDialogSetFoundOrders([]);
+//        updateSearchOrderByProductDialogView();
+//    }
+
+//    function isSearchOrderByProductDialogActive() {
+//        return getSearchOrderByProductDialogState().active;
+//    }
+
+//    function updateSearchOrderByProductDialogView() {
+//        var
+//            $dialog = getSearchOrderByProductDialog(),
+//            $orderList = $dialog.find('.order_list'),
+//            $lastProduct = $dialog.find('.scanned_products'),
+//            state = getSearchOrderByProductDialogState(),
+//            htmlCode = '';
+//
+//        $lastProduct.text(state.scannedProducts.join(', '));
+//        state.foundOrders.forEach(function(order) {
+//            var
+//                selected = (order === state.selectedOrder);
+//
+//            if (order === state.selectedOrder) {
+//                htmlCode += '<tr><td><input type="radio" name="order" value="' + order + '" checked="checked"></td><td>' + order + '</td></tr>';
+//            } else {
+//                htmlCode += '<tr><td><input type="radio" name="order" value="' + order + '"></td><td>' + order + '</td></tr>';
+//            }
+//        });
+//        $orderList.empty();
+//        $orderList.html(htmlCode);
+//    }
+
+//    function resetSearchOrderByProductDialog() {
+//        var state = getSearchOrderByProductDialogState();
+//        state.foundOrders = [];
+//        state.scannedProducts = [];
+//        state.selectedOrder = null;
+//    }
+
+//    function searchOrderByProductDialogSetFoundOrders(orders) {
+//        var state = getSearchOrderByProductDialogState();
+//
+//        state.foundOrders = orders;
+//
+//        if (!state.selectedOrder || state.foundOrders.indexOf(state.selectedOrder) < 0) {
+//            if (state.foundOrders.length > 0) {
+//                state.selectedOrder = state.foundOrders[0];
+//            } else {
+//                state.selectedOrder = null;
+//            }
+//        }
+//    }
+
+//    function getSearchOrderByProductDialogState() {
+//        if (!window.searchOrderByProdId) {
+//            window.searchOrderByProdId = {
+//                active: false,
+//                selectedOrder: null,
+//                foundOrders: [],
+//                scannedProducts: [],
+//                lastProduct: ''
+//            }
+//        }
+//
+//        return window.searchOrderByProdId;
+//
+//    }
+
+//    function getSearchOrderByProductDialog() {
+//        return $('#search_order_by_prod_id_dialog');
+//    }
+</script>

@@ -1,0 +1,13 @@
+started from pick.order.order3
+allow issn replacement by any issn for the ssn's ssn_id in the pick item
+
+take out the use of addrprodlabel for this method
+
+allow issn replacement by any issn for the ssn's ssn_description for the ssn_id in the pick item
+
+must change the getfromlocn
+           checkfromlocn
+
+           then must check the pkol
+                               pkil
+

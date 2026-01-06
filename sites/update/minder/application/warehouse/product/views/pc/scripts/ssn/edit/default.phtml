@@ -1,0 +1,2047 @@
+<?php
+    $attributes = array('autocomplete' => 'off');
+    $editable = $attributes;
+    if (!isset($this->action)) {
+        $editable["readonly"] = "true";
+        $editable["disabled"] = "true";
+    }
+?>
+
+<div id="search_tabs" style="width:99%" class="ui-tabs-container">
+
+    <ul class="ui-tabs-nav">
+        <li><a href="#basic_tab"><span><b>Basic</b></span></a></li>
+        <li><a href="#desc_tab"><span><b>Desc</b></span></a></li>
+        <li><a href="#misc_tab"><span><b>Misc</b></span></a></li>
+    </ul>
+    <div id="basic_tab">
+        <table class="summary">
+            <tr>
+                <th>SSN:</th>
+                <?php if ($this->action == 'create-ssn') {
+                    $editableId['disabled'] = 'true';
+                } else {
+                    $editableId = $editable;
+                }
+                ?>
+                <td><?php echo $this->formText('ssn_id', $this->ssnObj->items['SSN_ID'], $editableId + array('class' => 'mandatory')); ?></td>
+                <th>Cost Center:</th>
+                <td><?php echo $this->formSelectStrict('cost_center', $this->ssnObj->items['COST_CENTER'], array(), $this->costCenterList);?></td>
+            </tr>
+            <tr>
+            <tr>
+                <th>Supplier ID:</th>
+                <td><?php echo $this->formSelectStrict('supplier_id', $this->ssnObj->items['SUPPLIER_ID'], array(), $this->supplierIdList);?></td>
+                <th>Company ID:</th>
+                <td><?php echo $this->formSelectStrict('company_id', $this->ssnObj->items['COMPANY_ID'], array(), $this->companyIdList);?></td>
+            </tr>
+            <tr>
+                <th>GRN:</th>
+                <td><?php echo $this->formText('grn', $this->ssnObj->items['GRN'], $editable); ?></td>
+                <th>Division ID:</th>
+                <td><?php echo $this->formSelectStrict('division_id', $this->ssnObj->items['DIVISION_ID'], array(), $this->divisionList);?></td>
+            </tr>
+            <tr>
+                <th>Order No:</th>
+                <td><?php echo $this->formText('po_order', $this->ssnObj->items['PO_ORDER'], array()); ?></td>
+                <th>Department ID:</th>
+                <td><?php echo $this->formSelectStrict('department_id', $this->ssnObj->items['DEPARTMENT_ID'], array(), $this->departmentList);?></td>
+            </tr>
+            <tr>
+                <th>Order Line No:</th>
+                <td><?php echo $this->formText('po_line', $this->ssnObj->items['PO_LINE'], array()); ?></td>
+                <th>Original Quantity:</th>
+                <?php if($this->minder->isAdmin) {?>
+                    <td><?php echo $this->formText('original_qty', $this->ssnObj->items['ORIGINAL_QTY'], array('class' => 'mandatory')); ?></td>
+                <?php } else { ?>
+                    <td><?php echo $this->formText('original_qty', $this->ssnObj->items['ORIGINAL_QTY'], $editable + array('class' => 'mandatory')); ?></td>
+                <?php } ?>
+            </tr>
+            <tr>
+                <th>Purchase Price:</th>
+                <td><?php echo $this->formText('purchase_price', $this->ssnObj->items['PURCHASE_PRICE'], array()); ?></td>
+                <th>Sale Price:</th>
+                <td><?php echo $this->formText('ssn_sale_price', $this->ssnObj->items['SSN_SALE_PRICE'], array()); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo  $this->ssnType1Name; ?></th>
+                <td><span class="mandatory"><?php echo $this->formSelectStrict('ssn_type',
+                            $this->ssnObj->items['SSN_TYPE'],
+                            array('class' => 'mandatory')); ?></span></td>
+                <th><?php echo  $this->ssnType2Name; ?></th>
+                <td><?php echo $this->formSelectStrict('generic',
+                        $this->ssnObj->items['GENERIC']); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo  $this->ssnType3Name; ?></th>
+                <td><?php echo $this->formSelectStrict('ssn_sub_type',
+                        $this->ssnObj->items['SSN_SUB_TYPE']); ?></td>
+                <th><?php echo  $this->brandName; ?></th>
+                <td><?php echo $this->formSelectStrict('brand', $this->ssnObj->items['BRAND'], array(), $this->brandList); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo  $this->modelName; ?></th>
+                <td><?php echo $this->formText('model', $this->ssnObj->items['MODEL'], array()); ?></td>
+                <th>Serial Number:</th>
+                <td><?php echo $this->formText('serial_number', $this->ssnObj->items['SERIAL_NUMBER'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Alternate Name:</th>
+                <td><?php echo $this->formText('alt_name', $this->ssnObj->items['ALT_NAME'], array()); ?></td>
+                <th>Legacy ID:</th>
+                <td><?php echo $this->formText('legacy_id', $this->ssnObj->items['LEGACY_ID'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Parent SSN</th>
+                <td><?php echo $this->formText('parent_ssn_id', $this->ssnObj->items['PARENT_SSN_ID'], array()); ?></td>
+                <th>Old SSN No:</th>
+                <td><?php echo $this->formText('old_ssn_id', $this->ssnObj->items['OLD_SSN_ID'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Status Code:</th>
+                <?php
+                $attr = array();
+                if ($this->minder->isAdmin)
+                    $attr['title'] = 'GROUP_CODE: SSN_STA_CO';
+                ?>
+                <td><?php echo $this->formSelectStrict('status_code', $this->ssnObj->items['STATUS_CODE'], $attr, $this->statusCodeList);?></td>
+                <th>Home Location:</th>
+                <td><?php echo $this->formText('home_locn_id', $this->ssnObj->items['HOME_LOCN_ID'], array());?></td>
+            </tr>
+            <tr>
+                <th>Product ID:</th>
+                <td><?php echo $this->formSelectStrict('prod_id', $this->ssnObj->items['PROD_ID'], array(), $this->productList);?></td>
+                <th>External Product No:</th>
+                <td><?php echo $this->formText('product', $this->ssnObj->items['PRODUCT'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Notes:</th>
+                <td colspan=3><?php echo $this->formTextarea('notes', $this->ssnObj->items['NOTES'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Created By:</th>
+                <td>
+                    <?php
+                    if($this->minder->isAdmin){
+                        echo $this->formText('created_by', $this->ssnObj->items['CREATED_BY'], array('class' => 'mandatory'));
+                    } else {
+                        echo $this->formText('created_by', $this->ssnObj->items['CREATED_BY'], array('readonly' => 'true') + array('class' => 'mandatory'));
+                    }
+                    ?>
+                </td>
+                <th>Create Date:</th>
+                <td>
+
+                    <?php
+                    if($this->minder->isAdmin){
+                        echo $this->formText('create_date', $this->ssnObj->items['CREATE_DATE'], array('class' => 'mandatory'));
+                    } else {
+                        echo $this->formText('create_date', $this->ssnObj->items['CREATE_DATE'],array('readonly' => 'true') + array('class' => 'mandatory'));
+                    }
+                    ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Last Updated By:</th>
+                <td><?php echo $this->formNote('last_update_by', $this->ssnObj->items['LAST_UPDATE_BY'], array()); ?></td>
+                <th>Last Update Date:</th>
+                <td><?php echo $this->formNote('last_update_date', $this->ssnObj->items['LAST_UPDATE_DATE'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Warehouse ID:</th>
+                <td><?php echo $this->formSelect('wh_id', $this->ssnObj->items['WH_ID'], $editable + array('class' => 'mandatory'), $this->warehouseList); ?></td>
+                <th>Prev. Warehouse ID:</th>
+                <td><?php echo $this->formNote('prev_wh_id', $this->ssnObj->items['PREV_WH_ID'], array()); ?></td>
+            </tr>
+            <tr>
+                <th>Location ID:</th>
+                <td><?php echo $this->formSelect('locn_id', $this->ssnObj->items['LOCN_ID'], $editable + array('class' => 'mandatory'), $this->locationList); ?></td>
+                <th>Prev. Location ID:</th>
+                <td><?php echo $this->formNote('prev_locn_id', $this->ssnObj->items['PREV_LOCN_ID'], array()); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div id="desc_tab">
+        <table class="summary">
+
+
+            <?php
+                $arrHeadings = $this->arrDynamicSsnWidget["heading"];
+                $arrWidget = $this->arrDynamicSsnWidget["widget"];
+                $arrSearch = $this->arrDynamicSsnWidget["search"];
+                $intWidgetCount = $this->arrDynamicSsnWidget["count"];
+                $intFlag = 1;
+                foreach($arrHeadings as $strKey => $strValue){ 
+                    if($intFlag % 2 != 0){
+                        echo "<tr>";
+                    }
+                    echo "<th>$strValue</th>";
+                    echo "<td>".$arrWidget[$strKey];
+                    if(isset($arrSearch[$strKey])){
+                        echo $arrSearch[$strKey];
+                    }
+                    echo "</td>";
+                    if($intFlag % 2 == 0){
+                        echo "</tr>";
+                    }
+                    if($intFlag == $intWidgetCount && ($intWidgetCount % 2 != 0)){
+                        echo "<td></td><td></td></tr>";
+                    }
+                    ++$intFlag;
+                }
+            ?>
+
+
+            <tr>
+                <th>Label Location:</th>
+                <td>
+                    <?php //echo $this->formText('label_locn', $this->ssnObj->items['LABEL_LOCN'], array(), $this->locationList);
+                    echo $this->formSelectStrict('label_locn', $this->ssnObj->items['LABEL_LOCN'], array(), $this->labelLocationList); ?>
+                </td>
+                <th>Home Location:</th>
+                <td>
+                    <?php echo $this->formText('home_locn_id', $this->ssnObj->items['HOME_LOCN_ID'], $attributes, $this->locationList);
+                    //echo $this->formSelectStrict('home_locn_id', $this->ssnObj->items['HOME_LOCN_ID'], array(), $this->locationList); ?>
+                </td>
+            </tr>
+        </table>
+
+
+        <!--  conditions edit table starts -->
+
+        <div id="conditions_a" style="margin-top:20px;">
+            <?php echo '<h3>PRODUCT CONDITIONS: ' . $this->ssnConditionNameA . '</h3>';?>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table id ="myTable" style="width:99%">
+                    <tr>
+                        <td>
+                            <div style="float:left;">
+                                <b>
+                                    Selected: <span  id="selected_num">0</span>
+                                </b>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline">
+
+                <label for='show_by'>View By : </label>
+                <?php echo $this->formSelect('show_by',
+                    $this->navigation['show_by'],
+                    array('onchange' => "refreshTables('A')"),
+                    array(  5 => 5,
+                        10 => 10,
+                        15 => 15,
+                        20 => 20,
+                        30 => 30,
+                        40 => 40,
+                        50 => 50,
+                        100 => 100));?>
+                <label for='page'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector',
+                    $this->navigation['pageselector'],
+                    array('onchange' => "refreshTables('A')"),
+                    $this->conditionsPaginator['A']->pages); ?>
+            </div>
+            <table id="table_conditions_a" class="withborder tablesorter" style="width:99%">
+                <thead>
+                <tr>
+                    <th>
+                        <?php echo $this->formCheckbox('select_all',
+                            '',
+                            array('onclick' => "selectAll('A')"));?>
+                    </th>
+                    <?php
+
+                    foreach ($this->ssnConditionHeaders as $header) {
+                        echo '<th>'. $this->escape($header) . '</th>';
+                    }
+                    ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if (count($this->ssnConditionsA) > 0) {
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                        'controller'  => 'issn',
+                        'action'      => 'editssnconditions'),
+                        '',
+                        true);
+                    for ($i = 0; $i < count($this->ssnConditionsA); $i++) {
+                        $line = $this->ssnConditionsA[$i];
+                        echo '<tr>';
+                        echo '<td class="line">';
+                        echo $this->formCheckbox($this->escape($line['SSN_ID']),
+                            $this->escape($line['SSN_ID']),
+                            array("class" => 'line_selector',
+                                'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                "onclick" => "showSelected(this)"
+                            ),
+                            array($this->escape($line['SSN_ID']), 'off'));
+                        echo '</td>';
+                        foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                            $val = $line[$propertyName];
+
+                            if ($propertyName=='CODE') {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->ssnConditionNameA . '</a></td>';
+                            } elseif ($propertyName=='ORIGINAL_TEST') {
+                                if ($val == 'O') {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Original</a></td>';
+                                } else {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Subsequental</a></td>';
+                                }
+                            } else {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->escape($val) . '</a></td>';
+                            }
+
+                        }
+                        echo "</tr>";
+                    }
+                } else {
+                    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+                    echo "<tr id='tsort'>
+        	<td>&nbsp;</td>";
+                    foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                        echo "<td>&nbsp;</td>";
+                    }
+                    echo "</tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <b>
+                                <div id='num_rec'>Total
+                                    <?php echo $this->conditionsPaginator['A']->total . " records. ";?>
+                                    <?php echo "Show from " . $this->conditionsPaginator['A']->from; ?>
+                                    <?php echo " to " . $this->conditionsPaginator['A']->to;?>
+                                </div>
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="conditions_b">
+            <?php echo '<h3>PRODUCT CONDITIONS: ' . $this->ssnConditionNameB . '</h3>';?>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table id ="myTable" style="width:99%">
+                    <tr>
+                        <td>
+                            <div style="float:left;">
+                                <b>
+                                    Selected: <span  id="selected_num">0</span>
+                                </b>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline">
+
+                <label for='show_by'>View By : </label>
+                <?php echo $this->formSelect('show_by',
+                    $this->navigation['show_by'],
+                    array('onchange' => "refreshTables('B')"),
+                    array(  5 => 5,
+                        10 => 10,
+                        15 => 15,
+                        20 => 20,
+                        30 => 30,
+                        40 => 40,
+                        50 => 50,
+                        100 => 100));?>
+                <label for='page'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector',
+                    $this->navigation['pageselector'],
+                    array('onchange' => "refreshTables('B')"),
+                    $this->conditionsPaginator['B']->pages); ?>
+            </div>
+            <table id="table_conditions_b" class="withborder tablesorter" style="width:99%">
+                <thead>
+                <tr>
+                    <th>
+                        <?php echo $this->formCheckbox('select_all',
+                            '',
+                            array('onclick' => "selectAll('B')"));?>
+                    </th>
+                    <?php
+
+                    foreach ($this->ssnConditionHeaders as $header) {
+                        echo '<th>'. $this->escape($header) . '</th>';
+                    }
+                    ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if (count($this->ssnConditionsB) > 0) {
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                        'controller'  => 'issn',
+                        'action'      => 'editssnconditions'),
+                        '',
+                        true);
+                    for ($i = 0; $i < count($this->ssnConditionsB); $i++) {
+                        $line = $this->ssnConditionsB[$i];
+                        echo '<tr>';
+                        echo '<td class="line">';
+                        echo $this->formCheckbox($this->escape($line['SSN_ID']),
+                            $this->escape($line['SSN_ID']),
+                            array("class" => 'line_selector',
+                                'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                "onclick" => "showSelected(this)"
+                            ),
+                            array($this->escape($line['SSN_ID']), 'off'));
+                        echo '</td>';
+                        foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                            $val = $line[$propertyName];
+
+                            if ($propertyName=='CODE') {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->ssnConditionNameB . '</a></td>';
+                            } elseif ($propertyName=='ORIGINAL_TEST') {
+                                if ($val == 'O') {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Original</a></td>';
+                                } else {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Subsequental</a></td>';
+                                }
+                            } else {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->escape($val) . '</a></td>';
+                            }
+
+                        }
+                        echo "</tr>";
+                    }
+                } else {
+                    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+                    echo "<tr id='tsort'>
+        	<td>&nbsp;</td>";
+                    foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                        echo "<td>&nbsp;</td>";
+                    }
+                    echo "</tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <b>
+                                <div id='num_rec'>Total
+                                    <?php echo $this->conditionsPaginator['B']->total . " records. ";?>
+                                    <?php echo "Show from " . $this->conditionsPaginator['B']->from; ?>
+                                    <?php echo " to " . $this->conditionsPaginator['B']->to;?>
+                                </div>
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="conditions_c">
+            <?php echo '<h3>PRODUCT CONDITIONS: ' . $this->ssnConditionNameC . '</h3>';?>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table id ="myTable" style="width:99%">
+                    <tr>
+                        <td>
+                            <div style="float:left;">
+                                <b>
+                                    Selected: <span  id="selected_num">0</span>
+                                </b>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline">
+
+                <label for='show_by'>View By : </label>
+                <?php echo $this->formSelect('show_by',
+                    $this->navigation['show_by'],
+                    array('onchange' => "refreshTables('C')"),
+                    array(  5 => 5,
+                        10 => 10,
+                        15 => 15,
+                        20 => 20,
+                        30 => 30,
+                        40 => 40,
+                        50 => 50,
+                        100 => 100));?>
+                <label for='page'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector',
+                    $this->navigation['pageselector'],
+                    array('onchange' => "refreshTables('C')"),
+                    $this->conditionsPaginator['C']->pages); ?>
+            </div>
+            <table id="table_conditions_c" class="withborder tablesorter" style="width:99%">
+                <thead>
+                <tr>
+                    <th>
+                        <?php echo $this->formCheckbox('select_all',
+                            '',
+                            array('onclick' => "selectAll('C')"));?>
+                    </th>
+                    <?php
+
+                    foreach ($this->ssnConditionHeaders as $header) {
+                        echo '<th>'. $this->escape($header) . '</th>';
+                    }
+                    ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if (count($this->ssnConditionsC) > 0) {
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                        'controller'  => 'issn',
+                        'action'      => 'editssnconditions'),
+                        '',
+                        true);
+                    for ($i = 0; $i < count($this->ssnConditionsC); $i++) {
+                        $line = $this->ssnConditionsC[$i];
+                        echo '<tr>';
+                        echo '<td class="line">';
+                        echo $this->formCheckbox($this->escape($line['SSN_ID']),
+                            $this->escape($line['SSN_ID']),
+                            array("class" => 'line_selector',
+                                'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                "onclick" => "showSelected(this)"
+                            ),
+                            array($this->escape($line['SSN_ID']), 'off'));
+                        echo '</td>';
+                        foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                            $val = $line[$propertyName];
+
+                            if ($propertyName=='CODE') {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->ssnConditionNameC . '</a></td>';
+                            } elseif ($propertyName=='ORIGINAL_TEST') {
+                                if ($val == 'O') {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Original</a></td>';
+                                } else {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Subsequental</a></td>';
+                                }
+                            } else {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->escape($val) . '</a></td>';
+                            }
+
+
+                            //echo '<td>' . $this->escape($val) . '</td>'."";
+                        }
+                        echo "</tr>";
+                    }
+                } else {
+                    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+                    echo "<tr id='tsort'>
+        	<td>&nbsp;</td>";
+                    foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                        echo "<td>&nbsp;</td>";
+                    }
+                    echo "</tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <b>
+                                <div id='num_rec'>Total
+                                    <?php echo $this->conditionsPaginator['C']->total . " records. ";?>
+                                    <?php echo "Show from " . $this->conditionsPaginator['C']->from; ?>
+                                    <?php echo " to " . $this->conditionsPaginator['C']->to;?>
+                                </div>
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="conditions_d">
+            <?php echo '<h3>PRODUCT CONDITIONS: ' . $this->ssnConditionNameD . '</h3>';?>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table id ="myTable" style="width:99%">
+                    <tr>
+                        <td>
+                            <div style="float:left;">
+                                <b>
+                                    Selected: <span  id="selected_num">0</span>
+                                </b>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline">
+
+                <label for='show_by'>View By : </label>
+                <?php echo $this->formSelect('show_by',
+                    $this->navigation['show_by'],
+                    array('onchange' => "refreshTables('D')"),
+                    array(  5 => 5,
+                        10 => 10,
+                        15 => 15,
+                        20 => 20,
+                        30 => 30,
+                        40 => 40,
+                        50 => 50,
+                        100 => 100));?>
+                <label for='page'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector',
+                    $this->navigation['pageselector'],
+                    array('onchange' => "refreshTables('D')"),
+                    $this->conditionsPaginator['D']->pages); ?>
+            </div>
+            <table id="table_conditions_d" class="withborder tablesorter" style="width:99%">
+                <thead>
+                <tr>
+                    <th>
+                        <?php echo $this->formCheckbox('select_all',
+                            '',
+                            array('onclick' => "selectAll('D')"));?>
+                    </th>
+                    <?php
+
+                    foreach ($this->ssnConditionHeaders as $header) {
+                        echo '<th>'. $this->escape($header) . '</th>';
+                    }
+                    ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if (count($this->ssnConditionsD) > 0) {
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                        'controller'  => 'issn',
+                        'action'      => 'editssnconditions'),
+                        '',
+                        true);
+                    for ($i = 0; $i < count($this->ssnConditionsD); $i++) {
+                        $line = $this->ssnConditionsD[$i];
+                        echo '<tr>';
+                        echo '<td class="line">';
+                        echo $this->formCheckbox($this->escape($line['SSN_ID']),
+                            $this->escape($line['SSN_ID']),
+                            array("class" => 'line_selector',
+                                'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                "onclick" => "showSelected(this)"
+                            ),
+                            array($this->escape($line['SSN_ID']), 'off'));
+                        echo '</td>';
+                        foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                            $val = $line[$propertyName];
+
+                            if ($propertyName=='CODE') {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->ssnConditionNameD . '</a></td>';
+                            } elseif ($propertyName=='ORIGINAL_TEST') {
+                                if ($val == 'O') {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Original</a></td>';
+                                } else {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Subsequental</a></td>';
+                                }
+                            } else {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->escape($val) . '</a></td>';
+                            }
+
+                        }
+                        echo "</tr>";
+                    }
+                } else {
+                    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+                    echo "<tr id='tsort'>
+        	<td>&nbsp;</td>";
+                    foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                        echo "<td>&nbsp;</td>";
+                    }
+                    echo "</tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <b>
+                                <div id='num_rec'>Total
+                                    <?php echo $this->conditionsPaginator['D']->total . " records. ";?>
+                                    <?php echo "Show from " . $this->conditionsPaginator['D']->from; ?>
+                                    <?php echo " to " . $this->conditionsPaginator['D']->to;?>
+                                </div>
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div id="conditions_e">
+            <?php echo '<h3>PRODUCT CONDITIONS: ' . $this->ssnConditionNameE . '</h3>';?>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table id ="myTable" style="width:99%">
+                    <tr>
+                        <td>
+                            <div style="float:left;">
+                                <b>
+                                    Selected: <span  id="selected_num">0</span>
+                                </b>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline">
+
+                <label for='show_by'>View By : </label>
+                <?php echo $this->formSelect('show_by',
+                    $this->navigation['show_by'],
+                    array('onchange' => "refreshTables('E')"),
+                    array(  5 => 5,
+                        10 => 10,
+                        15 => 15,
+                        20 => 20,
+                        30 => 30,
+                        40 => 40,
+                        50 => 50,
+                        100 => 100));?>
+                <label for='page'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector',
+                    $this->navigation['pageselector'],
+                    array('onchange' => "refreshTables('E')"),
+                    $this->conditionsPaginator['E']->pages); ?>
+            </div>
+            <table id="table_conditions_e" class="withborder tablesorter" style="width:99%">
+                <thead>
+                <tr>
+                    <th>
+                        <?php echo $this->formCheckbox('select_all',
+                            '',
+                            array('onclick' => "selectAll('E')"));?>
+                    </th>
+                    <?php
+
+                    foreach ($this->ssnConditionHeaders as $header) {
+                        echo '<th>'. $this->escape($header) . '</th>';
+                    }
+                    ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                if (count($this->ssnConditionsE) > 0) {
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                        'controller'  => 'issn',
+                        'action'      => 'editssnconditions'),
+                        '',
+                        true);
+                    for ($i = 0; $i < count($this->ssnConditionsE); $i++) {
+                        $line = $this->ssnConditionsE[$i];
+                        echo '<tr>';
+                        echo '<td class="line">';
+                        echo $this->formCheckbox($this->escape($line['SSN_ID']),
+                            $this->escape($line['SSN_ID']),
+                            array("class" => 'line_selector',
+                                'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                "onclick" => "showSelected(this)"
+                            ),
+                            array($this->escape($line['SSN_ID']), 'off'));
+                        echo '</td>';
+                        foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                            $val = $line[$propertyName];
+
+                            if ($propertyName=='CODE') {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->ssnConditionNameE . '</a></td>';
+                            } elseif ($propertyName=='ORIGINAL_TEST') {
+                                if ($val == 'O') {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Original</a></td>';
+                                } else {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Subsequental</a></td>';
+                                }
+                            } else {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->escape($val) . '</a></td>';
+                            }
+
+
+                        }
+                        echo "</tr>";
+                    }
+                } else {
+                    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+                    echo "<tr id='tsort'>
+        	<td>&nbsp;</td>";
+                    foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                        echo "<td>&nbsp;</td>";
+                    }
+                    echo "</tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <b>
+                                <div id='num_rec'>Total
+                                    <?php echo $this->conditionsPaginator['E']->total . " records. ";?>
+                                    <?php echo "Show from " . $this->conditionsPaginator['E']->from; ?>
+                                    <?php echo " to " . $this->conditionsPaginator['E']->to;?>
+                                </div>
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="conditions_all">
+            <h3>ALL PRODUCT CONDITIONS</h3>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table id ="myTable" style="width:99%">
+                    <tr>
+                        <td>
+                            <div style="float:left;">
+                                <b>
+                                    Selected: <span  id="selected_num">0</span>
+                                </b>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="display:inline">
+
+                <label for='show_by'>View By : </label>
+                <?php echo $this->formSelect('show_by',
+                    $this->navigation['show_by'],
+                    array('onchange' => "refreshTables('All')"),
+                    array(  5 => 5,
+                        10 => 10,
+                        15 => 15,
+                        20 => 20,
+                        30 => 30,
+                        40 => 40,
+                        50 => 50,
+                        100 => 100));?>
+                <label for='page'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector',
+                    $this->navigation['pageselector'],
+                    array('onchange' => "refreshTables('All')"),
+                    $this->conditionsPaginator['All']->pages); ?>
+            </div>
+            <table id="table_conditions_e" class="withborder tablesorter" style="width:99%">
+                <thead>
+                <tr>
+                    <th>
+                        <?php echo $this->formCheckbox('select_all',
+                            '',
+                            array('onclick' => "selectAll('All')"));?>
+                    </th>
+                    <?php
+
+                    foreach ($this->ssnConditionHeaders as $header) {
+                        echo '<th>'. $this->escape($header) . '</th>';
+                    }
+                    ?>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                $this->ssnConditionsAll = array_merge($this->ssnConditionsA, $this->ssnConditionsB, $this->ssnConditionsC, $this->ssnConditionsD, $this->ssnConditionsE);
+
+                if (count($this->ssnConditionsAll) > 0) {
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                        'controller'  => 'issn',
+                        'action'      => 'editssnconditions'),
+                        '',
+                        true);
+
+
+                    for ($i = 0; $i < count($this->ssnConditionsAll); $i++) {
+                        $line = $this->ssnConditionsAll[$i];
+                        echo '<tr>';
+                        echo '<td class="line">';
+                        /*echo $this->formCheckbox($this->escape($line['SSN_ID']),
+                                                 $this->escape($line['SSN_ID']),
+                                                 array("class" => 'line_selector',
+                                                      'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                                      "onclick" => "showSelected(this)"
+                                                 ),
+                                                 array($this->escape($line['SSN_ID']), 'off'));*/
+                        echo $this->formCheckBox($line['SSN_ID'],
+                            $line['CODE'] . ':' . $line['DESCRIPTION'] . ':' . $line['ORIGINAL_TEST'],
+                            array("class"   => 'line_selector',
+                                'checked' => selectFilterValue($this->escape($line['SSN_ID']), $this->conditions),
+                                "onclick" => "showSelected(this)")
+                        );
+                        echo '</td>';
+                        foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                            $val = $line[$propertyName];
+
+                            if ($propertyName=='CODE') {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->ssnConditionNameE . '</a></td>';
+                            } elseif ($propertyName=='ORIGINAL_TEST') {
+                                if ($val == 'O') {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Original</a></td>';
+                                } else {
+                                    echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">Subsequental</a></td>';
+                                }
+                            } else {
+                                echo '<td id="condition_'.$line['SSN_ID'].'_'.$propertyName.'"><a href="#" onclick="editSsnCondition(\''.$line['SSN_ID'].'\'); return false;">'. $this->escape($val) . '</a></td>';
+                            }
+
+
+                        }
+                        echo "</tr>";
+                    }
+                } else {
+                    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+                    echo "<tr id='tsort'>
+        	<td>&nbsp;</td>";
+                    foreach($this->ssnConditionHeaders as $propertyName => $v) {
+                        echo "<td>&nbsp;</td>";
+                    }
+                    echo "</tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+            <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                            <b>
+                                <div id='num_rec'>Total
+                                    <?php echo $this->conditionsPaginator['All']->total . " records. ";?>
+                                    <?php echo "Show from " . $this->conditionsPaginator['All']->from; ?>
+                                    <?php echo " to " . $this->conditionsPaginator['All']->to;?>
+                                </div>
+                            </b>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+
+        <div id="conditionsToolbar">
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ADD', array('onclick' => 'edit_conditions(window.otherType); return false;'))?>
+                </li>
+
+                <li>
+                    <?php echo $this->formSubmit('action', 'DELETE', array('onclick' => 'delete_conditions(); return false;'))?>
+                </li>
+
+                <!--changed formSubmit on formButton to prevent extra POST-->
+                <li>
+                    <?php echo $this->formButton('action', 'REPORT: CSV', array('onclick' => "makeReport('CSV');"))?>
+                </li>
+
+                <li>
+                    <?php echo $this->formButton('action', 'REPORT: XLS', array('onclick' => "makeReport('XLS');"))?>
+                </li>
+
+                <li>
+                    <?php echo $this->formSubmit('action', 'ALL CONDITIONS', array('onclick' => 'conditionsAll(); return false;'))?>
+                </li>
+
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => 'conditionsHide(); return false;'))?>
+                </li>
+
+            </ul>
+        </div>
+
+        <br>
+
+        <div id="edit_conditions_a">
+            <table class="summary" id="issnConditionEditDialog" width="">
+                <tr>
+                    <th>Condition:</th>
+                    <td id="edit_condition_code">
+                        <input type="text" id="" name="" value="<?php echo $this->ssnConditionNameA ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Description:</th>
+                    <td id="edit_condition_description_a">
+                        <select>
+                            <?php foreach($this->ssnConditionDescriptions as $val) {
+                                if ($val['CODE']=='A') {
+                                    ?>
+                                    <option value="<?php echo $val['DESCRIPTION'] ?>"><?php echo $val['DESCRIPTION'] ?></option>
+                                <?php 		}
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Status</th>
+                    <td id="edit_condition_original">
+                        <select id="edit_condition_original_a" name="edit_condition_original_a">
+                            <option value="S">Subsequent</option>
+                            <option value="O">Original</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ACCEPT',
+                        array('onclick' => "addCondition(
+	                			'A',
+	                			$('#edit_condition_description_a option:selected').val(),
+	                			$('#edit_condition_original_a option:selected').val());
+	                		  return false;"))?>
+                </li>
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => '$(\'#edit_conditions_a\').hide(); return false;'))?>
+                </li>
+            </ul>
+        </div>
+
+
+        <div id="edit_conditions_b">
+            <table class="summary" id="issnConditionEditDialog" width="">
+                <tr>
+                    <th>Condition:</th>
+                    <td id="edit_condition_code">
+                        <input type="text" id="" name="" value="<?php echo $this->ssnConditionNameB ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Description:</th>
+                    <td id="edit_condition_description_b">
+                        <select>
+                            <?php foreach($this->ssnConditionDescriptions as $val) {
+                                if ($val['CODE']=='B') {
+                                    ?>
+                                    <option value="<?php echo $val['DESCRIPTION'] ?>"><?php echo $val['DESCRIPTION'] ?></option>
+                                <?php 		}
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Status</th>
+                    <td id="edit_condition_original">
+                        <select id="edit_condition_original_b" name="edit_condition_original_b">
+                            <option value="S">Subsequent</option>
+                            <option value="O">Original</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ACCEPT',
+                        array('onclick' => "addCondition(
+	                			'B',
+	                			$('#edit_condition_description_b option:selected').val(),
+	                			$('#edit_condition_original_b option:selected').val());
+	                		  return false;"))?>
+                </li>
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => '$(\'#edit_conditions_b\').hide(); return false;'))?>
+                </li>
+            </ul>
+        </div>
+
+
+        <div id="edit_conditions_c">
+            <table class="summary" id="issnConditionEditDialog" width="">
+                <tr>
+                    <th>Condition:</th>
+                    <td id="edit_condition_code">
+                        <input type="text" id="" name="" value="<?php echo $this->ssnConditionNameC ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Description:</th>
+                    <td id="edit_condition_description_c">
+                        <select>
+                            <?php foreach($this->ssnConditionDescriptions as $val) {
+                                if ($val['CODE']=='C') {
+                                    ?>
+                                    <option value="<?php echo $val['DESCRIPTION'] ?>"><?php echo $val['DESCRIPTION'] ?></option>
+                                <?php 		}
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Status</th>
+                    <td id="edit_condition_original">
+                        <select id="edit_condition_original_c" name="edit_condition_original_c">
+                            <option value="S">Subsequent</option>
+                            <option value="O">Original</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ACCEPT',
+                        array('onclick' => "addCondition(
+	                			'C',
+	                			$('#edit_condition_description_c option:selected').val(),
+	                			$('#edit_condition_original_c option:selected').val());
+	                		  return false;"))?>
+                </li>
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => '$(\'#edit_conditions_c\').hide(); return false;'))?>
+                </li>
+            </ul>
+        </div>
+
+
+        <div id="edit_conditions_d">
+            <table class="summary" id="issnConditionEditDialog" width="">
+                <tr>
+                    <th>Condition:</th>
+                    <td id="edit_condition_code">
+                        <input type="text" id="" name="" value="<?php echo $this->ssnConditionNameD ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Description:</th>
+                    <td id="edit_condition_description_d">
+                        <select>
+                            <?php foreach($this->ssnConditionDescriptions as $val) {
+                                if ($val['CODE']=='D') {
+                                    ?>
+                                    <option value="<?php echo $val['DESCRIPTION'] ?>"><?php echo $val['DESCRIPTION'] ?></option>
+                                <?php 		}
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Status</th>
+                    <td id="edit_condition_original">
+                        <select id="edit_condition_original_d" name="edit_condition_original_d">
+                            <option value="S">Subsequent</option>
+                            <option value="O">Original</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ACCEPT',
+                        array('onclick' => "addCondition(
+	                			'D',
+	                			$('#edit_condition_description_d option:selected').val(),
+	                			$('#edit_condition_original_d option:selected').val());
+	                		  return false;"))?>
+                </li>
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => '$(\'#edit_conditions_d\').hide(); return false;'))?>
+                </li>
+            </ul>
+        </div>
+
+
+        <div id="edit_conditions_e">
+            <table class="summary" id="issnConditionEditDialog" width="">
+                <tr>
+                    <th>Condition:</th>
+                    <td id="edit_condition_code">
+                        <input type="text" id="" name="" value="<?php echo $this->ssnConditionNameE ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Description:</th>
+                    <td id="edit_condition_description_e">
+                        <select>
+                            <?php foreach($this->ssnConditionDescriptions as $val) {
+                                if ($val['CODE']=='E') {
+                                    ?>
+                                    <option value="<?php echo $val['DESCRIPTION'] ?>"><?php echo $val['DESCRIPTION'] ?></option>
+                                <?php 		}
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Status</th>
+                    <td id="edit_condition_original">
+                        <select id="edit_condition_original_e" name="edit_condition_original_e">
+                            <option value="S">Subsequent</option>
+                            <option value="O">Original</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ACCEPT',
+                        array('onclick' => "addCondition(
+	                			'E',
+	                			$('#edit_condition_description_e option:selected').val(),
+	                			$('#edit_condition_original_e option:selected').val());
+	                		  return false;"))?>
+                </li>
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => '$(\'#edit_conditions_e\').hide(); return false;'))?>
+                </li>
+            </ul>
+        </div>
+
+        <div id="edit_conditions_all">
+            <table class="summary" id="issnConditionEditDialog" width="">
+                <tr>
+                    <th>Condition:</th>
+                    <td id="edit_condition_code">
+                        <select name="">
+                            <option val="<?php echo $this->ssnConditionNameA ?>"><?php echo $this->ssnConditionNameA ?></option>
+                            <option val="<?php echo $this->ssnConditionNameB ?>"><?php echo $this->ssnConditionNameB ?></option>
+                            <option val="<?php echo $this->ssnConditionNameC ?>"><?php echo $this->ssnConditionNameC ?></option>
+                            <option val="<?php echo $this->ssnConditionNameD ?>"><?php echo $this->ssnConditionNameD ?></option>
+                            <option val="<?php echo $this->ssnConditionNameE ?>"><?php echo $this->ssnConditionNameE ?></option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Description:</th>
+                    <td>
+                        <select id="edit_condition_description_all" name="edit_condition_description_all">
+                            <?php foreach($this->ssnConditionDescriptions as $val) { ?>
+                                <option value="<?php echo $val['DESCRIPTION'] ?>"><?php echo $val['DESCRIPTION'] ?></option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Condition Status</th>
+                    <td>
+                        <select id="edit_condition_original_all" name="edit_condition_original_all">
+                            <option value="S">Subsequent</option>
+                            <option value="O">Original</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <br>
+
+            <ul class="toolbar">
+                <li>
+                    <?php echo $this->formSubmit('action', 'ACCEPT',
+                        array('onclick' => "addCondition(
+	                			'A',
+	                			$('#edit_condition_description_all option:selected').val(),
+	                			$('#edit_condition_original_all option:selected').val());
+	                		  return false;"))?>
+                </li>
+                <li>
+                    <?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => '$(\'#edit_conditions_all\').hide(); return false;'))?>
+                </li>
+            </ul>
+        </div>
+
+        <script type="text/javascript">
+
+            var otherType = null;
+
+            $(function(){
+                $('#edit_conditions').hide();
+                $("#myTable").tablesorter( {sortList: [[0,0], [1,0]]} );
+
+                conditionsHide();
+
+                $("#table_conditions_a").tablesorter({widgets: ['zebra'], headers: {0: {sorter:false}, 2: {sorter:false}, 3: {sorter:false}, 5: {sorter:false}},sortList:[[1,1],[4,1]]});
+                $("#table_conditions_b").tablesorter({widgets: ['zebra'], headers: {0: {sorter:false}, 2: {sorter:false}, 3: {sorter:false}, 5: {sorter:false}},sortList:[[1,1],[4,1]]});
+                $("#table_conditions_c").tablesorter({widgets: ['zebra'], headers: {0: {sorter:false}, 2: {sorter:false}, 3: {sorter:false}, 5: {sorter:false}},sortList:[[1,1],[4,1]]});
+                $("#table_conditions_d").tablesorter({widgets: ['zebra'], headers: {0: {sorter:false}, 2: {sorter:false}, 3: {sorter:false}, 5: {sorter:false}},sortList:[[1,1],[4,1]]});
+                $("#table_conditions_e").tablesorter({widgets: ['zebra'], headers: {0: {sorter:false}, 2: {sorter:false}, 3: {sorter:false}, 5: {sorter:false}},sortList:[[1,1],[4,1]]});
+
+                $('#edit_conditions_a').hide();
+                $('#edit_conditions_b').hide();
+                $('#edit_conditions_c').hide();
+                $('#edit_conditions_d').hide();
+                $('#edit_conditions_e').hide();
+                $('#edit_conditions_all').hide();
+
+                var objSsnTypeSelect = {}
+                if($('#ssn_type').is("select")){
+                    objSsnTypeSelect["$ssnType"] = $('#ssn_type')
+                }
+                if($('#generic').is("select")){
+                    objSsnTypeSelect["$generic"] = $('#generic')
+                }
+                if($('#ssn_sub_type').is("select")){
+                    objSsnTypeSelect["$ssnSubType"] = $('#ssn_sub_type')
+                }
+                
+                objSsnTypeSelect["ssnSubTypes"] = new Mdr.OptionsDataSource(<?php echo json_encode($this->ssnSubTypes);?>)
+                objSsnTypeSelect["ssnType"] = '<?php echo $this->ssnObj->items['SSN_TYPE']; ?>'
+                objSsnTypeSelect["generic"] = '<?php echo $this->ssnObj->items['GENERIC']; ?>'
+                objSsnTypeSelect["ssnSubType"] = '<?php echo $this->ssnObj->items['SSN_SUB_TYPE']; ?>'
+
+                Minder.Helper.SsnTypeSelect.init(objSsnTypeSelect);
+
+            });
+
+            function refreshTables(code) {
+                // performs tables refresh whenn add/delete condition
+                var show_by = (code == 'All') ?
+                    $('#conditions_all').find(':input[id="show_by"]').get(0).value :
+                    $('#conditions_' + code.toLowerCase()).find(':input[id="show_by"]').get(0).value;
+
+                var pages   = (code == 'All') ?
+                    $('#conditions_all').find(':input[id="pageselector"]').get(0).value :
+                    $('#conditions_' + code.toLowerCase()).find(':input[id="pageselector"]').get(0).value;
+
+                // remove all rows before update
+                if (code == 'All')  {
+                    $('#conditions_all').find('tbody:eq(1) tr').remove();
+                    $('#conditions_all').block('<?php echo $this->SysScreenWaitPrompt('Retrieving data...');?>');
+                }
+                else
+                {
+                    $('#table_conditions_' + code.toLowerCase()).find('tbody tr').remove();
+                    $('#conditions_' + code.toLowerCase()).block('<?php echo $this->SysScreenWaitPrompt('Retrieving data...');?>');
+                }
+
+                $.post(
+                    '<?php echo $this->url(array('controller' => 'ssn', 'action' => 'refresh-data'))?>',
+                    {
+                        code:       code,
+                        ssn_id:     $('#ssn_id').val(),
+                        show_by:    show_by,
+                        pages:      pages
+                    },
+                    function(data){
+                        if (code == 'All') {
+                            $(data.rows).each(function(index){
+                                $('#conditions_all tbody:eq(1)').append(buildRow(this));
+                            });
+
+                            $('#conditions_all').find('table').trigger('update').trigger('applyWidgets');
+
+                            $('#conditions_all').unblock();
+
+                        }
+                        else {
+                            $(data.rows).each(function(index){
+                                $('#table_conditions_' + code.toLowerCase()).append(buildRow(this));
+                            });
+
+                            $('#table_conditions_' + code.toLowerCase()).trigger('update').trigger('applyWidgets');
+
+                            $('#conditions_' + code.toLowerCase()).unblock();
+
+                        }
+
+                        updatePaginatorState(code, data.paginator);
+                    },
+                    'json'
+                );
+            }
+
+            function addCondition(code, description, original_test) {
+
+                var ssn_id = $('#ssn_id').val();
+
+                $.ajax({
+                    type:       "POST",
+                    url:        "/minder/warehouse/ssn/addcondition",
+                    cache:      false,
+                    data:       {
+                        ssn_id:         ssn_id,
+                        code:           code,
+                        description:    description,
+                        original_test:  original_test
+                    },
+                    dataType:   "json",
+                    success: function (data) {
+                        $('#edit_conditions_' + code.toLowerCase()).hide();
+
+                        if (data.ssn) {
+                            $('#other1').val(data.ssn['OTHER1']);
+                            $('#other2').val(data.ssn['OTHER2']);
+                            $('#other3').val(data.ssn['OTHER3']);
+                            $('#other4').val(data.ssn['OTHER4']);
+                            $('#other5').val(data.ssn['OTHER5']);
+                        }
+
+                        if (data.response.messages && data.response.messages.length > 0) {
+                            showMessage(data.response.messages);
+
+                            var tsort = $("#tsort");
+                            if (tsort && tsort.length > 0) {
+                                $("#tsort").remove();
+                            }
+
+                            refreshTables(code);
+                        }
+
+                        if (data.response.errors && data.response.errors.length > 0)
+                            showErrors(data.response.errors);
+
+                    },
+                    error: function () {
+                        $('#edit_conditions_' + code.toLowerCase()).hide();
+                        alert("Try again");
+                    }
+                });
+            }
+
+            function buildRow(row) {
+                var line = '<tr>' + '<td class="line">';
+                var checkBox = '<input id="' + row.id +
+                    '" class="line_selector" type="checkbox" onclick="showSelected(this)" value="' +
+                    row.code + ":" + row.desc + ":" + row.test + '" name="' + row.id + '">';
+
+                line += checkBox + '</td>';
+
+                var tds = '<td id="condition_' + row.id + '_CODE>" <a onclick="editSsnCondition(\'' + row.id +
+                    '\'); return false;" href="#">' + row.name + '</a></td>' +
+
+                    '<td id="condition_' + row.id + '_DESCRIPTION>" <a onclick="editSsnCondition(\'' + row.id +
+                    '\'); return false;" href="#">' + row.desc + '</a></td>' +
+
+                    '<td id="condition_' + row.id + '_ORIGINAL_TEST>" <a onclick="editSsnCondition(\'' + row.id +
+                    '\'); return false;" href="#">' + row.status + '</a></td>' +
+
+                    '<td id="condition_' + row.id + '_LAST_UPDATE_DATE>" <a onclick="editSsnCondition(\'' + row.id +
+                    '\'); return false;" href="#">' + row.date + '</a></td>';
+
+                line += tds + '</tr>';
+
+                return line;
+            }
+
+            function delete_conditions() {
+                var code    = window.otherType;
+                var ssn_id  = null;
+                var lines   = null;
+                var idx     = null;
+
+                if (code == 'All') {
+                    lines = $('#conditions_all').find('td.line').find('input:checkbox:checked');
+
+                    idx = 0;
+                    $('#conditions_all').find('td.line').find('input:checkbox').each(function(index){
+                        if (this.checked) {
+                            idx = index;
+                            return false;
+                        }
+                    });
+                }
+                else
+                    lines = $('#table_conditions_' + code.toLowerCase()).find('td.line').find('input:checkbox:checked');
+
+                if (lines && lines.length > 0) {
+
+                    // provide only single condition remove
+                    ssn_id = lines[0].id;
+
+                    $.post(
+                        '<?php echo $this->url(array('controller' => 'ssn', 'action' => 'deletecondition'));?>',
+                        {
+                            code:   code,
+                            ssn_id: ssn_id,
+                            info:   lines[0].value
+                        },
+                        function(data) {
+                            if (data.ssn) {
+                                $('#other1').val(data.ssn['OTHER1']);
+                                $('#other2').val(data.ssn['OTHER2']);
+                                $('#other3').val(data.ssn['OTHER3']);
+                                $('#other4').val(data.ssn['OTHER4']);
+                                $('#other5').val(data.ssn['OTHER5']);
+                            }
+
+                            if (data.messages && data.messages.length > 0) {
+                                if (code == 'All') {
+                                    //$('#conditions_all').find('td.line').find('input:checkbox:checked').parent().parent().eq(idx).remove();
+                                    refreshTables(code);
+                                }
+                                else {
+                                    //$('#table_conditions_' + code.toLowerCase()).find('td.line').find('input:checkbox:checked').parent().parent().eq(0).remove();
+                                    refreshTables(code);
+                                }
+                                showMessage(data.messages);
+                            }
+
+                            if (data.errors && data.errors.length > 0) {
+                                showErrors(data.errors);
+                            }
+                        },
+                        'json'
+                    );
+                }
+                else {
+                    alert('Please select condition to delete !');
+                }
+            }
+
+            function makeReport(type) {
+                var code    = window.otherType;
+                var lines   = null;
+                var ssn_id  = null;
+                var url     = "";
+
+                if (code == 'All') {
+                    ssn_id = $('#ssn_id').val();
+
+                    url = "<?php echo $this->url(array('controller' => 'ssn', 'action' => 'report-conditions'));?>" +
+                        "?code=" + code + "&ssn_id=" + ssn_id + "&type=" + type;
+                    location.href = url;
+                }
+                else {
+
+                    lines   = $('#table_conditions_' + code.toLowerCase()).find('td.line').find('input:checkbox');
+
+                    if (lines && lines.length > 0) {
+                        ssn_id = lines[0].id;
+
+                        url = "<?php echo $this->url(array('controller' => 'ssn', 'action' => 'report-conditions'));?>" +
+                            "?code=" + code + "&ssn_id=" + ssn_id + "&type=" + type;
+                        location.href = url;
+                    }
+                    else {
+                        var typeDescription = '';
+                        switch (code) {
+                            case 'A' :
+                                typeDescription = '<?php echo $this->ssnConditionNameA;?>';
+                                break;
+                            case 'B' :
+                                typeDescription = '<?php echo $this->ssnConditionNameB;?>';
+                                break;
+                            case 'C' :
+                                typeDescription = '<?php echo $this->ssnConditionNameC;?>';
+                                break;
+                            case 'D' :
+                                typeDescription = '<?php echo $this->ssnConditionNameD;?>';
+                                break;
+                        }
+                        alert('There are no ' + typeDescription + ' conditions!');
+                    }
+                }
+
+            }
+
+            function updatePaginatorState(code, paginator) {
+                // update paginator settings when onchange event appears
+                var text = 'Total ' + paginator.total + ' records. Show from ' + paginator.from + ' to ' + paginator.to + '.';
+                var div  = $('#conditions_' + code.toLowerCase());
+
+                $(div).find('#num_rec').text(text);
+
+                // updare pages dropdown
+                var pageselector = $(div).find(':input[id="pageselector"]').find('option').remove().end();
+
+                for(var i = 0; i < paginator.pages.length; i++) {
+                    $(pageselector).append('<option value="' + i + '">' + paginator.pages[i] + '</option>');
+                }
+
+                $(pageselector).val(paginator.selected);
+
+                // reset Selected when update paginator
+                $('#conditions_' + code.toLowerCase()).find('#selected_num').text('0');
+            }
+
+            function selectAll(code) {
+                var selectAllCheckbox = null;
+                var lineSelectors     = null;
+                if (code == 'All') {
+                    selectAllCheckbox = $('#conditions_all').find('#select_all');
+                    lineSelectors     = $('#conditions_all tbody').find(':input[type="checkbox"]');
+                }
+                else {
+                    selectAllCheckbox = $('#table_conditions_' + code.toLowerCase()).find('#select_all');
+                    lineSelectors     = $('#table_conditions_' + code.toLowerCase() + ' tbody').find(':input[type="checkbox"]');
+                }
+
+                if ($(selectAllCheckbox).is(':checked')) {
+                    $(lineSelectors).attr('checked', true);
+
+                    // getting 'Selected' string and set text
+                    $('#conditions_' + code.toLowerCase()).find('#selected_num').text($(lineSelectors).length.toString());
+                    $('#conditions_all').find('#selected_num').text($(lineSelectors).length.toString());
+                }
+                else {
+                    $(lineSelectors).attr('checked', false);
+                    $('#conditions_' + code.toLowerCase()).find('#selected_num').text('0');
+                    $('#conditions_all').find('#selected_num').text('0');
+                }
+            }
+
+            function edit_conditions(type) {
+
+                if (type=='A') {
+                    $('#edit_conditions_a').show();
+                    $('#edit_conditions_b').hide();
+                    $('#edit_conditions_c').hide();
+                    $('#edit_conditions_d').hide();
+                    $('#edit_conditions_e').hide();
+                    $('#edit_conditions_all').hide();
+                }
+
+                if (type=='B') {
+                    $('#edit_conditions_a').hide();
+                    $('#edit_conditions_b').show();
+                    $('#edit_conditions_c').hide();
+                    $('#edit_conditions_d').hide();
+                    $('#edit_conditions_e').hide();
+                    $('#edit_conditions_all').hide();
+                }
+
+                if (type=='C') {
+                    $('#edit_conditions_a').hide();
+                    $('#edit_conditions_b').hide();
+                    $('#edit_conditions_c').show();
+                    $('#edit_conditions_d').hide();
+                    $('#edit_conditions_e').hide();
+                    $('#edit_conditions_all').hide();
+                }
+
+                if (type=='D') {
+                    $('#edit_conditions_a').hide();
+                    $('#edit_conditions_b').hide();
+                    $('#edit_conditions_c').hide();
+                    $('#edit_conditions_d').show();
+                    $('#edit_conditions_e').hide();
+                    $('#edit_conditions_all').hide();
+                }
+
+                if (type=='E') {
+                    $('#edit_conditions_a').hide();
+                    $('#edit_conditions_b').hide();
+                    $('#edit_conditions_c').hide();
+                    $('#edit_conditions_d').hide();
+                    $('#edit_conditions_e').show();
+                    $('#edit_conditions_all').hide();
+                }
+
+                if (type=='All') {
+                    $('#edit_conditions_a').hide();
+                    $('#edit_conditions_b').hide();
+                    $('#edit_conditions_c').hide();
+                    $('#edit_conditions_d').hide();
+                    $('#edit_conditions_e').hide();
+                    $('#edit_conditions_all').show();
+                }
+
+                if (type=='A') {
+                    $('#edit_conditions_a').show();
+                    $('#edit_conditions_b').hide();
+                    $('#edit_conditions_c').hide();
+                    $('#edit_conditions_d').hide();
+                    $('#edit_conditions_e').hide();
+                    $('#edit_conditions_all').hide();
+                }
+            }
+
+
+            function conditionsA() {
+                window.otherType = 'A';
+                $('#table_conditions_' + window.otherType.toLowerCase()).find(':checkbox').removeAttr('checked');
+                conditionsHide();
+                $('#conditions_a').show();
+                $('#conditionsToolbar').show();
+
+                refreshTables(window.otherType);
+            };
+
+            function conditionsB() {
+                window.otherType = 'B';
+                $('#table_conditions_' + window.otherType.toLowerCase()).find(':checkbox').removeAttr('checked');
+                conditionsHide();
+                $('#conditions_b').show();
+                $('#conditionsToolbar').show();
+
+                refreshTables(window.otherType);
+            };
+
+            function conditionsC() {
+                window.otherType = 'C';
+                $('#table_conditions_' + window.otherType.toLowerCase()).find(':checkbox').removeAttr('checked');
+                conditionsHide();
+                $('#conditions_c').show();
+                $('#conditionsToolbar').show();
+
+                refreshTables(window.otherType);
+            };
+
+            function conditionsD() {
+                window.otherType = 'D';
+                $('#table_conditions_' + window.otherType.toLowerCase()).find(':checkbox').removeAttr('checked');
+                conditionsHide();
+                $('#conditions_d').show();
+                $('#conditionsToolbar').show();
+
+                refreshTables(window.otherType);
+            };
+
+            function conditionsE() {
+                window.otherType = 'E';
+                $('#table_conditions_' + window.otherType.toLowerCase()).find(':checkbox').removeAttr('checked');
+                conditionsHide();
+                $('#conditions_e').show();
+                $('#conditionsToolbar').show();
+
+                refreshTables(window.otherType);
+            };
+
+            function conditionsAll() {
+                window.otherType = 'All';
+                conditionsHide();
+                $('#conditions_all').find(':checkbox').removeAttr('checked');
+                $('#conditions_all').show();
+                $('#conditionsToolbar').show();
+
+                refreshTables(window.otherType);
+            };
+
+            function conditionsHide() {
+                $('#conditions_a').hide();
+                $('#conditions_b').hide();
+                $('#conditions_c').hide();
+                $('#conditions_d').hide();
+                $('#conditions_e').hide();
+                $('#conditions_all').hide();
+                $('#conditionsToolbar').hide();
+
+                $('#edit_conditions_a').hide();
+                $('#edit_conditions_b').hide();
+                $('#edit_conditions_c').hide();
+                $('#edit_conditions_d').hide();
+                $('#edit_conditions_e').hide();
+                $('#edit_conditions_all').hide();
+            };
+
+        </script>
+
+        <!--  conditions edit table ends -->
+
+
+    </div>
+    <div id="misc_tab">
+        <table class="summary">
+            <tr>
+                <th>
+                    <b>Lease Details:</b>
+                </th>
+                <td style="text-align: right;">
+                    Leased: <?php
+                    $value = 'T';
+                    if ($this->ssnObj->items['LEASED']) {
+                        $checked = $this->ssnObj->items['LEASED'];
+                    } else {
+                        $checked = 'F';
+                    }
+                    echo $this->formHidden('leased', 'F', array('id' => 'store_leased'));
+                    echo $this->formCheckbox('leased', $value, array('onchange' => 'updateLeased()',
+                        'checked' => ($checked == 'T' ? $checked: '')));
+                    ?>
+                </td>
+                <th>
+                </th>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>Leased From:</th>
+                <td>
+                    <?php echo $this->formSelectStrict('leasor', $this->ssnObj->items['LEASOR'], array('disabled' => 'true'), $this->leasorList); ?>
+                </td>
+                <th>Lease Expiry Date</th>
+                <td>
+                    <?php echo $this->formText('lease_expiry_date', $this->ssnObj->items['LEASE_EXPIRY_DATE'], array('disabled' => 'true')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <b>Miscellaneous Details:</b>
+                </th>
+                <td>
+                </td>
+                <th>
+                </th>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <th>Licence No.:</th>
+                <td>
+                    <?php echo $this->formText('licence_number', $this->ssnObj->items['LICENCE_NUMBER'], array()); ?>
+                </td>
+                <th>IP Address:</th>
+                <td>
+                    <?php echo $this->formText('ip_address', $this->ssnObj->items['IP_ADDRESS'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Version No.:</th>
+                <td>
+                    <?php echo $this->formText('version', $this->ssnObj->items['VERSION'], array()); ?>
+                </td>
+                <th>Warranty Expiry Date:</th>
+                <td>
+                    <?php echo $this->formText('warranty_expiry_date', $this->ssnObj->items['WARRANTY_EXPIRY_DATE'], array()); ?>
+                </td>
+            </tr>
+
+            <tr>
+                <th>
+                    <b>Disposal Details:</b>
+                </th>
+                <td style="text-align:right;">
+                    Disposed: <?php
+                    $value   = 'T';
+                    if ($this->ssnObj->items['DISPOSED']) {
+                        $checked = $this->ssnObj->items['DISPOSED'];
+                    } else {
+                        $checked = 'F';
+                    }
+                    echo $this->formHidden('disposed', 'F', array('id' => 'store_disposed'));
+                    echo $this->formCheckbox('disposed', $value, array('onclick' => 'updateDisposed()',
+                        'checked' => ($checked == 'T' ? $checked: '')));
+                    ?>
+                </td>
+                <th>Disposed Date:</th>
+                <td>
+                    <?php echo $this->formText('disposal_date', $this->ssnObj->items['DISPOSAL_DATE'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Disposal Cost:</th>
+                <td>
+                    <?php echo $this->formText('disposal_cost', $this->ssnObj->items['DISPOSAL_COST'], array()); ?>
+                </td>
+                <th>Disposal Income:</th>
+                <td>
+                    <?php echo $this->formText('disposal_price', $this->ssnObj->items['DISPOSAL_PRICE'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Disposal Notes:</th>
+                <td colspan=3>
+                    <?php echo $this->formTextarea('disposal_notes', $this->ssnObj->items['DISPOSAL_NOTES'], array()); ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var cacheValue = 50;
+    $(document).ready( function() {
+        $("#table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+        $("#search_tabs > ul").tabs();
+        $("#lease_expiry_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#loan_last_safety_check_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#loan_last_calibrate_check_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#disposal_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#create_date").datepicker({dateFormat: 'yy-mm-dd'});
+        $("#limit_company").get(0).disabled = true;
+        $("#limit_warehouse").get(0).disabled = true;
+
+        $("#tabs #select_complete").bind("click", selectWholeTable);
+        $("#ssn_id").change(checkSsn);
+        $("#wh_id").change(updateLocation);
+
+        showSelected($("#table #select_all").get(0), "init");
+
+        updateDisposed();
+        updateLeased();
+<?php
+foreach ($this->searchFields as $key => $val) {
+    $url = $this->url(array('module'     => 'warehouse',
+                           'controller' => 'ssn',
+                           'action'     => 'lookup'));
+    echo <<<JSCRIPT
+        $('[name="$key"]').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+        $('[name="home_locn_id"]').change(function(evt) {
+            $('[name="home_locn_id"]').val($(evt.target).val());
+        }).result(function(evt, selectedOption, selectedVal) {
+            $('[name="home_locn_id"]').val(selectedVal);
+        });
+    });
+
+    function checkSsn()
+    {
+        var element = this;
+        $.getJSON('<?php echo $this->url(array('action' => 'exist-ssn', 'controller' => 'ssn', 'module' => 'warehouse')); ?>',
+            {value: this.value},
+            function(json) {
+                if (json) {
+                    if (confirm('Do you want to edit existing SSN ' + json + ' ?')) {
+                        window.location = '<?php echo $this->url(array('action' => 'edit', 'controller' => 'ssn', 'module' => 'warehouse')); ?>/edit_ssn_ssn_id/' + json;
+                    } else {
+                        element.value="";
+                    }
+                } else {
+
+                }
+            });
+
+    }
+
+    function selectWholeTable()
+    {
+        var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+        var checkOnOff = this.checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+        calcOther(this, $($(this).parent().parent()[0]));
+        return true;
+    }
+
+    function calcOther(element, method)
+    {
+        var countEl = 0;
+        if ('auto' == method) {
+            var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+            var method = element.checked;
+        } else if ('init' == method) {
+            var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+            var method = 'init';
+        } else {
+            var container_id = '#' + $(method)[0].id;
+            //var method = element.checked;
+        }
+        $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'ssn', 'module' => 'warehouse')); ?>',
+            { field: 'QTY',
+                inAction: '<?php echo 'edit'; ?>',
+                activeTab: container_id,
+                method: method,
+                id: element.id,
+                value: element.value }, function(json) {
+                var answer = eval(json);
+                $("#selected_num", container_id).text(answer.selected_num);
+            });
+    }
+
+
+    function formatItemWithoutDesc(ele)
+    {
+        return ele[1];
+    }
+    function formatItemWithDesc(ele)
+    {
+        return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+    }
+
+    function updateLeased()
+    {
+        var state = $("#leased").get(0).checked;
+        $("#lease_expiry_date").get(0).disabled = !state;
+        $("#leasor").get(0).disabled            = !state;
+    }
+
+    function updateLoanSafetyCheck()
+    {
+        var state = $("#loan_safety_check").get(0).checked;
+        $("#loan_safety_period_no").get(0).disabled       = !state;
+        $("#loan_last_safety_check_date").get(0).disabled = !state;
+        $("#loan_safety_period").get(0).disabled          = !state;
+    }
+
+    function updateLoanCalibrateCheck()
+    {
+        var state = $("#loan_calibrate_check").get(0).checked;
+        $("#loan_calibrate_period_no").get(0).disabled       = !state;
+        $("#loan_last_calibrate_check_date").get(0).disabled = !state;
+        $("#loan_calibrate_period").get(0).disabled          = !state;
+    }
+
+    function updateDisposed()
+    {
+        var state = $("#disposed").get(0).checked;
+        $("#disposal_cost").get(0).disabled  = !state;
+        $("#disposal_date").get(0).disabled  = !state;
+        $("#disposal_price").get(0).disabled = !state;
+        $("#disposal_notes").get(0).disabled = !state;
+    }
+
+    <?php
+    $url = $this->url(array('module'     => 'warehouse',
+                           'controller' => 'ssn',
+                           'action'     => 'seek'));
+    ?>
+
+
+    function updateLocation()
+    {
+        $.ajax(
+            {
+                type: "GET",
+                url: "<?php echo $url; ?>",
+                cache: false,
+                data: {
+                    field: "wh_id",
+                    wh_id: $("#wh_id").get(0).value
+                },
+                success: function (data) {
+                    $("#locn_id").get(0).length = 0;
+                    var options = eval('(' + data + ')');
+                    var i = 0;
+                    //$("#locn_id").get(0).options[i] = new Option('', '');
+                    for (var key in options) {
+                        var newOpt = new Option(options[key], key);
+                        $("#locn_id").get(0).options[i] = newOpt;
+                        i++;
+                    }
+                },
+                error: function () {
+                    alert("Try again");
+                }
+            }
+        );
+    }
+
+    function goDelete()
+    {
+        var selectedNum = parseInt($('#selected_num').text());
+        if (selectedNum) {
+            if (confirm('You are trying to dispose ' + selectedNum + ' record(s). Are you sure?')) {
+                $('#disposed')[0].checked = true;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+</script>

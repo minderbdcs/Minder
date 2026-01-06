@@ -1,0 +1,10 @@
+<?php
+// Append data.
+foreach ($this->data as $row) {
+    $j = 0;
+    foreach ($this->headers as $key => $val) {
+        $this->worksheet->writeString($this->currentRow, $j++, $row[$val]);
+    }
+    $this->currentRow++;
+}
+

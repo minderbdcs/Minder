@@ -1,0 +1,250 @@
+<div id="ssn_issn_sr_container">
+</div>
+
+<?php
+    echo $this->StandardSRTemplate(array('SRROField', 'SRDefaultButtons', 'SRTabContainer'));
+?>
+
+<script type="text/x-jquery-tmpl" id="tab-container-tmpl">
+    <div id="${tabContainerId}" class="ui-tabs-container">
+        <div class="ui-tabs-panel-header">
+            <div class="sys-screen-title" title="${sysScreenName}">${sysScreenCaption}</div>
+            {{if canSelect}}
+                <div class="paginator-container">
+                    <label disablefor="1">Select All Rows on all pages</label>
+                    <input name="select_complete" {{if $item.data.paginator.totalRows == $item.data.paginator.selectedRows}} checked="checked" {{/if}} {{if $item.data.paginator.selectionMode == 'one'}} disabled="disabled" {{/if}} id="select_complete" row_id="select_complete" class="select_complete ${namespace}" selection_namespace="${namespace}" type="checkbox">
+                </div>
+            {{/if}}
+            {{if usePagination}}
+                {{tmpl(paginator) '#paginator-tpl'}}
+            {{/if}}
+
+            {{if hasHeader}}
+                {{tmpl($item.data) '#header-tmpl'}}
+            {{/if}}
+        </div>
+
+        {{tmpl(tabs) '#tabs-tmpl'}}
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        <ul class="toolbar">
+            <li><input type="button" onclick="return false;" value="REPORT: CSV" class="report_csv_btn"></li>
+            <li><input type="button" onclick="return false;" value="RE-PACK" class="repack_btn"></li>
+            <li><input type="button" onclick="return false;" value="PRINT LABEL" class="print_label_btn"></li>
+        </ul>
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="ro-tmpl">
+    <label>
+        <?php if ($this->minder->isEditable || $this->minder->isSysAdmin()) {?>
+            <a href="<?php echo $this->url(array('action' => 'edit', 'controller' => 'issn'));?>/edit_issn_ssn_id/{{= $item.parent.parent.data.row_id}}">{{= $item.value}}</a>
+        <?php } else {?>
+            {{= $item.value}}
+        <?php }?>
+    </label>
+</script>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#ssn_issn_sr_container').minderSearchResult(response.sysScreens['<?php echo $this->issnNamespace;?>']);
+
+        initButtons();
+
+        $(document).dequeue();
+    }
+
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->issnNamespace;?>':
+                paginator = $('#ssn_issn_sr_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#ssn_issn_sr_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#ssn_issn_sr_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('.selected-container.<?php echo $this->issnNamespace;?>').html(response.selectedRowsTotal);
+
+        var rowsOnPage = $('#ssn_issn_sr_container .data-set:first tr').length;
+        var totalRows  = parseInt($('.total-container.<?php echo $this->issnNamespace;?>').html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == response.selectedRowsOnPage) {
+            $('.select_all_rows.<?php echo $this->issnNamespace;?>').attr('checked', true);
+        } else {
+            $('.select_all_rows.<?php echo $this->issnNamespace;?>').removeAttr('checked');
+        }
+
+        if (totalRows == response.selectedRowsTotal) {
+            $('.select_complete.<?php echo $this->issnNamespace;?>').attr('checked', true);
+        } else {
+            $('.select_complete.<?php echo $this->issnNamespace;?>').removeAttr('checked');
+        }
+
+        $('.row_selector.<?php echo $this->issnNamespace;?>').each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (response.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+        $(document).dequeue();
+    }
+
+    function loadData() {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens['<?php echo $this->issnNamespace?>'] = {
+            'paginator' : $('#ssn_issn_sr_container').minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#ssn_issn_sr_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#ssn_issn_sr_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnPageChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnShowByChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnPreSort(evt) {
+    }
+
+    function tabContainerOnSort(evt) {
+        loadData();
+    }
+
+    function printLabelBtnOnClick(evt) {
+        evt.preventDefault();
+
+        $(document).queue(function() {
+            $('#issn_sr_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Printing Labels...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'print-label'));?>',
+                {},
+                onPrintResponse,
+                'json'
+            );
+        }).queue(function() {
+            $('#issn_sr_container > div').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onPrintResponse(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $(document).dequeue();
+    }
+
+    function repackBtn(evt) {
+        evt.preventDefault();
+        location.href = '<?php echo $this->url(array('action' => 'repack'));?>';
+    }
+
+    function reportOnClick(evt) {
+        evt.preventDefault();
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape($(this).val());
+    }
+
+    function initButtons() {
+        $('.print_label_btn').unbind('click.ssn-edit-form').bind('click.ssn-edit-form', printLabelBtnOnClick);
+        $('.repack_btn').unbind('click.ssn-edit-form').bind('click.ssn-edit-form', repackBtn);
+
+        $('.report_csv_btn').unbind('click.ssn-edit-form').bind('click.ssn-edit-form', reportOnClick);
+    }
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        $('#ssn_issn_sr_container').minderSearchResult(<?php echo json_encode($this->issnJsSearchResults);?>);
+        $('#ssn_issn_sr_container').minderSearchResult({autosorter:true, customSort:true});
+        $('#ssn_issn_sr_container').minderSearchResult(<?php echo json_encode($this->issnJsSearchResultsDataset);?>);
+
+        $('#ssn_issn_sr_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', tabContainerOnPageChanged)
+            .bind('show-by-changed', tabContainerOnShowByChanged)
+            .bind('pre-sort', tabContainerOnPreSort)
+            .bind('sort', tabContainerOnSort);
+
+        initButtons();
+    });
+
+
+/* ]]> */
+</script>

@@ -1,0 +1,323 @@
+<form name="ssns-form" id="ssns-form" action="<?php echo $this->url(array('module'=>'default', 'controller'=>'audit-proccessing', 'action'=>'load-ssns')) . '?table=ssns&method=post' ; ?>" method="post">
+<h3>SSN List</h3>
+<?php echo $this->messenger()->all(); ?>
+    <table width="99%" id="search">
+        <tbody>
+        <tr>
+            <td>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label for="start_date">Start Date: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formText('start_date', selectFilterValue('start_date', $this->conditions), array()); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_company_id">Company: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_company_id', selectFilterValue('st_company_id', $this->conditions), array(), $this->companyIdList); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_wh_id">Warehouse: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_wh_id', selectFilterValue('st_wh_id', $this->conditions), array(), $this->warehouseList); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_locn_id">Location ID: </label>
+                            </td>
+                            <td>
+                                <?php
+                                //echo $this->formSelect('st_locn_id', selectFilterValue('st_locn_id', $this->conditions), array(), $this->locationList);
+                                echo $this->formText('st_locn_id', selectFilterValue('st_locn_id', $this->conditions), array());
+                                ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_status">Status: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_status', selectFilterValue('st_status', $this->conditions), array(), $this->statusList); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_prod_id">Product: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formText('st_prod_id', selectFilterValue('st_prod_id', $this->conditions), array()); ?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <label for="end_date">End Date: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formText('end_date', selectFilterValue('end_date', $this->conditions), array()); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_company_id">User ID: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_audit_by', selectFilterValue('st_audit_by', $this->conditions), array(), $this->userIdList); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_wh_id">Device ID: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_device_id', selectFilterValue('st_device_id', $this->conditions), array(), $this->deviceList); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="st_locn_id">Action Applied By: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_applied_by', selectFilterValue('st_applied_by', $this->conditions), array(), $this->userIdList); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label for="status">Pending Action: </label>
+                            </td>
+                            <td>
+                                <?php echo $this->formSelect('st_action', selectFilterValue('st_action', $this->conditions), array(), $this->actionList); ?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit('action', 'SEARCH', array()); ?>
+            <?php echo $this->formSubmit('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?>
+        </li>
+    </ul>
+    <div id="tabs">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left;">
+                            <b>
+                                Selected: <span  id="selected_num">0</span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+             Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', 'all_values', array()); ?>
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => '$("#ssns-form").trigger("submit"); return true; '),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelect('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => '$("#ssns-form").trigger("submit"); return true; '),
+                                               $this->pages); ?>
+        </div>
+        <table id="<?php echo $this->escape($this->tableId) ?>" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           'any_value',
+                                           array('onclick' => 'selectAll(this)'));?>
+            </th>
+            <?php
+                foreach ($this->headers as $key => $header) {
+                    echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+                }
+            ?>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+                foreach ($this->data as $line) {
+            ?>
+                <tr>
+                    <th>
+                        <?php
+                            echo $this->formCheckbox('recs[' . $this->escape($line->id) . ']',
+                                                     $this->escape($line->id),
+                                                     array('class' => 'ssn_checkbox',
+                                                           'id' => $this->escape($line->id),
+                                                           'checked' => selectFilterValue($this->escape($line->id), $this->conditions['recs']),
+                                                           'onclick' => 'showSelected(this)'));
+
+                        ?>
+                    </th>
+                    <?php
+                        foreach ($this->headers as $key => $val) {
+                            echo '<td>' . $this->escape($line->items[$key]) . '</td>';
+                        }
+                    ?>
+                </tr>
+             <?php
+                }
+            ?>
+            </tbody>
+        </table>
+        <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">Total
+            <?php echo $this->numRecords . " records. ";?>
+            <?php echo "Show from " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + count($this->data));?>
+        </div>
+    </div>
+        <ul class="toolbar">
+            <li>
+                <?php echo $this->formButton('action', 'REPORT: CSV', array('onclick' => 'return reportCSVssns();')); ?>
+            </li>
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT STATISTICS: CSV', array('disabled' => 'disabled')); ?>
+            </li>
+            <li>
+                <?php echo $this->formButton('action', 'LIST STOCKTAKE LOC\'s', array('onclick' => 'return showLocnList();')); ?>
+            </li>
+        </ul>
+    <?php echo $this->formHidden('total', $this->numRecords); ?>
+</form>
+<script type="text/javascript">
+<!--
+
+<?php if ($this->noChildRefresh == 'true') { ?>
+      var isReload = false;
+<?php } else { ?>
+      var isReload = true;
+<?php }?>
+var cacheValue = 50;
+var warehouse = '';
+$(document).ready( function (){
+var options = {
+        beforeSubmit: function() {
+            $('#ssns-container > .messages').remove();
+            $('#ssns-container > .errors').remove();
+            $('#ssns-container > .warnings').remove();
+        },
+        target:     '#ssns-container',
+        url:        '<?php echo $this->url(array('action'=>'load-ssns', 'method' => 'post')); ?>',
+        success:    function() {
+        }
+    };
+    showSelected($("table #select_all").get(0), "init");
+
+    isReload = true;
+
+    $('#ssns-form').ajaxForm(options);
+    initAutocomplete();
+    $('#start_date, #end_date').datepicker({dateFormat: 'yy-mm-dd'});
+});
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function initAutocomplete()
+{
+
+<?php
+$url = $this->url(array('action'     => 'lookup'));
+
+foreach ($this->autocompletes as $key) {
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+}
+
+function showLocnList()
+{
+    $('#locations-container').load('<?php echo $this->url(array('action' => 'load-stocktake-locations', 'table' => 'locations'));?>',
+        function () {
+        });
+    return false;
+}
+
+function calcOther(element, method)
+{
+    if ($(element).parent().parent().parent().parent()[0].id == 'ssns') {
+        var listSsns = new Array();
+        var keys = new Array();
+        var values = new Array();
+        var searchParams = new Array();
+
+        $('#count-location-container').empty();
+        $('#count-issn-container').empty();
+        $('.ssn_checkbox', '#ssns-form').each(function(){ if (this.checked) {listSsns.push(this.id);}});
+
+        $('*','#search').filter(':input')
+                    .filter('[value!=""]')
+                    .each(function() {
+            keys.push(this.id);
+            values.push(this.value);
+        });
+
+        if(isReload) {
+            $('#issns-container').load('<?php echo $this->url(array('action' => 'load-issns', 'table' => 'issns'));?>',
+                        {'list_ssns[]': listSsns,
+                         'keys[]': keys,
+                         'values[]': values
+                         },
+                        function () {
+                        });
+        }
+    }
+}
+
+function reportCSVssns()
+{
+    var s = $('#ssns-form').formSerialize();
+    var generator = window.open('<?php echo $this->url(array('action' => 'load-ssns', 'method' => 'REPORT: CSV'));?>?' + s, 'subwin');
+    return true;
+}
+//-->
+</script>
+

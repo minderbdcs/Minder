@@ -1,0 +1,95 @@
+<?php
+    $editForm = $this->editForm;
+?>
+
+<style>
+    input[readonly="1"], select[readonly="1"] {
+        background: #EEEEEE;
+    }
+</style>
+
+<form id="EDIT_FORM">
+    <input type="hidden" name="model_name" value="<?php echo $this->modelName;?>" />
+    <input type="hidden" name="row_id" value="<?php echo $this->rowId;?>" /> 
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE"); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "CANCEL"); ?>
+        </li>
+    </ul>
+
+    <table class = "summary">
+        <?php foreach ($editForm->getElements() as $formElement) { ?>
+            <tr>
+                <?php
+                    $formElement->removeDecorator('Label')->addDecorator('HtmlTag', array('tag' => 'td'));
+                    echo '<th><b>' . $formElement->getLabel() . '</b></th>';
+                    echo '<th>' . $formElement->getAttrib('DB_FIELD_TYPE') . '</th>';
+                    echo $formElement; 
+                ?>
+            </tr>
+        <?php }?>
+    </table>
+
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE"); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "CANCEL"); ?>
+        </li>
+    </ul>
+    <div style="display: none;" class='JSON'></div>
+</form>
+
+<script type="text/javascript">
+$(document).ready( function (){
+    $('#EDIT_FORM .withdatepicker').each(function(){
+        
+        if (!$(this).attr('readonly')) {
+            $(this).datepicker({dateFormat: 'yy-mm-dd'});
+        }
+    });
+    
+    $('#EDIT_FORM input[VALUE=SAVE]').click(onSaveEditFormClick);
+    
+    $('#EDIT_FORM input[VALUE=CANCEL]').click(function(evt){
+        evt.preventDefault();
+        $('#EDIT_FORM').remove();
+    });
+    
+    function onSaveEditFormClick(evt) {
+        evt.preventDefault();
+        
+        var data = {};
+        
+        $('#EDIT_FORM input, #EDIT_FORM select').each(function() {
+            data[$(this).attr('name')] = $(this).val();
+        });
+        
+        $('#EDIT_FORM .JSON').load(
+            '<?php echo $this->url(array('action' => 'save-edit-form', 'controller' => 'pick-invoice'), null, true);?>',
+            data,
+            onSaveEditFormCallback
+        );
+    }
+    
+    function onSaveEditFormCallback() {
+        var response = $.parseJSON($('#EDIT_FORM .JSON').html());
+        $('#EDIT_FORM .JSON').html('');
+        
+        if (response.errors && response.errors.length > 0) {
+            showErrors(response.errors);
+            return;
+        }
+        
+        if (response.messages && response.messages.length > 0) {
+            showMessage(response.messages);
+        }
+        
+        location.href = '<?php echo $this->url(array('controller' => 'pick-invoice'), null, true);?>';
+    }
+});
+</script>

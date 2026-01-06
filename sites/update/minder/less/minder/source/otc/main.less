@@ -1,0 +1,205 @@
+@otc-font-size-base: 16pt;
+@otc-line-height-base: 22pt;
+
+.ui-dialog-buttonpane button.otc-dialog-button {
+    background: #A0DF82;
+    border:1px solid;
+    font-weight:bold;
+    font-size: @otc-font-size-base;
+    padding:4;
+    width: 100px;
+    height: 50px;
+}
+
+#otc_printer_select {
+    width: 30ex;
+}
+
+#issues_tab, #returns_tab, #audit_tab {
+    .tool_transaction_message {
+
+        margin-left: 166px;
+        width: 1056px;
+
+        &.error {
+            background-color: red;
+        }
+
+        &.success {
+            background-color: greenyellow;
+        }
+    }
+
+    input {
+        font-family: inherit;
+    }
+
+    input.green {
+        background: #A0DF82;
+        border:1px solid;
+        font-weight:bold;
+        font-size: @otc-font-size-base;
+        padding:0;
+        width: 100px;
+        height: 50px;
+        font-family: inherit;
+
+        &.small {
+            width: 50px;
+        }
+
+        &.large{
+            width: 160px;
+        }
+    }
+
+    input.infield {
+        width: 350px;
+    }
+
+    input.comment {
+        width: 700px;
+    }
+
+    input.short {
+        width: 50px;
+    }
+
+    .fields {
+        line-height: 33px;
+    }
+
+    .inline-field-set {
+        &.hidden {
+            display: none;
+        }
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .label {
+        display: inline-block;
+        width: 162px;
+    }
+
+    .big {
+        font-size: @otc-font-size-base;
+        font-weight: bold;
+        vertical-align: middle;
+    }
+
+    .safety-indicator, .calibration-indicator, .inspection-indicator {
+        line-height: 22px;
+        font-size: 18px;
+        border: dashed 1px #0000ff;
+
+        .expire-caption {
+            display: block;
+        }
+
+        .expired-caption {
+            display: none;
+        }
+
+        &.expired {
+            background-color: red;
+            border: none;
+
+            .expire-caption {
+                display: none;
+            }
+
+            .expired-caption {
+                display: block;
+            }
+
+        }
+    }
+
+
+    .issues-switch, .returns-switch, .audit-switch {
+        &:hover {
+            cursor: pointer;
+        }
+        border: none;
+        font-weight:bold;
+        font-size: @otc-font-size-base;
+        padding:0;
+        width: 120px;
+        height: 50px;
+        font-family: inherit;
+    }
+
+    .returns-switch {
+        background-color: lightyellow;
+    }
+
+    .issues-switch {
+        background-color: lightgreen;
+    }
+
+    .audit-switch {
+        background-color: lightblue;
+    }
+}
+
+#field5_tip_issues,
+#field5_tip_returns
+{
+    &.overdue {
+        background-color: #ff0000;
+        color: #000000;
+    }
+}
+
+table.tablesorter tbody {
+    td.mdr-otc-issued {
+        background-color: lightcoral;
+    }
+
+    td.mdr-otc-returned {
+        background-color: lightgreen;
+    }
+}
+
+.otc-page-body {
+
+    #datepicker_div,
+    .datepicker_oneMonth
+    {
+        width: 300px;
+        font-size: @otc-font-size-base;
+        line-height: @otc-line-height-base;
+    }
+
+    .datepicker_header select {
+        width: 13ex;
+    }
+}
+
+#issues_tab, #returns_tab, #audit_tab {
+
+    @media screen {
+        @media (max-width: 1459px) {
+            input {
+                &.comment {
+                    margin-left: 166px;
+                }
+
+                &.infield, &.tool_transaction_message, &.comment {
+                    width: 900px;
+                }
+            }
+        }
+
+        @media (max-width: 1319px) {
+            input {
+                &.comment, &.infield, &.tool_transaction_message {
+                    margin-left: 0;
+                    width: 95%;
+                }
+            }
+        }
+    }
+}
+

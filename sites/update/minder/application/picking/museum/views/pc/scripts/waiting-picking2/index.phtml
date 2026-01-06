@@ -1,0 +1,817 @@
+<?php echo $this->render('header.phtml'); ?>
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<?php echo $this->render('waiting-picking2/print-pick-block-dialog.phtml'); ?>
+
+<?php
+    foreach ($this->screenOrder as $screenDesc) {
+        echo '<div style="width: 100%; float: left;">';
+        switch ($screenDesc['name']) {
+            case $this->orderSsName:
+                if (!empty($this->orderSearchFields)) {
+                    echo '<h3 title="' . $this->orderSsName . '">Search Orders:</h3>';
+                    echo $this->sysScreenSearchForm2($this->orderSearchForm, array('title' => $this->orderSsName, 'id' => 'order-search-form', 'search_fields' => $this->orderSearchFields));
+                }
+                echo '<div id="order-container"></div>';
+                break;
+            case $this->linesSsName:
+                if (!empty($this->linesSearchFields)) {
+                    echo '<h3 title="' . $this->linesSsName . '">Search Order Lines:</h3>';
+                    echo $this->sysScreenSearchForm2($this->linesSearchForm, array('title' => $this->linesSsName, 'id' => 'lines-search-form', 'search_fields' => $this->linesSearchFields));
+                }
+                echo '<div id="lines-container"></div>';
+                break;
+            case $this->limitsSsName:
+                echo '<div id="limits-container"></div>';
+                break;
+        }
+        echo '<div style="clear: both; height: 20px;"></div></div>';
+    }
+
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<?php echo $this->render('waiting-picking2/cancel-order-dialog.phtml');?>
+<?php echo $this->render('waiting-picking2/device-statistics-dialog.phtml');?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.sysScreens['<?php echo $this->orderNamespace;?>']) {
+            $('#order-container').minderSearchResult(response.sysScreens['<?php echo $this->orderNamespace;?>']);
+            markUndispatchableRows(response.sysScreens['<?php echo $this->orderNamespace;?>'].UNDISPATCHABLE_ITEMS);
+        }
+
+        if (response.sysScreens['<?php echo $this->linesNamespace;?>']) {
+            $('#lines-container').minderSearchResult(response.sysScreens['<?php echo $this->linesNamespace;?>']);
+        }
+
+
+        $(document).dequeue();
+    }
+
+    function getMasterSlaveChain() {
+        //noinspection UnnecessaryReturnStatementJS
+        return <?php echo json_encode($this->masterSlaveChain);?>;
+    }
+
+    function getNamespaceMap() {
+        return {
+            '<?php echo $this->orderSsName;?>': '<?php echo $this->orderNamespace?>',
+            '<?php echo $this->linesSsName;?>': '<?php echo $this->linesNamespace?>'
+        };
+    }
+
+    function getContainerIdMap() {
+        return {
+            "<?php echo $this->orderNamespace?>": 'order-container',
+            "<?php echo $this->linesNamespace?>": 'lines-container'
+        };
+    }
+
+    function getSysScreenMap() {
+        return {
+            '<?php echo $this->orderNamespace?>' : '<?php echo $this->orderSsName;?>',
+            '<?php echo $this->linesNamespace?>' : '<?php echo $this->linesSsName;?>'
+        };
+    }
+
+    function getSearchFormIdMap() {
+        return {
+            "<?php echo $this->orderNamespace?>": 'order-search-form',
+            "<?php echo $this->linesNamespace?>": 'lines-search-form'
+        };
+    }
+
+    function getSubNamespacesToReload(sysScreens) {
+        var fullChain    = getMasterSlaveChain();
+        var result       = {};
+        var namespaceMap = getNamespaceMap();
+        var containerMap = getContainerIdMap();
+
+        function getSubscreens(sysScreen) {
+            if (typeof fullChain[sysScreen] !== 'undefined') {
+                for (var subscreen in fullChain[sysScreen]) {
+                    result[namespaceMap[subscreen]] = {
+                        'paginator' : $('#' + containerMap[namespaceMap[subscreen]]).minderSearchGetPaginatorState()
+                    };
+                    getSubscreens(subscreen);
+                }
+            }
+        }
+
+        for (var index in sysScreens) {
+            getSubscreens(sysScreens[index]);
+        }
+
+        return result;
+    }
+
+    function loadSlaveDatasets(namespace) {
+        var sysScreensMap = getSysScreenMap();
+
+        var dataToSend = {
+            'sysScreens': getSubNamespacesToReload([sysScreensMap[namespace]])
+        };
+
+        var containerMap = getContainerIdMap();
+
+        $(document).queue(function() {
+            for (var tmpNamespace in dataToSend.sysScreens){
+                $('#' + containerMap[tmpNamespace] + ' > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            }
+
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            for (var tmpNamespace in dataToSend.sysScreens){
+                $('#' + containerMap[tmpNamespace] + ' > div').unblock();
+            }
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnSelectRow(evt) {
+        var containerId = '';
+        switch (evt.namespace) {
+            case '<?php echo $this->orderNamespace;?>':
+                containerId = 'order-container';
+                break;
+            case '<?php echo $this->linesNamespace;?>':
+                containerId = 'lines-container';
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : $('#' + containerId).minderSearchGetPaginatorState(),
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+
+        loadSlaveDatasets(evt.namespace);
+    }
+
+    function setSelection(namespace, sysScreen) {
+        $('.selected-container.' + namespace).html(sysScreen.selectedRowsTotal);
+
+        var rowsOnPage = 0;
+
+        switch (namespace) {
+            case '<?php echo $this->orderNamespace;?>':
+                rowsOnPage = $('#order-container .data-set:first tr').length;
+                break;
+            case '<?php echo $this->linesNamespace;?>':
+                rowsOnPage = $('#lines-container .data-set:first tr').length;
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        var totalRows  = parseInt($('.total-container.' + namespace).html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == sysScreen.selectedRowsOnPage) {
+            $('.select_all_rows.' + namespace).attr('checked', true);
+        } else {
+            $('.select_all_rows.' + namespace).removeAttr('checked');
+        }
+
+        if (totalRows == sysScreen.selectedRowsTotal) {
+            $('.select_complete.' + namespace).attr('checked', true);
+        } else {
+            $('.select_complete.' + namespace).removeAttr('checked');
+        }
+
+        $('.row_selector.' + namespace).each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (sysScreen.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $.each(response.sysScreens, setSelection);
+
+        $(document).dequeue();
+    }
+
+    function loadData(namespace) {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        var containerIdMap = getContainerIdMap();
+        var containerId = containerIdMap[namespace];
+
+        dataToSend.sysScreens[namespace] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function ordersContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->orderNamespace;?>');
+    }
+
+    function ordersContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->orderNamespace;?>');
+    }
+
+    function ordersContainerOnPreSort(evt) {
+
+    }
+
+    function ordersContainerOnSort(evt) {
+        loadData('<?php echo $this->orderNamespace;?>');
+    }
+
+    function linesContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->linesNamespace;?>');
+    }
+
+    function linesContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->linesNamespace;?>');
+    }
+
+    function linesContainerOnPreSort(evt) {
+
+    }
+
+    function linesContainerOnSort(evt) {
+        loadData('<?php echo $this->linesNamespace;?>');
+    }
+
+    function doSearch(searchParams, namespace) {
+        var dataToSend = searchParams;
+        dataToSend.push({
+            'name': 'namespace',
+            'value': namespace
+        });
+        var containerIdMap = getContainerIdMap();
+        var searchFormMap  = getSearchFormIdMap();
+        var sysScreensMap  = getSysScreenMap();
+        var subNamespacesToReload = getSubNamespacesToReload([sysScreensMap[namespace]]);
+
+        dataToSend.push({
+            'name': 'sysScreens[' + namespace + ']',
+            'value': []
+        });
+
+        for (var tmpNamespace in subNamespacesToReload) {
+            dataToSend.push({
+                'name': 'sysScreens[' + tmpNamespace + ']',
+                'value': []
+            });
+        }
+
+        $('#barcode').val('').parent().block();
+        $('#' + searchFormMap[namespace]).block();
+        $(document).queue(function() {
+            $('#' + containerIdMap[namespace] + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            for (var tmpNamespace in subNamespacesToReload) {
+                $('#' + containerIdMap[tmpNamespace] + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            }
+
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerIdMap[namespace] + ' > div, #' + searchFormMap[namespace]).unblock();
+            for (var tmpNamespace in subNamespacesToReload) {
+                $('#' + containerIdMap[tmpNamespace] + ' > div').unblock();
+            }
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function orderSearchFormOnDoSearch(evt) {
+        doSearch(evt.searchParams, '<?php echo $this->orderNamespace?>');
+    }
+
+    function orderSearchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#order-search-form').serializeArray();
+        $('#order-search-form').trigger(searchEvent);
+    }
+
+    function linesSearchFormOnDoSearch(evt) {
+        doSearch(evt.searchParams, '<?php echo $this->linesNamespace?>');
+    }
+
+    function linesSearchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#lines-search-form').serializeArray();
+        $('#lines-search-form').trigger(searchEvent);
+    }
+
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        var namespaceMap = getNamespaceMap();
+
+        if (typeof namespaceMap[sysScreen] == 'undefined')
+            throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(namespaceMap[sysScreen]);
+    }
+
+    function holdOrders() {
+        var orderNamespace = '<?php echo $this->orderNamespace?>';
+        var linesNamespace = '<?php echo $this->linesNamespace?>';
+        var sysScreensMap  = getSysScreenMap();
+        var dataToSend = {
+            'sysScreens': getSubNamespacesToReload(sysScreensMap[orderNamespace])
+        };
+
+        var containerIdMap = getContainerIdMap();
+
+        dataToSend.sysScreens[orderNamespace] = {
+            'paginator' : $('#' + containerIdMap[orderNamespace]).minderSearchGetPaginatorState()
+        };
+
+        dataToSend.sysScreens[linesNamespace] = {
+            'paginator' : $('#' + containerIdMap[linesNamespace]).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            for (var tmpNamespace in dataToSend.sysScreens) {
+                $('#' + containerIdMap[tmpNamespace] + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Holding orders...');?>'));
+            }
+            $.post(
+                '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking2', 'action' => 'hold'), null, true); ?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            for (var tmpNamespace in dataToSend.sysScreens) {
+                $('#' + tmpNamespace + ' > div').unblock();
+            }
+            $(this).dequeue();
+        });
+    }
+
+    function changePriority(mode) {
+
+        $.getJSON(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking2', 'action' => 'change-priority'), null, true); ?>',
+            {mode: mode},
+            changePriorityCallback
+        );
+    }
+
+    function changePriorityCallback(response) {
+        if (response.errors && response.errors.length > 0) {
+            showErrors(response.errors);
+            return;
+        }
+        if (response.messages && response.messages.length > 0) {
+            showMessage(response.messages);
+        }
+        if (response.warnings && response.warnings.length > 0) {
+            showWarnings(response.warnings);
+        }
+
+        if (response.updatedRows) {
+            for (i in response.updatedRows) {
+                $('#order-container .PICK_PRIORITY.ROW-ID-' + i).val(response.updatedRows[i]).html(response.updatedRows[i]);
+            }
+        }
+    }
+
+    function cancelOrders() {
+        $('#dialog_cancel').dialog('open');
+    }
+
+    function getAllocateLimits() {
+        $('#limits-container').load(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'allocating-limits'), null, true);?>',
+            {INSTANCE_ID: '<?php echo $this->limitsInstanceId;?>'}
+        );
+    }
+
+    function allocateOrdersToTrolley() {
+        allocate('<?php echo Minder_OrderAllocator_Abstract::ORDERS_TO_TROLLEY?>');
+    }
+
+    function allocateOrdersToDevice() {
+        allocate('<?php echo Minder_OrderAllocator_Abstract::ORDERS_TO_DEVICE?>');
+    }
+
+    function allocateProductsToTrolley() {
+        allocate('<?php echo Minder_OrderAllocator_Abstract::PRODUCTS_TO_TROLLEY?>');
+    }
+
+    function allocateProductsToDevice() {
+        allocate('<?php echo Minder_OrderAllocator_Abstract::PRODUCTS_TO_DEVICE?>');
+    }
+
+    function allocate(method) {
+        var dataToSend = {
+            limits_instance_id   : '<?php echo $this->limitsInstanceId;?>',
+            limits_namespace     : 'default',
+            sysScreens           : {}
+        };
+
+        switch (method) {
+            case '<?php echo Minder_OrderAllocator_Abstract::ORDERS_TO_TROLLEY?>':
+            case '<?php echo Minder_OrderAllocator_Abstract::ORDERS_TO_DEVICE?>':
+                dataToSend.method               = method;
+                dataToSend.selection_namespace  = '<?php echo $this->orderNamespace;?>';
+                dataToSend.selection_action     = '<?php echo Minder_Controller_Action::$defaultSelectionAction;?>';
+                dataToSend.selection_controller = '<?php echo Minder_Controller_Action::$defaultSelectionController;?>';
+                break;
+
+            case '<?php echo Minder_OrderAllocator_Abstract::PRODUCTS_TO_TROLLEY?>':
+            case '<?php echo Minder_OrderAllocator_Abstract::PRODUCTS_TO_DEVICE?>':
+                dataToSend.method               = method;
+                dataToSend.selection_namespace  = '<?php echo $this->linesNamespace;?>';
+                dataToSend.selection_action     = '<?php echo Minder_Controller_Action::$defaultSelectionAction;?>';
+                dataToSend.selection_controller = '<?php echo Minder_Controller_Action::$defaultSelectionController;?>';
+                break;
+
+            default:
+                return;
+        }
+
+        $.post(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'service', 'action' => 'allocate'), null, true);?>',
+            dataToSend,
+            function (response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                    return;
+                }
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+
+                if (response.success) {
+                    location.href = '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking2'), null, true); ?>';
+                }
+            },
+            'json'
+        );
+    }
+
+    function runAllocateTransaction(transaction, sysScreen) {
+        var namespaceMap = getNamespaceMap();
+        var dataToSend = {
+            limits_instance_id   : '<?php echo $this->limitsInstanceId;?>',
+            limits_namespace     : 'default',
+            transaction          : transaction,
+            selection_namespace  : namespaceMap[sysScreen]
+        };
+
+        $.post(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'service', 'action' => 'run-allocate-transaction'), null, true);?>',
+            dataToSend,
+            function (response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                    return;
+                }
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+
+                if (response.success) {
+                    location.href = '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking2'), null, true); ?>';
+                }
+            },
+            'json'
+        );
+    }
+
+    function printPickLabels(sysScreen) {
+        var namespaceMap = getNamespaceMap();
+
+        if (typeof namespaceMap[sysScreen] == 'undefined') {
+            showErrors(['Unknown SY_SCREEN "' + sysScreen + '"']);
+            return;
+        }
+
+        $.post(
+            '<?php echo $this->url(array('action' => 'print-pick-label'));?>',
+            {
+                'namespace': namespaceMap[sysScreen]
+            },
+            printPickLabelsCallback,
+            'json'
+        );
+    }
+
+    function printPickLabelsCallback(response) {
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+    }
+
+    function markUndispatchableRows(rows) {
+        var $_orderContainer = $('#order-container');
+        rows.forEach(function(row) {
+            $_orderContainer.find('tr.ROW-ID-' + row.ROW_ID).addClass('bad-line');
+        });
+    }
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        var $_orderContainer = $('#order-container');
+        if ($_orderContainer.length > 0) {
+            $_orderContainer.minderSearchResult(<?php echo json_encode($this->orderJsSearchResults);?>);
+            $_orderContainer.minderSearchResult({autosorter: true, customSort: true});
+            $_orderContainer.minderSearchResult(<?php echo json_encode($this->orderJsSearchResultsDataset);?>);
+
+            $_orderContainer
+                .bind('select-row', tabContainerOnSelectRow)
+                .bind('page-changed', ordersContainerOnPageChanged)
+                .bind('show-by-changed', ordersContainerOnShowByChanged)
+                .bind('pre-sort', ordersContainerOnPreSort)
+                .bind('sort', ordersContainerOnSort);
+
+            $('#order-search-form').bind('do-search', orderSearchFormOnDoSearch);
+            $('#order-search-form .order-search-form_search_btn').bind('click', orderSearchBtnOnClick);
+            markUndispatchableRows(<?php echo json_encode($this->undispatchableOrders); ?>);
+        }
+
+        var $_linesContainer = $('#lines-container');
+        if ($_linesContainer.length > 0) {
+            $_linesContainer.minderSearchResult(<?php echo json_encode($this->linesJsSearchResults);?>);
+            $_linesContainer.minderSearchResult({autosorter: true, customSort: true});
+            $_linesContainer.minderSearchResult(<?php echo json_encode($this->linesJsSearchResultsDataset);?>);
+
+            $_linesContainer
+                .bind('select-row', tabContainerOnSelectRow)
+                .bind('page-changed', linesContainerOnPageChanged)
+                .bind('show-by-changed', linesContainerOnShowByChanged)
+                .bind('pre-sort', linesContainerOnPreSort)
+                .bind('sort', linesContainerOnSort);
+
+            $('#lines-search-form').bind('do-search', linesSearchFormOnDoSearch);
+            $('#lines-search-form .lines-search-form_search_btn').bind('click', linesSearchBtnOnClick);
+        }
+
+        getAllocateLimits();
+
+        $.minderLabel({
+                          printServiceUrl: '<?php echo $this->url(array(
+                                                                       'module' => 'services',
+                                                                       'controller' => 'label',
+                                                                       'action' => 'print-label'
+                                                                  ))?>',
+                          namespaceMap: {'WAITPICKINGLINES': 'PICKING2-WAITPICKINGLINES'}
+        });
+    });
+
+/* ]]> */
+</script>
+
+<!-- pick mode container start -->
+<?php $disabled_property = array('READONLY' => '', 'style' => 'background-color: lightgrey;');
+      foreach ($this->pickModes as $pickMode) { ?>
+
+<div id="select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>" class="flora" title="Pick Mode" style="display: none;">
+    <form id="select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>" name="prompt" method="post" action="<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking'), null, true);?>">
+    <input type="hidden" class="select_field_id" value="">
+    <input type="hidden" name="SEARCH_FORM_ACTION" value="search">
+    <input type="hidden" class="pick_mode_param_name" name="PICK_MODE_PARAM_NAME" value="">
+    <input type="hidden" class="pick_mode_param_value" name="PICK_MODE_PARAM_VALUE" value="">
+    <input type="hidden" name="action" value="run_pick_mode" >
+    <input type="hidden" name="PICK_PROC" value="<?php echo $pickMode['PROCEDURE_NAME']; ?>" >
+    <input type="hidden" class="one_or_accept" name="one_or_accept" value="" >
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <td>
+                    Order Type:
+                </td>
+                <td>
+                    <?php
+                        $_style = ($pickMode['PICK_PARAM_TYPE']=='F') ? $disabled_property: array();
+                        echo $this->formText('PICK_PARAM_TYPE', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Mode:
+                </td>
+                <td>
+                    <?php
+                        $_style = ($pickMode['PICK_PARAM_MODE']=='F') ? $disabled_property: array();
+                         echo $this->formText('PICK_PARAM_MODE', $pickMode['DESCRIPTION'], $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order No:
+                </td>
+                <td>
+                    <?php
+                        $_style = ($pickMode['PICK_PARAM_ORDNO']=='F') ? $disabled_property : array();
+                        echo $this->formText('PICK_PARAM_ORDNO', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Status:
+                </td>
+                <td>
+                    <?php
+                        $_style = ($pickMode['PICK_PARAM_STATUS']=='F') ? $disabled_property : array();
+                        echo $this->formText('PICK_PARAM_STATUS', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Priority:
+                </td>
+                <td>
+                    <?php
+                        $_style = ($pickMode['PICK_PARAM_PRIORITY']=='F') ? $disabled_property : array();
+                         echo $this->formText('PICK_PARAM_PRIORITY', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Input Required ID's:
+                </td>
+                <td>
+                    <?php
+                        $_style = ($pickMode['PICK_PARAM_ID']=='F') ? $disabled_property : array();
+                        echo $this->formText('PICK_PARAM_ID', '', $_style); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+    $(document).ready(function(){
+         $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog({buttons: {
+                 'CANCEL': function(){
+                        var selId = $('.select_field_id').val();
+                        if (selId != '') {
+                            $('#' + selId)[0].selectedIndex=0;
+                        }
+                        $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog('close');
+                    }
+    <?php if ($pickMode['PICK_PARAM_GETALLBTNVISIBLE']=='T') {?>
+                ,
+                 'GET ALL': function(){
+                        var selId = $('.select_field_id').val();
+                        $.each($('.one_or_accept'), function() {this.value = 'all'});
+                        if (selId != '') {
+                            $('.pick_mode_param_name').val($('#' + selId).attr('name'));
+                            $('.pick_mode_param_value').val($('#' + selId).val());
+                        }
+//                        $('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();
+
+                        var searchEvent = $.Event('do-search');
+                        searchEvent.searchParams = $('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').serializeArray();
+                        $('#order-search-form').trigger(searchEvent);
+                        $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog('close');
+                    }
+    <?php } ?>
+    <?php if ($pickMode['PICK_PARAM_ACCEPTBTNVISIBLE']=='T') {?>
+                ,
+                 'ACCEPT': function(){
+                        var selId = $('.select_field_id').val();
+                        $.each($('.one_or_accept'), function() {this.value = 'one'});
+                        if (selId != '') {
+                            $('.pick_mode_param_name').val($('#' + selId).attr('name'));
+                            $('.pick_mode_param_value').val($('#' + selId).val());
+                        }
+                        var searchEvent = $.Event('do-search');
+                        searchEvent.searchParams = $('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').serializeArray();
+                        $('#order-search-form').trigger(searchEvent);
+                        $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog('close');
+                    }
+    <?php } ?>
+            },
+            modal:      true,
+            width:      '500px',
+            height:     '250px',
+            resizable:  false,
+            draggable:  true,
+            position:   'center',
+            autoOpen:   false,
+            close:      function() {
+                var selId = $('.select_field_id').val();
+                if (selId != '') {
+                    $('#' + selId)[0].selectedIndex=0;
+                }
+            }
+        });
+
+        $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').bind('dialogopen', function(event, ui) {
+            $(this).show();
+        });
+
+
+    });
+    /* ]]> */
+</script>
+<?php } ?>
+
+<!-- pick mode container end   -->
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+            <ul class="toolbar">
+                {{each $item.data.buttons}}
+                    {{if $value.SSB_TITLE.toUpperCase() == '_GROUP_SEPARATOR'}}
+                        </ul><ul class="toolbar">
+                    {{else}}
+                        <li><button onclick="return false;" class="mdr-tool-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+                    {{/if}}
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

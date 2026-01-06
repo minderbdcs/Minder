@@ -1,0 +1,65 @@
+<div id="confirm_expiration_dialog" class="flora otc-confirm_expiration_dialog" title="Confirm" style="display: none;">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <h1><span class="type"></span> has expired <span class="date"></span></h1>
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        // dialog add tool
+        $('#confirm_expiration_dialog').dialog({
+            buttons: {SAVE: doExpirationConfirm, CANCEL: closeExpirationDialog},
+            width: '700px',
+            height: '180px',
+            autoOpen: false,
+            position: [0, 65],
+            buttonStyle: 'otc-dialog-button'
+        }).bind('dialogopen', function(event, ui) {
+            $('#confirm_expiration_dialog').attr('active', 'active');
+
+            $('#confirm_expiration_dialog').parents('.ui-dialog').find('button').each(function() {
+                var
+                    $this = $(this),
+                    buttonText = $(this).text();
+                if (buttonText == 'SAVE' || buttonText == 'CANCEL') {
+                    $this.attr('data-barcode', buttonText.toUpperCase());
+                }
+            });
+            $(this).show();
+            $('#barcode').focus();
+        }).bind('dialogclose', function(){
+            $('#confirm_expiration_dialog').removeAttr('active');
+            $('#barcode').focus();
+        });
+    });
+
+    function doExpirationConfirm(evt) {
+        var
+            confirmEvent = $.Event('confirm');
+        closeExpirationDialog();
+        $('#confirm_expiration_dialog').trigger(confirmEvent);
+    }
+
+    function openExpirationDialog(type, date){
+        $("#confirm_expiration_dialog").find('.type').text(type);
+        $("#confirm_expiration_dialog").find('.date').text(date);
+        $("#confirm_expiration_dialog").dialog("open");
+
+        return false;
+    }
+
+    function closeExpirationDialog(){
+        $('#confirm_expiration_dialog').removeAttr('active');
+        $('#confirm_expiration_dialog').dialog("close");
+        return false;
+    }
+
+    function isConfirmExpirationDialogActive() {
+        return !!$('#confirm_expiration_dialog').attr('active');
+    }
+
+    function pressConfirmDialogButton(barcode) {
+        $('#confirm_expiration_dialog').parents('.ui-dialog').find('button[data-barcode="' + barcode + '"]').click();
+    }
+
+</script>

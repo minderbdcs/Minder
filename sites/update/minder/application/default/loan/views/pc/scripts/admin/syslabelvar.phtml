@@ -1,0 +1,252 @@
+<form name="main" id="main_var_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'syslabelvar'), null, true); ?>" method="post">
+
+<div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <table style="width:99%">
+        <tr>
+            <td>
+                <div style="float:left; font-weight: bold;">
+                    Selected: <span  id="selected_var_num"><?php echo $this->totalSelected ?></span>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+<table id="var_lines" class="withborder tablesorter">
+    <thead>
+    <tr>
+        <th>
+            <?php echo $this->formCheckbox('select_all_var_lines', null , array('checked' => $this->upperCheckbox, 'onclick' => 'selectAllVarLines(this)')); ?>
+        </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        if(count($this->data)>0) {
+            foreach ($this->data as $command) {
+                echo '<tr>';
+                echo '<th>';
+                echo $this->formCheckbox($command['RECORD_ID'], $command['RECORD_ID'], array('checked' => array_key_exists($command['RECORD_ID'], $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'selectOneVarLine(this)'));
+                echo '</th>';
+                foreach ($this->headers as $key => $value) {
+                    echo '<td><a href="#" onclick="return showEditVarPromt(this);" id="' . $command['RECORD_ID'] . '">' . $this->escape($command[$key]) . '</td>';
+                }
+                echo "</tr>\n";
+            }
+        } else {
+            echo "<tr><th/>";
+            foreach($this->headers as $propertyName => $v) {
+                echo '<td/>';
+            }
+            echo "</tr>\n";
+        }
+        ?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                </div>
+            </li>
+    </ul>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" onclick="return getReport(this);" /></li>
+        <li><input type="submit" name="action" class="order-button" value="ADD" onclick="" /></li>
+    </ul>
+</form>
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+    
+        $("#var_lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+        
+        $("input[value=ADD]").bind('click', function(){
+            $('#dialog_var_add').dialog('open');
+            
+            return false;    
+        })
+        
+        $('#dialog_var_edit').dialog({
+            
+            buttons: {
+                Save: function(){
+                
+                    $(this).dialog('close');
+                     
+                    $.get('<?php echo $this->url(array('action' => 'syslabelvar', 'controller' => 'admin', 'module' => 'default')); ?>', {
+                        record_id:       $('#slv_record_id').val(),
+                        slv_name:        $('#slv_name').val(),
+                        slv_default:     $('#slv_default').val(),
+                        slv_expression:  $('#slv_expression').val(),
+                        last_update_date:$('#last_update_date').val(),
+                        last_update_by:  $('#last_update_by').val(),
+                        slv_sl_name:     $('#slv_sl_name').val(),
+                        slv_sequence:    $('#slv_sequence').val(),    
+                        
+                        method:          'save'
+                            
+                    }, function() {
+                        
+                        var id = $('#slv_sl_name').val();
+                        
+                        $('#sysLabelVarList').hide();
+                        getSysLabelVar(id);
+                        
+                    })
+                }, 
+                Close: function(){
+                    $(this).dialog('close');    
+                }
+            },
+         
+             width:     '80ex',
+             height:    '23em',
+             autoOpen:   false,
+             resizable:  false,
+             modal:      true,
+             
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();     
+        });
+        
+        $('#dialog_var_add').dialog({
+            
+            buttons: {
+                Save: function(){
+                
+                    $(this).dialog('close');
+                     
+                    $.get('<?php echo $this->url(array('action' => 'syslabelvar', 'controller' => 'admin', 'module' => 'default')); ?>', {
+                        slv_name:        $('#slv_name_add').val(),
+                        slv_default:     $('#slv_default_add').val(),
+                        slv_expression:  $('#slv_expression_add').val(),
+                        last_update_date:$('#last_update_date_add').val(),
+                        last_update_by:  $('#last_update_by_add').val(),
+                        slv_sl_name:     $('#slv_sl_name_add').val(),
+                        slv_sequence:    $('#slv_sequence_add').val(),    
+                        
+                        method:          'add'
+                            
+                    }, function() {
+                    
+                        var id = $('#slv_sl_name_add').val();
+                        
+                        $('#sysLabelVarList').hide();
+                        getSysLabelVar(id);
+                        
+                        $('#slv_name_add').val('');
+                        $('#slv_default_add').val('');
+                        $('#slv_expression_add').val('');
+                        $('#last_update_date_add').val('');
+                        $('#last_update_by_add').val('');
+                        $('#slv_sl_name_add').val('');
+                        $('#slv_sequence_add').val('');
+                        
+                    })
+                }, 
+                Close: function(){
+                    $(this).dialog('close');    
+                }
+            },
+         
+             width:     '80ex',
+             height:    '23em',
+             autoOpen:   false,
+             resizable:  false,
+             modal:      true,
+             
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();     
+        });
+        
+        $('#last_update_date').datepicker({dateFormat: 'yy-mm-dd'}); 
+        $('#last_update_date_add').datepicker({dateFormat: 'yy-mm-dd'}); 
+    
+    })
+    
+    function selectOneVarLine(target) {
+
+        $.getJSON('<?php echo $this->url(array('action' => 'syslabelvar', 'controller' => 'admin', 'module' => 'default')); ?>', 
+        {
+            condition:  target.checked, 
+            id:         target.value, 
+            value:      target.value,
+            method:     'mark'
+        
+        },
+        
+        function(json) {
+             $("#selected_var_num").get(0).innerHTML = json.selected_num;
+             
+             if(json.selected_num != json.selected_total) {
+                $('#select_all_var_lines').attr('checked', '');
+             } else {
+                $('#select_all_var_lines').attr('checked', 'checked');
+             }    
+        });
+        
+        
+        
+    }
+    
+    function getReport(target) {
+    
+        $('#main_var_form').append('<input name="method" value="' + target.value + '" type="hidden">').submit();
+       
+        return false;
+        
+    }
+    
+    function selectAllVarLines() {
+    
+        var onOff   = $('#select_all_var_lines').get(0).checked;
+        var chk     = $("#var_lines input:checkbox");
+        
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = onOff;
+        }
+        
+        $.getJSON('<?php echo $this->url(array('action' => 'syslabelvar', 'controller' => 'admin', 'module' => 'default')); ?>', 
+        {
+            method:     'mark_all'
+        
+        },    
+        function(json) {
+             $("#selected_var_num").get(0).innerHTML = json.selected_num;    
+        });
+    }
+    
+    function showEditVarPromt(target) {
+    
+        $.getJSON('<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'seek'), '', false); ?>',{
+            
+            q:      target.id, 
+            field: 'var_record'
+        
+        }, function(json){
+            
+            $('#slv_record_id').val(json.RECORD_ID);
+            $('#slv_name').val(json.SLV_NAME);
+            $('#slv_default').val(json.SLV_DEFAULT);
+            $('#slv_expression').val(json.SLV_EXPRESSION);
+            $('#last_update_date').val(json.LAST_UPDATE_DATE);
+            $('#last_update_by').val(json.LAST_UPDATE_BY);
+            $('#slv_sl_name').val(json.SL_NAME);
+            $('#slv_sequence').val(json.SLV_SEQUENCE);
+            
+            $('#dialog_var_edit').dialog('open');
+        
+        })
+        
+        return false;
+    } 
+    
+    
+    
+</script>

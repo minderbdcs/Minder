@@ -1,0 +1,145 @@
+    <div id="tabs">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left;">
+                            <b>
+                                Selected: <span  id="selected_num">0</span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+        <table id="table" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+                <th>
+                <?php echo $this->formCheckbox('select_all',
+                                               '',
+                                               array('onclick' => 'selectAll(this)'));?>
+                </th>
+<?php
+    foreach ($this->issnHeaders as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->issns) > 0) {
+        $urlEdit = $this->url(array('module'      => 'warehouse',
+                                    'controller'  => 'issn',
+                                    'action'      => 'edit'),
+                              '',
+                              true);
+        for ($i = 0; $i < count($this->issns); $i++) {
+            $line = $this->issns[$i];
+            echo '<tr>';
+            echo '<th class="line">';
+            echo $this->formCheckbox($this->escape($line->id),
+                                     $this->escape($line->id),
+                                     array("class" => 'line_selector',
+                                          'checked' => selectFilterValue($this->escape($line->id), $this->conditions),
+                                          "onclick" => "showSelected(this)"
+                                     ),
+                                     array($this->escape($line->id), 'off'));
+            echo '</th>';
+            foreach($this->issnHeaders as $propertyName => $v) {
+                    $val = $line->items[$propertyName];
+                    echo '<td><a href="' . $urlEdit . '/edit_issn_ssn_id/' . $line->id . '" >'. $this->escape($val) . '</a></td>';
+                    //echo '<td>' . $this->escape($val) . '</td>'."";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->issnHeaders as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <b>
+                        <div id='num_rec'>Total
+                            <?php echo $this->numRecords . " records. ";?>
+                            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno);?>
+                        </div>
+                        </b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+        <ul class="toolbar">
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+            <li>
+                <?php echo $this->formSubmit('action', 'PRINT LABEL', array('onclick' => 'return printIssn();'))?>
+            </li>
+<?php if (false) { ?>
+            <li>
+                <?php echo $this->formSubmit('action', 'RE-SORT', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+<?php } ?>
+        </ul>
+
+<script type="text/javascript">
+<!--
+function printIssn()
+{
+    $.getJSON('<?php echo $this->url(array('action' => 'print-label-direct', 'controller' => 'issn2', 'module' => 'warehouse')); ?>/',
+           {cnt: 'issn',
+           act: 'index',
+           prn: $('#limit_printer')[0].value,
+           id: $('#ssn_id')[0].value}, 
+             function (response)
+             {
+                 if (response.messages && response.messages.length > 0) {
+                     showMessage(response.messages);
+                 }
+
+                 if (response.warnings && response.warnings.length > 0) {
+                     showWarnings(response.warnings);
+                 }
+
+                 if (response.errors && response.errors.length > 0) {
+                     showErrors(response.errors);
+                 }
+             });
+    return false;
+}        
+
+//-->
+</script>
+        

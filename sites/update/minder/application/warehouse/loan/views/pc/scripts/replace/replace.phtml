@@ -1,0 +1,207 @@
+<form name="main" id="replacedForm" action="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'replace'))?>" method="post">
+  
+  <h1><?php echo $this->tableName; ?> REPLACED BY: </h1>
+  
+  <ul class="toolbar">
+    <li>
+        <table>
+            <?php for($i=0; $i < count($this->headers); $i+=2) { ?>
+                <tr>
+                    <?php if(isset($this->headers[$i])) { ?>
+                        <th style="min-width: 60px; text-align: left;"><?php echo $this->headers[$i]; ?></th>
+                        <td style="padding-right: 10px;"><?php echo $this->formText(strtolower($this->headers[$i]), $this->conditions[$this->headers[$i]], null); ?></td>
+                    <?php } ?>
+                    
+                    <?php if (isset($this->headers[$i+1])) { ?>
+                        <th style="min-width: 60px; text-align: left;"><?php echo $this->headers[$i+1]; ?></th>
+                        <td style="padding-right: 10px;"><?php echo $this->formText(strtolower($this->headers[$i+1]), $this->conditions[$this->headers[$i+1]], null); ?></td>
+                    <?php } ?>
+                </tr>
+            <?php } ?>
+        </table>
+    </li>
+  </ul>
+</form>
+  
+   <ul class="toolbar">
+        <input type="submit" class="green-button" name="action" value="SEARCH" onclick="sendReplacedParams();" />
+        <input type="button" class="green-button" id="clear" value="CLEAR" onclick="clearReplacedParams();" />
+   </ul>
+   
+   <div id="order-list" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999; padding: 2px; height: 20px;">
+        <div style="float: left; padding: 2px;">
+           Selected: <span id="replacedSelected">0</span>
+       </div>
+        <div style="position: relative; left:10px; float: left;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('replace_show_by', $this->navigation['show_by'], array('onchange' => 'sendReplacePaging()'),
+                                         array(5  => 5,
+                                               10 => 10,
+                                               15 => 15,
+                                               20 => 20,
+                                               30 => 30,
+                                               40 => 40,
+                                               50 => 50,
+                                               100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('replace_pageselector', $this->navigation['pageselector'], array('onchange' => 'sendReplacePaging()'), $this->pages); ?>
+        </div>
+        
+        <div style="clear: both;" />
+    </div>
+   
+       <table id="replacedList" class="withborder tablesorter" style="margin-bottom: 0;">
+        <thead>
+         <tr>
+            <th>&nbsp;</th>
+            <?php
+                foreach ($this->headers as $header) {
+                    echo '<th>'. $this->escape($header) . '</th>';
+                }
+            ?>
+         </tr>
+        </thead>
+        <tbody>
+        <?php
+            foreach ($this->tableData as $data) {
+                echo '<tr>';
+                echo '<th style="width: 30px;">';
+                
+                $value = '';
+                if(isset($data['CODE'])){
+                    $value .= $data['CODE'];
+                    
+                    if(isset($data['SSN_TYPE'])){
+                        $value .= '|' . $data['SSN_TYPE'];
+                        
+                        if(isset($data['GENERIC'])){
+                            $value .= '|' . $data['GENERIC'];
+                        }
+                    }
+                }
+                
+                echo '<input type="radio" name="replacedBy" value="' . $value . '" id="replacedBy" onclick="incrementReplacedSslected();" />';
+                
+                echo '</th>';
+                foreach ($this->headers as $key => $value) {
+                    echo '<td>'. $this->escape($data[$value]) . '</a></td>';
+                }
+                echo "</tr>\n";
+            }
+        ?>
+        
+                <?php if (!count($this->tableData)) { ?>
+                <tr>
+                    <th/>
+                    <?php foreach($this->headers as $value) { ?>
+                            <td/>
+                    <?php } ?>
+                </tr>
+                <?php } ?>
+                </tbody>
+    </table>
+    
+    <table class="withborder" width="100%">
+        <tr>
+            <td style="white-space: nowrap; text-align: right;" colspan="2"></td>
+        </tr>
+        <tr>
+            <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td style="white-space: nowrap; text-align: right;" width="20%"></td>
+        </tr>
+    </table>
+    
+    <ul class="toolbar">
+        <li><input type="submit" class="order-button" name="action" id="UPDATE" value="UPDATE" onclick="updateSelected();" /></li>
+        <li><input type="submit" class="order-button" name="action" id="CANCEL" value="CANCEL" /></li>
+    </ul>
+
+<script type="text/javascript">
+
+$(document).ready(function (){
+    
+    $('#replacedList').tablesorter({headers:{0:{sorter:false}}, sortList: null, widgets: ['zebra']}).find('tbody a');
+    
+});
+
+    function sendReplacePaging(){
+        var pageSelector    =   $('#replace_pageselector option:selected').val(); 
+        var showBy          =   $('#replace_show_by option:selected').val();
+        var selectedTable   =   $('#masterDataTable option:selected').val();
+        var serchedParams   =   $('#replacedForm').serialize();
+        
+        $('#replaceList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'replace'))?>', {
+            page_selector:  pageSelector,
+            show_by:        showBy,        
+            select_table:   selectedTable,
+            params:         serchedParams        
+        }, function(){
+            
+        }) 
+    }
+    
+    function sendReplacedParams(){
+        
+        var selectedTable   =   $('#masterDataTable option:selected').val();
+        var serchedParams   =   $('#replacedForm').serialize();
+        
+        $('#replaceList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'replace'))?>', {
+            select_table:   selectedTable,
+            params:         serchedParams        
+        }, function(){
+            
+        })    
+    }
+    
+    function clearReplacedParams(){
+        
+        $('#replacedForm input:text').each(function() {
+            this.value = '';
+        });
+  
+        return false;
+           
+    }
+    
+    function updateSelected(){
+        
+        var beReplaced      =   new Array();
+        var replacedBy      =   $(':radio:checked').val();
+        var selectedTable   =   $('#masterDataTable option:selected').val();
+        
+        var serchedReplacedParams   =   $('#replacedForm').serialize();
+        var serchedParams           =   $('#searchedForm').serialize();
+        
+        
+        $('#beReplacedList :checked').each(function(){
+            beReplaced.push({code: $(this).val()});    
+        })
+        
+        $.getJSON('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'update'))?>', {
+            be_replaced:    $.toJSON(beReplaced),
+            replaced_by:    replacedBy,
+            select_table:   selectedTable    
+        }, function(json){
+            
+            $('#searchList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'search'))?>', {
+                select_table:   selectedTable,
+                params:         serchedParams
+            }, function(){
+                
+            })
+            
+            $('#replaceList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'replace'))?>', {
+                select_table:   selectedTable,
+                params:         serchedReplacedParams        
+            }, function(){
+                
+            })
+        })
+    }
+    
+    function incrementReplacedSslected(){
+        
+        $('#replacedSelected').text(1);    
+    }
+
+</script>

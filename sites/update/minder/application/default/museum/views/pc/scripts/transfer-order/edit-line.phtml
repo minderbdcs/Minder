@@ -1,0 +1,360 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php echo $this->messenger()->all() ?>
+<form action="<?php echo $this->url(); ?>" method="post">
+    <h1>Transfer Order: <?php echo $this->escape($this->pickOrder); ?></h1>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" onclick="return dateCompare();" /></li>
+        <li><input type="submit" name="action" value="CANCEL" /></li>
+    </ul>
+    <table class="summary"style="width:99%">
+        <tr>
+            <th>PICK_LABEL_NO</th>
+            <td><?php echo $this->formText('pick_label_no', $this->pickItem->pickLabelNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+            <th>SPECIAL_INSTRUCTIONS1</th>
+            <td><?php echo $this->formText('special_instructions1', $this->pickItem->specialInstructions1) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_ORDER</th>
+            <td><?php echo $this->formText('pick_order', $this->pickItem->pickOrder, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+            <th>SPECIAL_INSTRUCTIONS2</th>
+            <td><?php echo $this->formText('special_instructions2', $this->pickItem->specialInstructions2) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_ORDER_LINE_NO</th>
+            <td><?php echo $this->formText('pick_order_line_no', $this->pickItem->pickOrderLineNo, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+            <th>SPECIAL_INSTRUCTIONS3</th>
+            <td><?php echo $this->formText('special_instructions3', $this->pickItem->specialInstructions3) ?></td>
+        </tr>
+        <tr>
+            <th>PRODUCT_ID</th>
+<?php if ($this->pickItem->prodId) { ?>
+            <td><?php echo $this->formSelect('prod_id', $this->pickItem->prodId, null, array( '1400' => '- Select PRODUCT_ID -') + $this->productList) ?></td>
+<?php } else { ?>
+            <td><?php echo $this->formSelect('prod_id', $this->pickItem->prodId, array('disabled' => 'disabled')) ?></td>
+<?php } ?>
+            <th>OTHER1</th>
+            <td><?php echo $this->formText('other1', $this->pickItem->other1) ?></td>
+        </tr>
+        <tr>
+            <th>ISSN</th>
+<?php if ($this->pickItem->ssnId) { ?>
+            <td><?php echo $this->formText('ssn_id', $this->pickItem->ssnId) ?></td>
+<?php } else { ?>
+            <td><?php echo $this->formText('ssn_id', $this->pickItem->ssnId, array('disabled' => 'disabled')) ?></td>
+<?php } ?>
+            <th>OTHER2</th>
+            <td><?php echo $this->formText('other2', $this->pickItem->other2) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_LINE_STATUS</th>
+            <?php
+                if($this->minder->userId == 'Admin') {
+            ?>
+                      <td><?php echo $this->formText('pick_line_status', $this->pickItem->pickLineStatus) ?></td>
+            <?php
+                } else {
+            ?>
+                      <td><?php echo $this->formText('pick_line_status', $this->pickItem->pickLineStatus, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+            <?php
+                }
+            ?>
+            <th>OTHER3</th>
+            <td><?php echo $this->formText('other3', $this->pickItem->other3) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_ORDER_QTY</th>
+            <td><?php echo $this->formText('pick_order_qty', $this->pickItem->pickOrderQty, array('onchange' => 'updateTotal()')) ?></td>
+            <th>OTHER4</th>
+            <td><?php echo $this->formText('other4', $this->pickItem->other4) ?></td>
+        </tr>
+        <tr>
+            <th>SALE_PRICE</th>
+            <td><?php echo $this->formText('sale_price', $this->pickItem->salePrice, array('onchange' => 'updateTotal()')) ?></td>
+            <th>OTHER5</th>
+            <td><?php echo $this->formText('other5', $this->pickItem->other5) ?></td>
+        </tr>
+        <tr>
+            <th>DISCOUNT (%)</th>
+            <td><?php echo $this->formText('discount', $this->pickItem->discount, array('onchange' => 'updateTotal()')) ?></td>
+            <th>OTHER6</th>
+            <td><?php echo $this->formText('other6', $this->pickItem->other6) ?></td>
+        </tr>
+        <tr>
+            <th>LINE_TOTAL</th>
+            <td><?php echo $this->formText('line_total', $this->pickItem->lineTotal) ?></td>
+            <th>OTHER7</th>
+            <td><?php echo $this->formText('other7', $this->pickItem->other7) ?></td>
+        </tr>
+        <tr>
+            <th>TAX_AMOUNT</th>
+            <td><?php echo $this->formText('tax_amount', $this->pickItem->taxAmount, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+            <th>OTHER8</th>
+            <td><?php echo $this->formText('other8', $this->pickItem->other8) ?></td>
+        </tr>
+        <tr>
+            <th>TAX RATE (%)</th>
+            <td><?php echo $this->formText('tax_rate', $this->pickItem->taxRate, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+            <th>OTHER9</th>
+            <td><?php echo $this->formText('other9', $this->pickItem->other9) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_ALLOCATED_QTY</th>
+            <td><?php echo $this->formText('pick_allocated_qty', $this->pickItem->pickAllocatedQty) ?></td>
+            <th>BATCH_LINE</th>
+            <td><?php echo $this->formText('batch_line', $this->pickItem->batchLine) ?></td>
+        </tr>
+        <tr>
+            <th>OTHER_QTY1</th>
+            <td><?php echo $this->formText('other_qty1', $this->pickItem->otherQty1) ?></td>
+            <th>OVER_SIZED</th>
+            <td><?php echo $this->formText('over_sized', $this->pickItem->overSized) ?></td>
+        </tr>
+        <tr>
+            <th>OTHER_QTY2</th>
+            <td><?php echo $this->formText('other_qty2', $this->pickItem->otherQty2) ?></td>
+            <th>SSN_CONFIRM</th>
+            <td><?php echo $this->formText('ssn_confirm', $this->pickItem->ssnConfirm) ?></td>
+        </tr>
+        <tr>
+            <th>PICKED_QTY</th>
+            <td><?php echo $this->formText('picked_qty', $this->pickItem->pickedQty) ?></td>
+            <th>PICK_RETRIEVE_STATUS</th>
+            <td><?php echo $this->formText('pick_retrieve_status', $this->pickItem->pickRetrieveStatus, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_LINE_DUE_DATE</th>
+            <td><?php echo $this->formText('pick_line_due_date', $this->pickItem->pickLineDueDate) ?></td>
+            <th>DESPATCH_LOCATION_GROUP</th>
+            <td><?php echo $this->formText('despatch_location_group', $this->pickItem->despatchLocationGroup, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>RETURN_DATE</th>
+            <td><?php echo $this->formText('return_date', $this->pickItem->returnDate) ?></td>
+            <th>WIP_PRELOCN_ORDERING</th>
+            <td><?php echo $this->formText('wip_prelocn_ordering', $this->pickItem->wipPrelocnOrdering, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_LINE_PRIORITY</th>
+            <td><?php echo $this->formText('pick_line_priority', $this->pickItem->pickLinePriority) ?></td>
+            <th>WIP_POSTLOCN_ORDERING</th>
+            <td><?php echo $this->formText('wip_postlocn_ordering', $this->pickItem->wipPostlocnOrdering, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PARTIAL_PICK_ALLOWED</th>
+            <td><?php echo $this->formText('partial_pick_allowed', $this->pickItem->partialPickAllowed) ?></td>
+            <th>PICK_QTY_DIFFERENCE</th>
+            <td><?php echo $this->formText('pick_qty_difference', $this->pickItem->pickQtyDifference, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>ALLOW_SUBSTITUTE</th>
+            <td><?php echo $this->formText('allow_substitute', $this->pickItem->allowSubstitute) ?></td>
+            <th>PICK_QTY_DIFFERENCE2</th>
+            <td><?php echo $this->formText('pick_qty_difference2', $this->pickItem->pickQtyDifference2, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>ORIGINAL_SSN_ID</th>
+            <td><?php echo $this->formText('original_ssn_id', $this->pickItem->originalSsnId) ?></td>
+            <th>LAST_UPDATE_DATE</th>
+            <td><?php echo $this->formText('last_update_date', $this->pickItem->lastUpdateDate, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PICK_LOCATION</th>
+            <td><?php echo $this->formText('pick_location', $this->pickItem->pickLocation) ?></td>
+            <th>PICK_PICK_FINISH</th>
+            <td><?php echo $this->formText('pick_pick_finish', $this->pickItem->pickPickFinish, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>REASON</th>
+            <td><?php echo $this->formText('reason', $this->pickItem->reason) ?></td>
+            <th>PICK_LOCN_SEQ</th>
+            <td><?php echo $this->formText('pick_locn_seq', $this->pickItem->pickLocnSeq, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>DESPATCH_PALLET_NO</th>
+            <td><?php echo $this->formText('despatch_pallet_no', $this->pickItem->despatchPalletNo) ?></td>
+            <th>PICK_LABEL_DATE</th>
+            <td><?php echo $this->formText('pick_label_date', $this->pickItem->pickLabelDate, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>WH_ID</th>
+            <td><?php echo $this->formSelect('wh_id', $this->pickItem->whId, null, array('' => '- Select WH_ID -') + $this->warehouseList) ?></td>
+            <th>PICK_STARTED</th>
+            <td><?php echo $this->formText('pick_started', $this->pickItem->pickStarted, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>ALT_DESPATCH_WH_ID</th>
+            <td><?php echo $this->formSelect('alt_despatch_wh_id', $this->pickItem->altDespatchWhId, null, array('' => '- Select ALT_DESPATCH_WH_ID -') + $this->warehouseList) ?></td>
+            <th>DESPATCH_TS</th>
+            <td><?php echo $this->formText('despatch_ts', $this->pickItem->despatchTs, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>DESPATCH_LOCATION</th>
+            <td><?php echo $this->formSelect('despatch_location', $this->pickItem->despatchLocation, null, array('' => '- Select DESPATCH_LOCATION -') + $this->despatchLocationList) ?></td>
+            <th>CREATE_DATE</th>
+            <td><?php echo $this->formText('create_date', $this->pickItem->createDate, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>ALT_DESPATCH_LOCN_ID</th>
+            <td><?php echo $this->formSelect('alt_despatch_locn_id', $this->pickItem->altDespatchLocnId, null, array('' => '- Select ALT_DESPATCH_LOCN_ID -') + $this->despatchLocationList) ?></td>
+            <th>USER_ID</th>
+            <td><?php echo $this->formText('user_id', $this->pickItem->userId, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>SHIP_VIA</th>
+            <td><?php echo $this->formSelect('ship_via', $this->pickItem->shipVia, null, array('' => '- Select SHIP_VIA -') + $this->shipViaList) ?></td>
+            <th>DEVICE_ID</th>
+            <td><?php echo $this->formText('device_id', $this->pickItem->deviceId, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>CONTACT_NAME</th>
+            <td><?php echo $this->formText('contact_name', $this->pickItem->contactName) ?></td>
+            <th>CHECKIN_START</th>
+            <td><?php echo $this->formText('checkin_start', $this->pickItem->checkinStart, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>WARRANTY_TERM</th>
+            <td><?php echo $this->formSelect('warranty_term', $this->pickItem->warrantyTerm, null, array('' => '- Select WARRANTY_TERM -') + $this->warrantyList) ?></td>
+            <th>CHECKIN_FINISH</th>
+            <td><?php echo $this->formText('checkin_finish', $this->pickItem->checkinFinish, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>&nbsp;</th>
+            <td>&nbsp;</td>
+            <th>CHECKIN_USER_ID</th>
+            <td><?php echo $this->formText('checkin_user_id', $this->pickItem->checkinUserId, array('readonly' => 'readonly', 'class' => 'disabled')) ?></td>
+        </tr>
+        <tr>
+            <th>PI_LEGACY_ITEM_DESCR</th>
+            <td><?php echo $this->formText('pi_legacy_item_descr', $this->pickItem->piLegacyItemDescr); ?>
+            </td>
+            <th>PI_LEGACY_CLOSED</th>
+            <td><?php echo $this->formText('pi_legacy_closed', $this->pickItem->piLegacyClosed); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>PI_LEGACY_LINENO</th>
+            <td><?php echo $this->formText('pi_legacy_lineno', $this->pickItem->piLegacyLineno); ?>
+            </td>
+            <th>PI_LEGACY_WH_NAME</th>
+            <td><?php echo $this->formText('pi_legacy_wh_name', $this->pickItem->piLegacyWhName); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>PI_LEGACY_FULFILLED_QTY</th>
+            <td><?php echo $this->formText('pi_legacy_fulfilled_qty', $this->pickItem->piLegacyFulfilledQty); ?>
+            </td>
+            <th>PI_LEGACY_PACKED_QTY</th>
+            <td><?php echo $this->formText('pi_legacy_packed_qty', $this->pickItem->piLegacyPackedQty); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>PI_LEGACY_PICKED_QTY</th>
+            <td><?php echo $this->formText('pi_legacy_picked_qty', $this->pickItem->piLegacyPickedQty); ?>
+            </td>
+            <th>PI_LEGACY_RATE</th>
+            <td><?php echo $this->formText('pi_legacy_rate', $this->pickItem->piLegacyRate); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>PI_LEGACY_PICK_UOM</th>
+            <td><?php echo $this->formText('pi_legacy_pick_uom', $this->pickItem->piLegacyPickUom); ?>
+            </td>
+            <th>SO_REVISION_STATUS</th>
+            <td><?php echo $this->formText('so_revision_status', $this->pickItem->soRevisionStatus); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>PI_LOAN_RATE</th>
+            <td><?php echo $this->formText('pi_legacy_pick_uom', $this->pickItem->piLoanRate); ?>
+            </td>
+            <th>PI_LOAN_SSN_COST</th>
+            <td><?php echo $this->formText('so_revision_status', $this->pickItem->piLoanSsnCost); ?>
+            </td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="SAVE" onclick="return dateCompare();" /></li>
+        <li><input type="submit" name="action" value="CANCEL" /></li>
+    </ul>
+</form>
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#pick_line_due_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#return_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#last_update_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#pick_label_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#create_date').datepicker({dateFormat: 'yy-mm-dd'});
+
+    $('#line_total').change(updateTaxAmount);
+    updateTotal();
+    updateTaxAmount();
+});
+function updateTotal()
+{
+    var price = parseFloat($('#sale_price')[0].value);
+    var qty = parseFloat($('#pick_order_qty')[0].value);
+    var discount = parseFloat($('#discount')[0].value);
+    if (isNaN(price)) {
+        price = 0;
+    }
+    if (isNaN(qty)) {
+        qty = 0;
+    }
+    if (isNaN(discount)) {
+        discount = 0;
+    }
+    $('#sale_price')[0].value = price.toFixed(2);
+    var total = Math.round(price * qty * (1 - discount/100) * 100) / 100;
+    $('#line_total')[0].value = total.toFixed(2);
+
+    updateTaxAmount();
+}
+function updateTaxAmount()
+{
+    var taxRate = getFloat('#tax_rate');
+    if (taxRate > 0) {
+        $('#tax_amount').val((getFloat('#line_total') * 1/taxRate).toFixed(2));
+    }
+}
+function getFloat(selector)
+{
+    var tmp = parseFloat($(selector).val());
+    if (isNaN(tmp)) {
+        tmp = 0;
+    }
+    return tmp;
+}
+function dateCompare() {
+    var fromDueDateField    = $('#pick_line_due_date')[0].value.split('-');
+    var fromReturnDateField = $('#return_date')[0].value.split('-');
+    
+    yearDiff    = parseFloat(fromReturnDateField[0]) - parseFloat(fromDueDateField[0]);
+    monthDiff   = parseFloat(fromReturnDateField[1]) - parseFloat(fromDueDateField[1]);
+    dayDiff     = parseFloat(fromReturnDateField[2]) - parseFloat(fromDueDateField[2]);
+    
+    if(dayDiff < 0) {
+        if(monthDiff <= 0) {
+            if(yearDiff <= 0) {
+                  alert('PICK_LINE_DUE_DATE must be < RETURN_DATE');
+                  $('#return_date').focus();
+                  return false;
+            }
+        }
+    } else {
+        if(monthDiff < 0) {
+            if(yearDiff <= 0) {
+                  alert('PICK_LINE_DUE_DATE must be < RETURN_DATE');
+                  $('#return_date').focus();
+                  return false;
+            }
+        } else {
+            if(yearDiff < 0) {
+                  alert('PICK_LINE_DUE_DATE must be < RETURN_DATE');
+                  $('#return_date').focus();
+                  return false;
+            }
+        }
+    }
+}
+</script>
+<?php echo $this->render('footer.phtml'); ?>

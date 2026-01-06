@@ -1,0 +1,218 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array();
+?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post" id="main_form">
+    <h2><?php echo $this->pageTitle; ?></h2>
+<?php if ($this->minder->isAdmin) { ?>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "EDIT", array("onclick" => "frmSubmit()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "COPY", array("onclick" => "frmSubmit()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DELETE", array("onclick" => "frmSubmit()")); ?>
+        </li>
+    </ul>
+<?php } ?>
+    <hr />
+            <div style="text-transform: uppercase; font-weight: bold;">
+                <div style="float:left">RESULTS List</div>
+                <div id="pages" style="position: relative; left: 10ex; font-weight: none;text-transform: none;">
+                    <label for="show_by">View By : </label>
+                    <?php echo $this->formSelect("show_by",
+                                                 $this->showBy,
+                                                 array("onchange" => "frmSubmit()"),
+                                                 array(5 => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                     100 => 100));
+                    ?>
+                    <label for="pageselector">Page : </label>
+                    <?php echo $this->formSelectStrict("pageselector",
+                                                       $this->pageSelector,
+                                                       array("onchange" => "frmSubmit()"),
+                                                       $this->pages);
+                    ?>
+                </div>
+            </div>
+    <hr/>
+    <div class="report_header">
+        <?php echo $this->reportHeader; ?>
+    </div>
+    <div class="report_body">
+        <table id="table" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+<?php
+        if (count($this->headers) > 0) {
+            foreach ($this->headers as $header) {
+                echo "<th>". $this->escape($header) . "</th>";
+            }
+        }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->data) > 0) {
+        foreach ($this->data as $row) {
+            echo "<tr>";
+            foreach ($row as $cell) {
+                echo '<td>'. $this->escape($cell, ENT_QUOTES) . '</td>';
+            }
+            echo "</tr>\n";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        if (count($this->headers) > 0) {
+            echo "<tr>";
+            foreach($this->headers as $propertyName => $v) {
+                echo "<td/>";
+            }
+            echo "</tr>\n";
+        }
+    }
+?>
+            </tbody>
+        </table>
+    </div>
+    <div class="report_footer">
+        <?php echo $this->reportFooter; ?>
+    </div>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id="rec_counter" style="display: inline;">
+                <div id="num_rec">Total
+                <?php echo $this->numRecords . " records. ";?>
+                <?php echo "Show from " . ($this->startItem + 1); ?>
+                <?php echo " to " . ($this->startItem + $this->maxno);?>
+                </div>
+            </li>
+        </ul>
+        <ul class="toolbar">
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: TXT', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: XML', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: PDF', array('onclick' => 'return frmSubmit();'))?>
+            </li>
+        </ul>
+    <div id="filter" style="display:none">
+        <input type="text" value="<?php echo $this->startItem; ?>" class="flt" id="old_start_item" name="old_start_item" />
+        <input type="text" value="<?php echo $this->showBy; ?>" class="flt" id="old_show_by" name="old_show_by" />
+    </div>
+</form>
+<script type="text/javascript">
+<!--
+var checkOnOff;
+var selectedNum = 0;
+var fromUrl="";
+var cacheValue = 50;
+$(document).ready(function(){
+<?php if (count($this->headers) > 0) { ?>
+    $('#table').tablesorter({widgets: ['zebra']});
+<?php } ?>
+});
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+
+function formatItemWithDesc(ele)
+{
+    return "<b>"+ele[0]+"</b><br/><i>"+ele[1]+"</i>";
+}
+
+function selectAll(self) {
+    var chk = $("#table input:checkbox");
+    var checkOnOff = $("#select_all").get(0).checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    if (checkOnOff) {
+        selectedNum = i-1;
+    } else {
+        selectedNum = 0;
+    }
+    $("#selected_num").get(0).innerHTML = "Selected: " + selectedNum;
+}
+
+function frmSubmit()
+{
+    document.forms.main.submit();
+    return true;
+}
+
+function goDelete()
+{
+    document.forms.main.submit();
+    return true;
+}
+
+function goRun()
+{
+    frmSubmit();
+    return true;
+}
+
+function goNew()
+{
+    frmSubmit();
+    return true;
+}
+
+function goCopy()
+{
+    frmSubmit();
+    return true;
+}
+
+function showSelected(element)
+{
+    if (element.checked) {
+        selectedNum++;
+    } else {
+        selectedNum--;
+    }
+    if (selectedNum == 0) {
+        $("#select_all").get(0).checked = false;
+    } else if ( selectedNum == ($("#table input:checkbox").length - 1)) {
+        $("#select_all").get(0).checked = true;
+    }
+
+    $("#selected_num").get(0).innerHTML = "Selected: " + selectedNum;
+    return true;
+}
+
+function frmClear()
+{
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+//-->
+</script>
+<?php echo $this->render('footer.phtml'); ?>

@@ -1,0 +1,20 @@
+<?php
+if (is_array($this->data) && count($this->data) > 0) {
+    $fp = fopen("php://temp/", 'r+');
+    foreach ($this->data as $row) {
+        $line = array();
+        if(isset($row->items)) {
+            foreach ($this->headers as $key => $val) {
+                $line[] = $row->items[$val];
+            }
+        } else {
+            foreach ($this->headers as $key => $val) {
+                $line[] = $row[$val];
+            }
+        }
+        fputcsv($fp, $line, ',');
+    }
+    rewind($fp);
+    echo stream_get_contents($fp);
+    fclose($fp);
+}

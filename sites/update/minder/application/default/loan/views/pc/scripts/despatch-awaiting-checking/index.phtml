@@ -1,0 +1,181 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<table>
+<tr><td>
+<div id="ORDERS_LIST_CONTAINER">
+<?php echo $this->render('despatch-awaiting-checking/orders.phtml'); ?>
+</div>
+</td></tr>
+<tr><td>
+<div id="LINES_LIST_CONTAINER"></div>
+</td></tr>
+<tr><td>
+<div id="CONNOTE_SCREEN_CONTAINER"></div>
+</td></tr>
+</table>
+
+<?php echo $this->render('footer.phtml'); ?>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        
+        var barcodeSearch               = $('#barcode');
+        barcodeSearch.focus();
+
+        var barcodeDesc = [<?php echo $this->SymbologyPrefixDescriptor('LOCATION'); ?>, <?php echo $this->SymbologyPrefixDescriptor('SALESORDER'); ?>];
+        barcodeDesc     = barcodeDescriptorsInitialSetup(barcodeDesc);
+
+        barcodeSearch.bind('keyup', {barcodDesc: barcodeDesc}, onInputKeyup);
+    });
+    
+    function barcodeDescriptorsInitialSetup(descriptors) {
+        var tmpPrefixTest;
+        for (descriptorId in descriptors) {
+            descriptors[descriptorId].prefixTests        = [];
+            descriptors[descriptorId].validWithoutPrefix = false;
+            
+            for (prefixId in descriptors[descriptorId].PREFIX_ARRAY) {
+                tmpPrefixTest = {len: descriptors[descriptorId].PREFIX_ARRAY[prefixId].length, regExp: /(.*)/, prefix: ''};
+            
+                if (tmpPrefixTest.len > 0) {
+                    tmpPrefixTest.regExp = new RegExp('^(' + descriptors[descriptorId].PREFIX_ARRAY[prefixId] + ')');
+                    tmpPrefixTest.prefix = descriptors[descriptorId].PREFIX_ARRAY[prefixId];
+                } else {
+                    descriptors[descriptorId].validWithoutPrefix = true;
+                }
+                descriptors[descriptorId].prefixTests.push(tmpPrefixTest);
+            }
+
+            descriptors[descriptorId].dataRegExp = /(.*)/;
+            if (descriptors[descriptorId].DATA_EXPRESSION.length > 0)
+                descriptors[descriptorId].dataRegExp = new RegExp('^(' + descriptors[descriptorId].DATA_EXPRESSION + ')');
+        }
+        
+        return descriptors;
+    }
+    
+    function globalSearch(event) {
+        //suppress globalSearch() method as will use another EventListener for input field
+    }
+    
+    function onInputKeyup(event) {
+        var barcodeDesc   = event.data.barcodDesc;
+        var inputField    = $('#barcode');
+        
+        var rawValue      = $('#barcode').val().replace(/\s+/, '');
+        var filteredValue = rawValue;
+        var prefixDesc    = {len: 0, valid: false, prefix: ''};
+        var tmpTestsArray = []; //array of tests in descending by length order
+        var tmpTestsLists = []; //list of descriptiors grouped by valid prefix
+        
+        var paramDescription = {param_name: '', param_raw_value: rawValue, param_filtered_value: '', param_prefix: '', valid: false};
+        
+        if (event.keyCode == 13) {
+            //build list of prefixes in descending by length order
+            for (iterator in barcodeDesc) {
+                for (iterator2 in barcodeDesc[iterator].prefixTests) {
+                    barcodeDesc[iterator].prefixTests[iterator2].key = iterator;
+                    tmpTestsArray.push(barcodeDesc[iterator].prefixTests[iterator2]);
+                        
+                    if (!(barcodeDesc[iterator].prefixTests[iterator2].prefix in tmpTestsLists)) {
+                        tmpTestsLists[barcodeDesc[iterator].prefixTests[iterator2].prefix] = [];
+                    }
+                    tmpTestsLists[barcodeDesc[iterator].prefixTests[iterator2].prefix].push(barcodeDesc[iterator]);
+                        
+                }
+            }
+                
+            tmpTestsArray.sort(function(a, b){return b.len - a.len;});
+                
+            if (barcodeDesc.NO_PREFIX !== true) {
+                //apply tests one by one untill find valid prefix
+                for (iterator in tmpTestsArray) {
+                    if (tmpTestsArray[iterator].regExp.test(rawValue)) {
+                        prefixDesc.len    = tmpTestsArray[iterator].len;
+                        prefixDesc.prefix = tmpTestsArray[iterator].prefix;
+                        prefixDesc.valid  = true;
+                        break;
+                    }
+                }
+            } else {
+                prefixDesc.valid = true;
+            }
+            
+            if (prefixDesc.valid !== true) {
+                showErrors(['Bad barcode. \'<b>' + rawValue + '</b>\' input given. Prefixes tested ' + tmpTestsArray + '. No valid prefixes found.'], 10000);
+            } else {
+                var foundDesc;
+                filteredValue = rawValue.slice(prefixDesc.len);
+                foundDesc     = tmpTestsLists[prefixDesc.prefix];
+                foundDesc.sort(function(a, b){return b.MAX_LENGTH - a.MAX_LENGTH;});
+                
+                
+                for (iterator in foundDesc) {
+                    if (foundDesc[iterator].FIXED_LENGTH.toUpperCase() == 'T') {
+                        if (foundDesc[iterator].MAX_LENGTH != filteredValue.length)
+                            //length doesn't match try next PARAM
+                            continue;
+                    } else {
+                        if (foundDesc[iterator].MAX_LENGTH < filteredValue.length)
+                            //length is greater then allowed length try next PARAM
+                            continue;
+                    }
+                    
+                    if (foundDesc[iterator].dataRegExp.test(filteredValue)) {
+                        paramDescription = {
+                            param_name: foundDesc[iterator].DATA_ID, 
+                            param_raw_value: rawValue, 
+                            param_filtered_value: filteredValue, 
+                            param_prefix: prefixDesc.prefix,
+                            valid: true,
+                            action: 'search'
+                        };
+                        
+                        break;
+                    }
+                }
+            }
+            
+            if (paramDescription.valid) {
+                var message = 'Input valid = \'<b>' + paramDescription.param_raw_value  + '</b>\'.';
+                message += ' Found prefix = \'<b>' + paramDescription.param_prefix + '</b>\'.';
+                message += ' Data value = \'<b>' + paramDescription.param_filtered_value + '</b>\'.';
+                message += ' PARAM = \'<b>' + paramDescription.param_name + '</b>\'.';
+                showMessage([message], 2000);
+                $('#barcode').attr('value','');
+                
+                $('#ORDERS_LIST_CONTAINER').html('');
+                $('#LINES_LIST_CONTAINER').html('');
+                $('#CONNOTE_SCREEN_CONTAINER').html('');
+                $('#ORDERS_LIST_CONTAINER').load(
+                    '<?php echo $this->url(array('action' => 'index', 'controller' => 'despatch-awaiting-checking'), null, true);?>', 
+                    paramDescription, 
+                    function() {
+                        var jsonData = eval('(' + $('#json').html() + ')');
+                        $('#json').remove();
+                        
+                        if (jsonData.errors && jsonData.errors.length > 0) {
+                            showErrors(jsonData.errors);
+                            return;
+                        }
+                        
+                        if (jsonData.messages && jsonData.messages.length > 0) {
+                            showMessage(jsonData.messages);
+                        }
+                    }
+                );
+            } else {
+                showErrors(['Bad input. \'<b>' + rawValue  + '</b>\' input given. No sutable param found.'], 10000);
+            }
+            
+        }
+        
+        inputField.focus();
+    }
+    /* ]]> */
+</script>

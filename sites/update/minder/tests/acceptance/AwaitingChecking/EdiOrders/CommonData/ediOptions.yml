@@ -1,0 +1,13 @@
+OPTIONS:
+  -
+    GROUP_CODE: "POST_CHKLN"
+    CODE: "GO|MB|MR"
+    DESCRIPTION: "All GO PICK_ORDER_SUB_TYPE must be scanned"
+    COMMENTS:
+    DESCRIPTION2:
+  -
+    GROUP_CODE: "PO_SUBTYPE"
+    CODE: "SA|EDI"
+    DESCRIPTION: "Edi order subtype"
+    COMMENTS:
+    DESCRIPTION2:

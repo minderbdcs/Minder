@@ -1,0 +1,224 @@
+/*
+This is the core stype of the whm site
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 10pt;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h1 {
+font-size: 1.1em;
+margin-left: 0%;
+text-align: left;
+}
+h2 {
+font-size: 1.2em;
+margin-left: 0%;
+}
+h3 {
+font-size: 12pt;
+line-height: 14pt;
+text-decoration: blink;
+margin-left: 0%;
+}
+h4 {
+font-size: 12pt;
+line-height: 14pt;
+position: absolute;
+left: 10px;
+top: 5px;
+}
+h5 {
+font-size: 12pt;
+}
+a:link {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:visited {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:hover {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:active {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+input.default,input[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.sel5,input.sel5[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.message,input.message[type="text"] {
+color: red ;
+background-color: yellow;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 8pt;
+}
+input.sel15,input.sel15[type="text"] {
+color: white ;
+background-color: lightslategrey;
+}
+input.noread {
+color: black ;
+background-color: gainsboro  ;
+}
+.product {
+width: 80pt;
+}
+input.submit:focus {
+outline: red 2px;
+color: blue ;
+}
+select.sel1 {
+width: 20%;
+}
+select.sel2 {
+width: 35%;
+}
+select.sel3 {
+width: 128pt;
+}
+select.sel4 {
+width: 30pt;
+}
+select.sel5 {
+width: 35pt;
+}
+select.sel6 {
+width: 40%;
+}
+select.sel7 {
+width: 35pt;
+}
+select.sel8 {
+width: 110pt;
+}
+select:focus {
+outline: 2px #ff7d00 ;
+color: red ;
+}
+/* select {
+display: block;
+width: 55%;
+} */
+button {
+display: block;
+color: black ;
+background-color: cyan;
+font-size: 11pt;
+width: 50pt;
+height: 2.75em;
+margin-top: 1%;
+margin-bottom: 1%;
+margin-right: 1%;
+margin-left: 1%;
+}
+#col1 {
+position: absolute;
+left: 4px;
+top: 160pt;
+}
+#col2 {
+position: absolute;
+left: 130px;
+top: 160pt;
+}
+#col4 {
+position: absolute;
+left: 68px;
+top: 168pt;
+}
+#col3 {
+position: absolute;
+left: 2px;
+/* top: 25pt; */
+top: 4em;
+width: 200pt;
+}
+#col5 {
+position: absolute;
+left: 105px;
+top: 133pt;
+}
+#col6 {
+position: absolute;
+left: 85pt;
+top: 70pt;
+}
+#col7 {
+position: absolute;
+left: 2pt;
+top: 80pt;
+}
+#col9 {
+position: absolute;
+left: 4px;
+top: 102pt;
+}
+#col10 {
+position: absolute;
+left: 130px;
+top: 100pt;
+}
+#col11 {
+position: absolute;
+left: 4px;
+top: 175pt;
+}
+#col12 {
+position: absolute;
+left: 130px;
+top: 175pt;
+}
+#col13 {
+position: absolute;
+left: 110pt;
+top: 98%
+}
+#col14 {
+position: absolute;
+top: 98%
+}
+#col15 {
+position: absolute;
+top: 114%
+}
+#search1 {
+position: absolute;
+left: 160pt;
+top: 13%
+}
+#col16 {
+position: absolute;
+left: 2px;
+top: 5px;
+width: 200pt;
+}
+#col17 {
+left: 5pt;
+}
+#getcancel1 {
+position: absolute;
+width: 150pt;
+left: 2pt;
+top: 80pt;
+}
+#getcomplete2 {
+position: absolute;
+left: 2pt;
+top: 90pt;
+width: 150pt;
+}

@@ -1,0 +1,2 @@
+<?php
+class Minder_SequenceGenerator_RegisterBase_Exception extends Minder_SequenceGenerator_Exception {}

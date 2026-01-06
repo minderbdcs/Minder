@@ -1,0 +1,232 @@
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'index'), null, true); ?>" method="post" id="lines_form">
+<?php echo $this->formHidden('from', 'purchase-lines'); ?>  
+<?php echo $this->formHidden('total_orders_selected', $this->ordersSelected); ?>  
+<?php echo $this->formHidden('total_orders', $this->totalOrders); ?>  
+    <div>
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">PO LINES:</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                        $this->navigation['show_by'],
+                                        array('onchange' => 'this.form.submit()'),
+                                        array(5  => 5,
+                                              10 => 10,
+                                              15 => 15,
+                                              20 => 20,
+                                              30 => 30,
+                                              40 => 40,
+                                              50 => 50,
+                                              100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'this.form.submit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span class="purchase_lines_selected"><?php echo $this->totalSelected; ?></span></li>
+    </ul>
+    <table id=line_list class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_lines',
+                                               '',
+                                               array('onclick' => 'selectAllLines(this)', 'checked' => $this->checkedAll)) ;?>
+            </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+
+<?php
+        foreach ($this->purcahseLineList as $line) { ?>
+        <tr>
+            <th><?php 
+                $lineId =   trim($line['PURCHASE_ORDER'] . '_' . $line['PO_LINE']);
+       
+                echo $this->formCheckbox($lineId, $lineId, array('checked' => array_key_exists($lineId, $this->conditions) ? 'checked' : '', 'class' => 'line-selector', 'onclick' => 'showSelectedLines(this)')) ?></th>
+<?php     foreach ($this->headers as $key => $val) { ?>
+            <td><a href="<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'edit-line', 'line' => $lineId), null, true); ?>"><?php echo $this->escape($line[$key]) ?></a></td>
+
+<?php     } ?>
+        </tr>
+<?php }  ?>
+<?php if (!count($this->purcahseLineList)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $v) : ?>
+            <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" id="lines-info" width="100%">
+        <tr>
+            <td>Total <span id="total_lines"><?php echo $this->numRecords; ?></span> <?php echo ($this->numRecords > 1 ? ' records' : ' record') ?></td>
+            <td>Show from <?php echo ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1) . ' to ' . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td width="80%">&nbsp;</td>
+        </tr>
+    </table>
+     <ul class="toolbar" style="margin-top: 3px;" id="edit_field_buttons">
+        <li>
+            <input type="button" class="order-button" name="action" id="returned" value="ADD LINE" onclick="frmSubmitPurchaseLines(this)" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="action" id="return_all" value="DELETE LINE" onclick="return deleteLines(this);" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: csv" value="REPORT: CSV" onclick="return frmSubmitPurchaseLines(this)" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: xls" value="REPORT: XLS" onclick="return frmSubmitPurchaseLines(this)" />
+        </li>
+        <li>
+            <input type="submit" class="order-button" name="action" id="report: xls" value="IMPORT LINES" onclick="return showUploadDialog();" />
+        </li>
+    </ul>
+</form>
+<br />
+
+<div id="uploadDialog" >
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'purchase-order', 'action' => 'import-csv'), null, true); ?>" enctype="multipart/form-data" method="post">
+
+<input type="hidden" name="MAX_FILE_SIZE" value="300000">
+
+<ul class="toolbar" style="margin-top: 3px;" id="edit_field_buttons">
+	<li>
+		<input type="file" name="userfile">&nbsp;&nbsp;&nbsp;
+		<input class="order-button" type="submit" value="IMPORT">
+	</li>
+</ul>
+</form>
+</div>
+
+
+<div id="line_details"></div>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#line_list").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+    
+    var totalSelected = $('.purchase_lines_selected').text();
+    
+    if(totalSelected > 0){
+         $.getJSON('<?php echo $this->url(array('action' => 'lines-selected', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+            method: 'init', 
+        }, function(json){
+            showLinesAndShowSelectedLines(json);
+            loadLineDetails('load', json);
+        });    
+    }
+    
+    $('#uploadDialog').hide();
+});
+
+function deleteLines(target){
+    
+    var totalSelected   =   parseInt($('.purchase_lines_selected').text());
+    
+    if(totalSelected > 0){
+        var result          = confirm('Do you want to Delete PURCHASE_ORDER_LINE - Yes/No?');
+    
+        if(result){
+            frmSubmitPurchaseLines(target);    
+        }    
+    }
+    
+    return false;
+}
+
+// The handler the one element selection.
+function showSelectedLines(target) {
+    
+    $.getJSON('<?php echo $this->url(array('action' => 'lines-selected', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     target.value, 
+        value:  target.value
+    }, function(json){
+        showLinesAndShowSelectedLines(json);
+        loadLineDetails('load', json);
+    });
+}
+
+function selectAllLines(target) {
+    $.getJSON('<?php echo $this->url(array('action' => 'lines-selected', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     'select_all'
+    }, function(json){
+         
+        checkAllBoxes();
+        showLinesAndShowSelectedLines(json);
+        loadLineDetails('init', json);
+    });
+}
+
+function showLinesAndShowSelectedLines(json) {
+    
+   var totalSelected    =   json.total_selected_lines;
+ 
+   $('.purchase_lines_selected').text(totalSelected);
+   
+   if(json.total_selected_lines == json.total_lines){
+        $('#select_all_lines').attr('checked', 'checked');    
+   } else {
+        $('#select_all_lines').attr('checked', false);    
+   } 
+  
+   onAjaxSuccess();
+}
+
+function frmSubmitPurchaseLines(target){
+    
+    var method      = $(target).val();  
+    var oldAction   = $('#lines_form').attr('action');  
+    var action      = $('#lines_form').attr('action') + '/purchase-lines';
+                      $('#lines_form').append('<input type="hidden" name="action" value="' + method + '" />');
+                      $('#lines_form').attr('action', action).submit();
+                      $('#lines_form').remove($('input[name=action]'));
+                      $('#lines_form').attr('action', oldAction);
+    return false;
+                    
+}
+
+function loadLineDetails(target, json){
+    
+    $('#line_details').load('<?php echo $this->url(array('action' => 'purchase-lines-details', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     'select_all'
+    }, function(){
+        
+        if(json.total_selected_lines > 0){
+            $('#line_details').show();     
+        } else { 
+            $('#line_details').hide();
+        }     
+        
+    });    
+}
+
+function checkAllBoxes(){
+   
+    var chk         = $("#line_list tbody input:checkbox");
+    var checkOnOff  = $('#select_all_lines').attr('checked');
+  
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+}
+
+function showUploadDialog() {
+	$('#uploadDialog').show();
+	return false;
+}
+
+</script>

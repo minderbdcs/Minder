@@ -1,0 +1,24 @@
+{
+  "name": "bdcs-minder",
+  "version": "5.0.2",
+  "description": "Warehouse Management Systems",
+  "main": "index.js",
+  "directories": {},
+  "scripts": {},
+  "author": "Barcoding & Data Collection Systems Pty Ltd",
+  "license": "Barcoding & Data Collection Systems Pty Ltd",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-babel": "^5.0.0",
+    "grunt-compile-handlebars": "^1.0.1",
+    "grunt-contrib-copy": "^0.4.1",
+    "grunt-contrib-less": "^1.0.0",
+    "grunt-contrib-requirejs": "^0.4.4",
+    "grunt-mustache-render": "^1.7.0",
+    "grunt-preprocess": "^4.1.0",
+    "grunt-template": "^0.2.3",
+    "grunt-urequire": "^0.7.2",
+    "urequire": "^0.7.0-beta.15",
+    "urequire-ab-grunt-contrib-watch": "0.0.1"
+  }
+}

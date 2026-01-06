@@ -1,0 +1,464 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h1><?php echo $this->pageTitle; ?></h1>
+<form name="main" id="main" action="" method="post">
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DISCARD", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "COPY", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DELETE", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "SHOW", array("onclick" => "return goRun('" . $this->report->id . "');", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "ADD PROMPT", array("onclick" => 'return newPrompt();', 'class' => 'mdr-button'));?>
+        </li>
+    </ul>
+    <table class="summary" style="width:99%">
+        <tbody>
+                        <tr>
+                            <th>
+                                Report Name:
+                            </th>
+                            <td>
+                                <?php echo $this->formText('name', $this->report->items['NAME'], array()); ?>
+                                Company:
+                                <?php echo $this->formSelect('company_id', $this->report->items['COMPANY_ID'] , array(), $this->companyList) ?>
+                            </td>
+                        </tr>
+            <tr>
+                <th>
+                    Description:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('description',
+                                                    $this->report->items['DESCRIPTION'],
+                                                    array('rows'  => '5',
+                                                          'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Query:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('query',
+                                                   $this->report->items['QUERY'],
+                                                   array('rows'  => '10',
+                                                         'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Header:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('report_header',
+                                                   $this->report->items['REPORT_HEADER'],
+                                                   array('rows'  => '3',
+                                                         'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Footer:
+                </th>
+                <td>
+                    <?php echo $this->formTextarea('report_footer',
+                                                   $this->report->items['REPORT_FOOTER'],
+                                                   array('rows'  => '3',
+                                                         'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Frequency:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_frequency',
+                                                   $this->report->items['REPORT_FREQUENCY']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Output Format:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_output_format',
+                                                   $this->report->items['REPORT_OUTPUT_FORMAT']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Type:
+                </th>
+                <td>
+                    <?php echo $this->formSelect('report_type',
+                                                   $this->report->items['REPORT_TYPE'], 
+                                                   array(),
+                                                   $this->reportTypes); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report URI:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_uri',
+                                                   $this->report->items['REPORT_URI']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Format:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_format',
+                                                   $this->report->items['REPORT_FORMAT']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Report Menu Type:
+                </th>
+                <td>
+                    <?php echo $this->formSelect('report_menu_type',
+                                                   $this->report->items['REPORT_MENU_TYPE'],
+                                                   array(),
+                                                   $this->reportMenuTypes); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Last Update Date:
+                </th>
+                <td>
+                    <?php echo $this->formNote('last_update_date',
+                                                   $this->report->items['LAST_UPDATE_DATE']); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Last Update By:
+                </th>
+                <td>
+                    <?php echo $this->formNote('last_update_by',
+                                                   $this->report->items['LAST_UPDATE_BY']); ?>
+                </td>
+            </tr>
+            <tr>
+                <td colspan=2>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table id="table" class="tablesorter withborder" style="width:99%">
+        <thead>
+            <tr>
+<?php
+    foreach ($this->headers as $key => $header) {
+        echo "<th id=\"" . strtolower($key) . "\">". $this->escape($header) . "</th>";
+    }
+?>
+            </tr>
+        </thead>
+        <tbody>
+<?php
+    if (count($this->prompts) > 0) {
+        for ($i = 0; $i < count($this->prompts); $i++) {
+            $line = $this->prompts[$i];
+            echo "<tr>";
+            foreach($this->headers as $propertyName => $v) {
+                $val = $line->items[$propertyName];
+                $urlEdit = $this->url(array("module"      => "default",
+                                            "controller"  => "reports",
+                                            "action"      => "show",
+                                            "start_item"  => $this->startItem,
+                                            "show_by"     => $this->showBy,
+                                            "report_id" => $line->id),
+                                            "",
+                                            true);
+                echo '<td><a href=# onclick="return editPrompt(this);" >' .
+                          $this->escape($val) . '</a></td>';
+                              
+
+            }
+            echo "</tr>\n";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        //if (false) {
+            echo "<tr>";
+        //}
+        foreach($this->headers as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>";
+    }
+?>
+        </tbody>
+    </table>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "SAVE", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DISCARD", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "COPY", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DELETE", array("onclick" => "frmSubmit()", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "SHOW", array("onclick" => "return goRun('" . $this->report->id . "');", 'class' => 'mdr-button')); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "ADD PROMPT", array("onclick" => 'return newPrompt();', 'class' => 'mdr-button'));?>
+        </li>
+    </ul>
+</form>
+<div id="dialog" class="flora" title="Add new prompt" style="display: none;">
+    <form id="prompt" name="prompt" method="post" action="">
+    <?php echo $this->formHidden('report_id', $this->report->id); ?>
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Report Name:
+                </th>
+                <td>
+                    <?php echo $this->formNote('name', $this->report->items['NAME'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Prompt ID:
+                </th>
+                <td>
+                    <?php echo $this->formText('report_detail_id', '', array('disabled' => 'true')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Sequence:
+                </th>
+                <td>
+                    <?php echo $this->formText('sequence', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Prompt Input Type:
+                </th>
+                <td>
+                    <?php echo $this->formSelect('query_prompt_type','D', array(), array('S' => 'Drop Down',
+                                                                                         'D'  => 'Date Picker',
+                                                                                         'L'  => 'Logical (T or F)',
+                                                                                         'I'  => 'Integer (+,-)',
+                                                                                         'C'  => 'Characters',
+                                                                                         'P'  => 'Predefined (%now% or %userid%)',
+                                                                                         'R'  => 'Copy another Field',
+                                                                                         'A'  => 'Date Picker US',
+                                                                                         'F'  => 'Not Used')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Placeholder #:
+                </th>
+                <td>
+                    <?php echo $this->formText('query_field', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Prompt Message:
+                </th>
+                <td>
+                    <?php echo $this->formText('query_prompt', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    SQL Query:
+                </th>
+                <td>
+                    <?php echo $this->formText('query_db_field', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Copy Field:
+                </th>
+                <td>
+                    <?php echo $this->formText('query_copy_field', '', array()); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+<div id="report_run" class="flora" title="Input">
+</div>
+<script type="text/javascript">
+<!--
+$(document).ready(function() {
+    $('#dialog').dialog({buttons: {Save: submitDialog, Delete: deletePrompt, Copy: copyPrompt, Close: closeDialog},
+         width: '70ex',
+         height: '23em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    }); 
+    
+    $('#report_run').dialog({buttons: {Go: runReportDialog, Close: closeRunDialog},
+         width: '70ex',
+         height: '23em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    }); 
+    $('#table').tablesorter({widgets: ['zebra']});
+});
+
+function goRun(reportId)
+{
+    $('#report_run').load('<?php echo $this->url(array('action' => 'get-prompts', 'controller' => 'reports', 'module' => 'default')); ?>/?report_id=' + reportId, function() {$('#report_run').dialog("open");});
+    return false;
+}
+
+function runReportDialog()
+{
+    var data = $('#input').serialize();
+    $.ajax({url: '<?php echo $this->url(array('action' => 'set-prompts', 'controller' => 'reports', 'module' => 'default')); ?>/',
+           data:  data,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        if (true == answer.response) {
+                            $('#report_run').dialog("close");
+                            document.forms['input'].submit();
+                        } else {
+                            alert(answer.message);
+                        }
+                    },
+           method: 'post'
+           });
+    return false;
+}
+
+function closeRunDialog()
+{
+    $('#report_run').dialog("close");
+    return false;
+}
+
+function submitDialog()
+{
+    $('#prompt input[disabled]').addClass('undisabled')[0].disabled = false;;
+    var data = $('#prompt').serialize();
+    $('.undisabled').removeClass('undisabled')[0].disabled = true;
+    $.ajax({url: '<?php echo $this->url(array('action' => 'save-prompt', 'controller' => 'reports', 'module' => 'default')); ?>?method=save',
+           data:  data,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        alert(answer.message);
+                        if (answer.id) {
+                                var tr = document.createElement('tr');
+                                $('#table thead th').each(function() {
+                                    var key = this.id;
+                                    key = key.toUpperCase();
+                                    var td = document.createElement('td');
+                                    var a = document.createElement('a');
+                                    var text = document.createTextNode(answer.data[key]);
+                                    a.appendChild(text);
+                                    $(a).attr('href', '#');
+                                    $(a).attr('onclick', 'return editPrompt(this);');
+                                    td.appendChild(a);
+                                    tr.appendChild(td);
+                                });
+                            if ('update' == answer.action) {
+                                $('.edit').replaceWith(tr);
+                            } else {
+                                $('#table').get(0).tBodies[0].appendChild(tr);
+                            }
+                                $('#table').trigger('update');
+                                $('#dialog').dialog("close");
+                        }
+                    },
+           method: 'post'
+           });
+    return false;
+}
+
+function newPrompt()
+{
+    document.prompt.reset();
+    $("#dialog").dialog("open");
+    return false;
+}
+
+function copyPrompt()
+{
+    $('.edit').removeClass('edit');
+    $('form#prompt #report_detail_id')[0].value = '';
+    return false;
+}
+function editPrompt(item)
+{
+    $(item).parent().parent().addClass('edit');
+    $('td', $(item).parent().parent()).each(function () {
+            var field = $('th', $(item).parent().parent().parent().parent()).get(this.cellIndex).id;
+            var value = $(this).text();
+            $('form#prompt [name="' + field + '"]').attr("value", value);
+        });
+    $("#dialog").dialog("open");
+    return false;
+}
+
+function deletePrompt()
+{
+    $('#prompt input[disabled]').addClass('undisabled')[0].disabled = false;
+    var data = $('#prompt').serialize();
+    $('.undisabled').removeClass('undisabled')[0].disabled = true;
+    $.ajax({url: '<?php echo $this->url(array('action' => 'save-prompt', 'controller' => 'reports', 'module' => 'default')); ?>?method=delete',
+           data:  data,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        alert(answer.message);
+                        if (answer.id) {
+                            $('.edit').remove();
+                            $('#table').trigger('update');
+                            $('#dialog').dialog("close");
+                        }
+                    },
+           method: 'post'
+           });
+    return false;
+}
+
+function closeDialog()
+{
+    $('#dialog').dialog("close");
+    return false;
+}
+
+function frmSubmit()
+{
+    document.forms.main.submit();
+    return true;
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

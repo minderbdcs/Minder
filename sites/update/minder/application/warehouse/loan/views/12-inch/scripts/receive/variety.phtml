@@ -1,0 +1,316 @@
+<?php echo $this->render('header.phtml');  ?>
+<h2><?php echo $this->pageTitle; ?></h2>
+
+<div id="flash_error">
+    <?php echo $this->messenger()->all() ?>
+</div>
+<form method="post" action="<?php echo $this->url() ?>/?fmt=12-inch" id="main_form">
+
+<?php echo $this->render('receive/_information-bar.phtml') ?>
+<table class="with_border" id="variety">
+    <tr>
+        <th><?php echo $this->formLabel('generic', $this->minder->getFieldFromSsnGroup('FIELD_GENERIC') . ':') ?></th>
+        <td><?php echo $this->formSelect('generic', $this->generic, null, $this->genericOpts) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('brand', $this->minder->getFieldFromSsnGroup('FIELD_BRAND') . ':') ?></th>
+        <td><?php echo $this->formSelect('brand', $this->brand, null, $this->brandOpts) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('model', $this->minder->getFieldFromSsnGroup('FIELD_MODEL') . ':') ?></th>
+        <td><?php echo $this->formSelect('model', $this->model, array('disabled' => 'disabled'), $this->modelOpts) ?></td>
+    </tr>
+</table>
+<table class="with_border" id="print_labels" style="display: none;">
+    <tr>
+        <th><?php echo $this->formLabel('recvd', 'Total counted Units:') ?></th>
+        <td><?php echo $this->formText('recvd', $this->recvd, array('class' => 'qty_field')) ?></td>
+        <th><?php echo $this->formLabel('printer_id', 'Printer ID:') ?></th>
+        <td><?php echo $this->formSelect('printer_id', $this->printerId, null, $this->printerIdOpts) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('qty1', 'Total Labels:') ?></th>
+        <td><?php echo $this->formText('qty1', $this->qty1, array('class' => 'qty_field')) ?></td>
+        <th><?php echo $this->formLabel('qty2', 'Quantity/Label:') ?></th>
+        <td><?php echo $this->formText('qty2', $this->qty2, array('class' => 'qty_field')) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('qty3', 'Total Labels:') ?></th>
+        <td><?php echo $this->formText('qty3', $this->qty3, array('class' => 'qty_field')) ?></td>
+        <th><?php echo $this->formLabel('qty4', 'Quantity/Label:') ?></th>
+        <td><?php echo $this->formText('qty4', $this->qty4, array('class' => 'qty_field')) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('prt_qty', 'Print Quantity:') ?></th>
+        <td><?php echo $this->formText('prt_qty', $this->prtQty, array('style' => 'background: #00ff00;', 'readonly' => 'readonly')) ?></td>
+        <th><?php echo $this->formLabel('third_party', 'Third Party Label #:') ?></th>
+        <td><?php echo $this->formCheckbox('third_party', 'y', $this->thirdParty ? array('checked' => 'checked') : null) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('complete', 'Is Delivery Complete:') ?></th>
+        <td><?php echo $this->formRadio('complete', $this->complete, null, array('y' => 'Yes', 'n' => 'No'), '&nbsp; &nbsp;'); ?></td> 
+        <th><?php echo $this->formLabel('receive_location', 'Receive Loc:') ?></th>
+        <td><?php echo $this->formSelect('receive_location', $this->receiveLocation, null, $this->receiveLocationOpts) ?></td>
+    </tr>
+</table>
+
+<div id="action_buttons">
+<?php echo $this->formSubmit('do_action', 'Next', array('class' => 'button', 'id' => 'next_button', 'onclick' => 'hideFlashError()')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Previous', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Print Labels', array('class' => 'button', 'id' => 'print_labels_button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?><br />
+<?php //echo $this->formSubmit('do_action', 'Go to Top', array('class' => 'button', 'onclick' => 'return false')) ?>
+</div>
+
+<?php echo $this->formHidden('cur_page', 1) ?>
+</form>
+<div id="dialog" class="flora" title="" style="display: none;">
+    <form id="prompt" name="prompt" method="post" action="">
+    <input type="hidden" name="do_action" value="get_order" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <td>
+                   Do you wish to Close the PO after 'SAVE & PRINT Y/N
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#dialog').dialog({buttons: {Yes: setStatusClose, No: closeDialog},
+         width: '55ex',
+         height: '10em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+    <?php if($this->isJsSump >= 1) { ?>
+         $('#print_labels').removeAttr('style');                           // show print_labels.
+                    $('#variety').attr('style', 'display: none;');         // hide variety.
+                    $('#cur_page').val(2);
+
+                    $('#print_labels_button').attr('style', 'display: none;').next('br').remove();
+                    $('#next_button').val('Save & Print');     
+    <?php } ?>
+    
+    function getQty(val) {
+        val = parseInt(val);
+        if (isNaN(val) || val < 0) {
+            val = 0;
+        }
+        return val;
+    }
+
+    function checkRequiredQty() {
+        var e = arguments[0] || null;
+        var qty1 = getQty($('#qty1').val());
+        var qty2 = getQty($('#qty2').val());
+        var qty3 = getQty($('#qty3').val());
+        var qty4 = getQty($('#qty4').val());
+        var recvd = getQty($('#recvd').val());
+        
+        if (e !== null) {
+            // Slightly modified code from whm.
+            switch (e.target.name) {
+                case 'qty1':
+                    if (qty1 > 0) {
+                        qty2 = Math.floor(recvd / qty1);
+                        qty3 = 1;
+                        qty4 = recvd - (qty1 * qty2);
+                    } else {
+                        qty1 = 0;
+                        qty2 = 0;
+                    }
+                    break;
+
+                case 'qty2':
+                    if (qty2 > 0) {
+                        qty3 = 1;
+                        qty4 = recvd - (qty1 * qty2);
+                    } else {
+                        qty1 = 0;
+                        qty2 = 0;
+                    }
+                    break;
+
+                case 'qty3':
+                    if (qty3 > 0) {
+                        qty4 = Math.floor((recvd - (qty1 * qty2)) / qty3);
+                    } else {
+                        qty3 = 0;
+                        qty4 = 0;
+                    }
+                    break;
+            }
+
+            if (qty1 < 0) {
+                qty1 = 0;
+            }
+            if (qty2 < 0) {
+                qty2 = 0;
+            }
+            if (qty3 < 0) {
+                qty3 = 0;
+            }
+            if (qty4 < 0) {
+                qty4 = 0;
+            }
+            if (qty1 == 0 || qty2 == 0) {
+                qty1 = 0;
+                qty2 = 0;
+            }
+            if (qty3 == 0 || qty4 == 0) {
+                qty3 = 0;
+                qty4 = 0;
+            }
+            if (qty1 > recvd) {
+                qty1 = recvd;
+                qty2 = 1;
+                qty3 = 0;
+                qty4 = 0;
+            }
+            if (qty2 > recvd) {
+                qty1 = 1;
+                qty2 = recvd;
+                qty3 = 0;
+                qty4 = 0;
+            }
+            if (qty3 > recvd) {
+                qty3 = recvd;
+                qty4 = 1;
+            }
+            if (qty4 > recvd) {
+                qty3 = 1;
+                qty4 = recvd;
+            }
+        }
+        $('#qty1').val(qty1);
+        $('#qty2').val(qty2);
+        $('#qty3').val(qty3);
+        $('#qty4').val(qty4);
+
+        var total = qty1 * qty2 + qty3 * qty4;
+        $('#prt_qty').val(total);
+        var prtQty = getQty($('#prt_qty').val());
+        $('#prt_qty').attr('style', total == recvd && prtQty > 0 ? 'background: #00ff00;' : 'background: #ff0000');
+    }
+
+    $('.qty_field').change(function(e) {checkRequiredQty(e);});
+
+    checkRequiredQty();
+
+    $('#action_buttons').find('input').click(function() {
+        var curPage = $('#cur_page').val();
+        switch (this.value.toLowerCase()) {
+            case 'next':
+            case 'print labels':
+                if (curPage == 1) {
+                    $('#print_labels').removeAttr('style');                // show print_labels.
+                    $('#variety').attr('style', 'display: none;');         // hide variety.
+                    $('#cur_page').val(2);
+
+                    $('#print_labels_button').attr('style', 'display: none;').next('br').remove();
+                    $('#next_button').val('Save & Print');
+                  
+                    return false;
+                }
+                return true;
+
+            case 'save & print':
+                
+                var totalQty = <?php echo $this->infReqQty; ?>;
+                var countOpenLines = <?php echo $this->countOpenLines ?>;
+                var recvd = getQty($('#recvd').val());
+                var prtQty = getQty($('#prt_qty').val());
+                
+                if ((recvd != prtQty) || recvd == 0 || prtQty == 0) {
+                    alert('No labels for print.');
+                    return false;
+                } else {
+                    <?php if($this->totalLinesQty > 0 ) { ?>
+                            if($('input:radio[name=complete]:checked').val() == "y") {
+                              if (countOpenLines > 1 ) {
+                                newPrompt();
+                                return false;
+                              }
+                              if(countOpenLines <= 1 && recvd < totalQty) {
+                                newPrompt();
+                                return false;
+                              }  
+                            } 
+                    <?php } ?> 
+                    
+                    return true;
+                }
+                break;
+
+            case 'previous':
+                if (curPage == 2) {
+                    $('#print_labels').attr('style', 'display: none;');    // hide print_labels.
+                    $('#variety').removeAttr('style');                     // show variety.
+                    $('#cur_page').val(1);
+
+                    $('#print_labels_button').removeAttr('style').after('<br />');
+                    $('#next_button').val('Next');
+                    return false;
+                }
+                return true;
+        }
+        return true;
+    });
+});
+
+
+function newPrompt()
+{
+    $("#dialog").dialog("open");
+    
+    return false;
+
+}
+
+function setStatusOpen() {
+   
+      return false;
+}
+
+function setStatusClose() {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'ajax', 'controller' => 'receive', 'module' => 'warehouse')) . '/?fmt=12-inch'; ?>',
+     { 
+       do_action: 'CHANGE STATUS',
+       status:   'CL',
+       po_order: '<?php echo  $this->purchaseOrderId; ?>' 
+     
+     }, function(json) {
+         if(json.result) {
+            closeDialog();
+         }
+       })
+       
+    return false;
+    
+}
+
+function closeDialog()
+{
+    $('#dialog').dialog("close");
+    $('#main_form').append('<input type="hidden" name="do_action" value="save & print">');
+    $('#main_form').submit();
+    return false;
+}
+
+function hideFlashError() {
+    
+    $('#flash_error').css("display", "none")
+
+}
+</script>
+
+<?php echo $this->render('footer.phtml') ?>

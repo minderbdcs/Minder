@@ -1,0 +1,96 @@
+<!-- change status dialog -->
+<div style="display: none;" id="select_transfer_order_status_dialog" title="Select Status" class="flora">
+    <form action="#">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td>Status:</td>
+                <td><?php echo $this->transferOrderStatusSelect('transferOrderStatus', '', array('id' => '')); ?></td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- confirm carriers dialog -->
+
+<script type="text/javascript">
+    minderNamespace('Minder.Dialogs.SelectTransferOrderStatus', function(){
+        const SELECTED_EVENT = 'transfer-order-status-selected';
+
+        this.init = function() {
+            var $dialog = this.getDialog(),
+                buttonPane,
+                self = this;
+            $dialog.dialog(
+                {
+                    buttons: {
+                        SELECT: function(evt){
+                            evt.preventDefault();
+                            self.select(self.getSelectElementValue());
+                        },
+                        'HTML': true,
+                        CANCEL: function(evt){
+                            evt.preventDefault();
+                            self.close();
+                        }},
+                    buttonStyle: 'green-button',
+                    insertHtml:  '&nbsp;',
+                    autoOpen  : false,
+                    width     : 400,
+                    height    : 160,
+                    resizable : true,
+                    modal     : false
+                }
+            ).unbind('dialogopen').bind('dialogopen', function(event, ui) {
+                    self.activate();
+                    $(this).show();
+                }).unbind('dialogclose').bind('dialogclose', function(event, ui) {
+                    self.deactivate();
+                });
+
+            buttonPane = $dialog.parents('.ui-dialog').find('.ui-dialog-buttonpane');
+            buttonPane.find('::nth-child(2)').css('height', 'auto'); //workaround to remove unnecessary height property
+            buttonPane.find('::nth-child(3)').find('button').removeClass('green-button').addClass('yellow-button');
+        };
+
+        this.getDialog = function() {
+            this.$dialog = this.$dialog || $('#select_transfer_order_status_dialog');
+            return this.$dialog;
+        };
+
+        this.getSelectElementValue = function() {
+            return this.getDialog().find('[name="transferOrderStatus"]').val();
+        };
+
+        this.activate = function() {
+            this.active = true;
+        };
+
+        this.deactivate = function() {
+            this.active = false;
+        };
+
+        this.open = function() {
+            this.getDialog().dialog('open');
+        };
+
+        this.close = function() {
+            this.getDialog().dialog('close');
+        };
+
+        this.select = function(value) {
+            var
+                selectedEvent = $.Event(SELECTED_EVENT);
+
+            selectedEvent.selectedValue = value;
+            this.getDialog().trigger(selectedEvent);
+
+            if (!selectedEvent.isDefaultPrevented()) {
+                this.close();
+            }
+        };
+
+        this.onStatusSelected = function(callback, namespace) {
+            var fullEventName = SELECTED_EVENT + '.' + namespace;
+            this.getDialog().unbind(fullEventName).bind(fullEventName, callback);
+        };
+    });
+</script>

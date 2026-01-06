@@ -1,0 +1,134 @@
+<div id="add_cost_centre_dialog" class="flora otc-add_cost_centre_dialog" title="Add Cost Centre" style="display: none;"
+     xmlns="http://www.w3.org/1999/html">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <table class="summary" style="width:99%">
+            <tr>
+                <td>
+                    <?php echo $this->options()->getCostCenterCaption();?> (Max 40):
+                </td>
+                <td>
+                    <?php echo $this->formText('cost_centre_id', '', array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    DESCRIPTION (Max 50):
+                </td>
+                <td>
+                    <?php echo $this->formText('cost_centre_description', '', array()); ?>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+    var COST_CENTRE_ADDED_EVENT = 'COST_CENTRE_ADDED_EVENT';
+
+    $(function() {
+        var
+            $addCostCentreDlg = $('#add_cost_centre_dialog');
+
+        // dialog add borrower
+        $addCostCentreDlg.dialog({
+            buttons: {SAVE: saveCostCentre, HTML:true, CANCEL: closeCostCentreDialog},
+            width: '700px',
+            height: '250px',
+            autoOpen: false,
+            position: [0, 65],
+            buttonStyle: 'otc-dialog-button',
+            insertHtml:  '<label for="print_label">Print Label</label>&nbsp;<input type="checkbox" id="print_cost_centre_lebel" name="print_cost_centre_lebel" value=""><br /><label>Label Qty:&nbsp;<select id="cost_centre_label_qty" name="cost_centre_label_qty" style="width: 5em"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select></label>'
+        }).bind('dialogclose', function() {
+            $('#barcode').focus();
+            $addCostCentreDlg.removeAttr('active');
+        }).bind('dialogopen', function() {
+            var
+                $costCentreLabelQty = $('#cost_centre_label_qty'),
+                $printLabelFlag = $('#print_cost_centre_lebel'),
+                defaultLabelQty = parseInt('<?php echo $this->defaultCostCentreLabelQty; ?>') || 0;
+
+            $costCentreLabelQty.unbind('change').change(function(){
+                var
+                    labelQty = parseInt($(this).val()) || 0;
+                if (labelQty < 1) {
+                    $printLabelFlag.removeAttr('checked');
+                } else {
+                    $printLabelFlag.attr('checked', true);
+                }
+            });
+
+            $printLabelFlag.unbind('change').change(function(){
+                if ($(this).attr('checked')) {
+                    $costCentreLabelQty.val(defaultLabelQty || 1);
+                } else {
+                    $costCentreLabelQty.val(0);
+                }
+            });
+
+            $costCentreLabelQty.val(defaultLabelQty).change();
+            $addCostCentreDlg.attr('active', true);
+            $('#cost_centre_id').val('');
+            $('#cost_centre_description').val('');
+
+            $(this).show();
+        });
+
+    });
+
+    // add Borrower
+    function openCostCentreDialog(){
+        $("#add_cost_centre_dialog").dialog("open");
+        $('#barcode').focus();
+
+        return false;
+    }
+
+    function closeCostCentreDialog(){
+        $('#add_cost_centre_dialog').dialog("close");
+
+        return false;
+    }
+
+    function isAddCostCentreDialogActive() {
+        return !!$("#add_cost_centre_dialog").attr('active');
+    }
+
+    function addCostCentreAddedListener(namespace, handler) {
+        var fullName = COST_CENTRE_ADDED_EVENT + '.' + namespace;
+        $('#add_cost_centre_dialog').unbind(fullName).bind(fullName, handler);
+    }
+
+    function triggerCostCentreAdded(costCentre) {
+        var addedEvent = $.Event(COST_CENTRE_ADDED_EVENT);
+        addedEvent.costCentre = costCentre;
+        $('#add_cost_centre_dialog').trigger(addedEvent);
+    }
+
+    function saveCostCentre(){
+        $.post(
+            "/minder/otc/add-cost-centre",
+            {
+                costCentre: {
+                    CODE: $("#cost_centre_id").val(),
+                    DESCRIPTION: $("#cost_centre_description").val()
+                },
+                printRequest: {
+                    printLabel: $("#print_cost_centre_lebel")[0].checked,
+                    labelQty: $('#cost_centre_label_qty').val()
+                }
+            },
+            function (response)
+            {
+                showResponseMessages(response);
+
+                if(response.errors && response.errors.length > 0) {
+                    return;
+                }
+
+                triggerCostCentreAdded(response.costCentre);
+            },
+            'json'
+        );
+        closeCostCentreDialog();
+    }
+</script>

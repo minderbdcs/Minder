@@ -1,0 +1,44 @@
+.mdr-menu-horizontal {
+  list-style: none;
+  border-top: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
+
+  li {
+    display: inline;
+    padding: 0 10px;
+    border-right: 1px solid #cccccc;
+    color: #333333;
+    line-height: 1.6em;
+
+    a {
+      font-weight: bold;
+    }
+  }
+}
+
+.mdr-top-menu {
+  margin-bottom: 10px;
+  clear: both;
+}
+
+.mdr-menu-item {
+  cursor: pointer;
+  a {
+    &:link, &:visited, &:hover {
+      font-weight: bold;
+    }
+  }
+}
+
+.mdr-side-menu {
+  .mdr-menu-item {
+    padding: 4px 0 4px 10px;
+    border-bottom: 1px solid black;
+    font-size: 14px;
+    background: black url(@menu-item-background) repeat-x bottom left;
+
+    &:hover {
+      background: #DFDCCB url(@menu-item-hover-background);
+    }
+  }
+}

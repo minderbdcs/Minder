@@ -1,0 +1,25 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php
+    echo $this->orderChart;
+?>
+
+<script type="text/javascript">
+
+    $(document).ready(function(){
+        startUpdate();
+    });
+
+    function startUpdate() {
+        setInterval(updateCharts, 30000);
+    }
+
+    function updateCharts() {
+        var now = new Date();
+        $('#<?php echo $this->orderChart->getName();?>').attr('src', '<?php echo $this->orderChart->getAttrib('src');?>?time=' + now.getTime());
+    }
+
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

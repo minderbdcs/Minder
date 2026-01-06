@@ -1,0 +1,174 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->pageTitle; ?></h2>
+
+<p>Use this tool to create Backup of System settings in one csv file. 
+And to Restore System settings from previosly created backup file.</p>
+
+
+<ul class="toolbar">
+    <li>
+        <?php echo $this->formButton('backup_btn', 'BACKUP', array('class'=>'green-button')); ?>
+    </li>
+    <li>
+        <?php echo $this->formButton('restore_btn', 'RESTORE', array('class'=>'green-button')); ?>
+    </li>
+</ul>
+
+<div id='confirm_restore_container' class="hidden" style="display: none;">
+    <ul class="restore-messages">
+    </ul>
+    
+    <ul class="restore-errors">
+    </ul>
+    
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formButton('confirm_restore_btn', 'CONFIRM', array('class'=>'green-button', 'disabled' => 'disabled')); ?>
+        </li>
+        <li>
+            <?php echo $this->formButton('cancel_restore_btn', 'CANCEL', array('class'=>'green-button')); ?>
+        </li>
+    </ul>
+</div>
+
+<div id="dialog_restore_file" class="flora" title="Select Backup File" style="display: none;">
+    <form id="prompt_backup_file" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    File:
+                </th>
+                <td>
+                     <?php echo $this->formFile('backup_file', '', array()); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<script type="text/x-jquery-tmpl" id="messages-tmpl">
+    <li>{{if $item.data == ''}} &nbsp; {{else}} {{= $item.data}} {{/if}}</li>
+</script>
+
+
+<script type="text/javascript">
+    function backupBtnOnClick(evt) {
+        evt.preventDefault();
+        location.href = '<?php echo $this->url(array('action' => 'do-sys-backup'));?>';
+    }
+    
+    function restoreBtnOnClick(evt) {
+        evt.preventDefault();
+        $('#dialog_restore_file').dialog('open');
+    }
+
+    function runRestore(evt) {
+        
+    };
+    
+    function closeRestoreDialog(evt) {
+        $('#dialog_restore_file').dialog('close');
+    }
+    
+    function runRestore() {
+        if ($('#backup_file').val() == '')
+            showErrors(['Select file to restore']);
+        else {
+            $('#confirm_restore_container').hide();
+            $.ajaxFileUpload(
+                {
+                    url           : '<?php echo $this->url(array('action' => 'check-restore-file')); ?>',
+                    secureuri     : false,
+                    fileElementId : 'backup_file',
+                    dataType      : 'json',
+                    success       : onCheckRestoreFileCallback,
+                    error         : function (data, status, e) {
+                        showErrors([e]);
+                    }
+                }
+            )
+        }
+    }
+    
+    function onCheckRestoreFileCallback(response) {
+        $('#confirm_restore_container .restore-messages').html('');
+        $('#confirm_restore_container .restore-errors').html('');
+
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+        
+        if (response.fileCheckMessages && response.fileCheckMessages.length > 0) {
+            $('#messages-tmpl').tmpl(response.fileCheckMessages).appendTo('#confirm_restore_container .restore-messages');
+        }
+        
+        if (response.fileCheckErrors && response.fileCheckErrors.length > 0) {
+            $('#messages-tmpl').tmpl(response.fileCheckErrors).appendTo('#confirm_restore_container .restore-errors');
+            $('#confirm_restore_btn').attr('disabled', true);
+            $('#confirm_restore_container .restore-errors').show();
+        } else {
+            $('#confirm_restore_btn').removeAttr('disabled');
+            $('#confirm_restore_container .restore-errors').hide();
+        }
+        
+        $('#dialog_restore_file').dialog('close');
+        $('#confirm_restore_container').show();
+    }
+    
+    function confirmRestoreBtnOnClick(evt) {
+        evt.preventDefault();
+        
+        $('#confirm_restore_container').block($('<?php echo $this->SysScreenWaitPrompt('Processing...');?>'));
+        
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'do-restore'));?>',
+            {},
+            onDoRestoreCallback
+        );
+    }
+    
+    function onDoRestoreCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#confirm_restore_container').unblock().hide();
+        
+    }
+    
+    function cancelRestoreBtnOnClick(evt) {
+        evt.preventDefault();
+        $('#confirm_restore_container').hide();
+    }
+    
+    $(document).ready(function () {
+        $('#dialog_restore_file').dialog({buttons: {'Restore': runRestore, 'Close': closeRestoreDialog},
+             width: '330px',
+             height: '125px',
+             autoOpen: false,
+        }).bind('dialogopen', function(event, ui) {
+            $('#backup_file').val('');
+            $(this).show();     
+        });
+
+        $('#backup_btn').click(backupBtnOnClick);
+        $('#restore_btn').click(restoreBtnOnClick);
+
+        $('#confirm_restore_btn').click(confirmRestoreBtnOnClick);
+        $('#cancel_restore_btn').click(cancelRestoreBtnOnClick);
+    });
+</script>
+<?php echo $this->render('footer.phtml');

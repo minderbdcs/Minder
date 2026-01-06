@@ -1,0 +1,18 @@
+<?php
+
+return array (
+    'CARRIER_ID' => 'POST',
+    'SERVICE_TYPE' => 'GEN',
+    'DESCRIPTION' => 'Australia Post - Standard',
+    'SERVICE_SERVICE_CODE' => 'NA',
+    'CS_LABEL_TYPE' => 'DESPATCH_ADDRESS',
+    'SERVICE_SIGNATURE_REQD' => 'T',
+    'SERVICE_MULTIPART_CONSIGNMENT' => 'T',
+    'SERVICE_PARTIAL_DELIVERY' => 'T',
+    'SERVICE_CASH_TO_COLLECT' => 'F',
+    'SERVICE_PROFILE_ID' => 'NA',
+    'SERVICE_CHARGE_CODES' => 'NA',
+    'SERVICE_LOCATION_ID' => 'PIN',
+    'LAST_UPDATE_DATE' => '2011-01-11 11:00:38',
+    'RECORD_ID' => '114',
+);

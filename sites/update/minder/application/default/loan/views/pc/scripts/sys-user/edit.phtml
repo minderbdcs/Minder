@@ -1,0 +1,140 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php if ($this->saved): ?>
+<p class="notice">SysUser Updated</p>
+<?php endif; ?>
+
+<?php if (isset($this->errors)): ?>
+<ul>
+<?php
+    foreach ($this->errors as $field => $errors) {
+        if (is_array($errors)) {
+            foreach ($errors as $error) {
+                echo '<li>' . $field . ': ' . $error .'</li>';
+            }
+        } else {
+                echo '<li>' . $field . ': ' . $errors .'</li>';
+        }
+    }
+?>
+</ul>
+<?php endif; ?>
+
+<form action="<?php echo $this->url(); ?>" method="post">
+<table>
+    <tr>
+        <td>User ID:</td>
+        <td><?php echo $this->escape($this->sysUser->userId); ?></td>
+    </tr>
+    <tr>
+        <td>Person ID:</td>
+        <td><?php echo $this->formText('Data[person_id]', $this->sysUser->personId); ?></td>
+    </tr>
+    <tr>
+        <td>Company ID:</td>
+        <td><?php echo $this->formText('Data[company_id]', $this->sysUser->companyId); ?></td>
+    </tr>
+    <tr>
+        <td>Division ID:</td>
+        <td><?php echo $this->formText('Data[division_id]', $this->sysUser->divisionId); ?></td>
+    </tr>
+    <tr>
+        <td>Device ID:</td>
+        <td><?php echo $this->formText('Data[device_id]', $this->sysUser->deviceId); ?></td>
+    </tr>
+    <tr>
+        <td>Loc Perm Level:</td>
+        <td><?php echo $this->formText('Data[loc_perm_level]', $this->sysUser->locPermLevel); ?></td>
+    </tr>
+    <tr>
+        <td>Prod Perm Level:</td>
+        <td><?php echo $this->formText('Data[prod_perm_level]', $this->sysUser->prodPermLevel); ?></td>
+    </tr>
+    <tr>
+        <td>Task Perm Level:</td>
+        <td><?php echo $this->formText('Data[task_perm_level]', $this->sysUser->taskPermLevel); ?></td>
+    </tr>
+    <tr>
+        <td>Login Date:</td>
+        <td><?php echo $this->formText('Data[login_date]', $this->sysUser->loginDate); ?></td>
+    </tr>
+    <tr>
+        <td>Pass Word:</td>
+        <td><?php echo $this->formText('Data[pass_word]', $this->sysUser->passWord); ?></td>
+    </tr>
+    <tr>
+        <td>Pass Word Date:</td>
+        <td><?php echo $this->formText('Data[pass_word_date]', $this->sysUser->passWordDate); ?></td>
+    </tr>
+    <tr>
+        <td>PW Expiry Date:</td>
+        <td><?php echo $this->formText('Data[pw_expiry_date]', $this->sysUser->pwExpiryDate); ?></td>
+    </tr>
+    <tr>
+        <td>Last Update Date:</td>
+        <td><?php echo $this->formText('Data[last_update_date]', $this->sysUser->lastUpdateDate); ?></td>
+    </tr>
+    <tr>
+        <td>Update User ID:</td>
+        <td><?php echo $this->formText('Data[update_user_id]', $this->sysUser->updateUserId); ?></td>
+    </tr>
+    <tr>
+        <td>Sys Admin:</td>
+        <td><?php echo $this->formCheckbox('Data[sys_admin]', $this->sysUser->sysAdmin, array(), array('T', 'F')); ?></td>
+    </tr>
+    <tr>
+        <td>Zone C:</td>
+        <td><?php echo $this->formText('Data[zone_c]', $this->sysUser->zoneC); ?></td>
+    </tr>
+    <tr>
+        <td>Editable:</td>
+        <td><?php echo $this->formText('Data[editable]', $this->sysUser->editable); ?></td>
+    </tr>
+    <tr>
+        <td>User Type:</td>
+        <td><?php echo $this->formText('Data[user_type]', $this->sysUser->userType); ?></td>
+    </tr>
+    <tr>
+        <td>Sale Manager:</td>
+        <td><?php echo $this->formText('Data[sale_manager]', $this->sysUser->saleManager); ?></td>
+    </tr>
+    <tr>
+        <td>Credit Manager</td>
+        <td><?php echo $this->formText('Data[credit_manager]', $this->sysUser->creditManager); ?></td>
+    </tr>
+    <tr>
+        <td>Default WH ID:</td>
+        <td><?php echo $this->formText('Data[default_wh_id]', $this->sysUser->defaultWhId); ?></td>
+    </tr>
+    <tr>
+        <td>Inventory Operator:</td>
+        <td><?php echo $this->formText('Data[inventory_operator]', $this->sysUser->inventoryOperator); ?></td>
+    </tr>
+    <tr>
+        <td>Pick Sequence:</td>
+        <td><?php echo $this->formText('Data[pick_sequence]', $this->sysUser->pickSequence); ?></td>
+    </tr>
+    <tr>
+        <td>Pick Direction:</td>
+        <td><?php echo $this->formText('Data[pick_direction]', $this->sysUser->pickDirection); ?></td>
+    </tr>
+    <tr>
+        <td>Default Order Sold From:</td>
+        <td><?php echo $this->formText('Data[default_order_sold_form]', $this->sysUser->defaultOrderSoldFrom); ?></td>
+    </tr>
+    <tr>
+        <td>Default Order Sold To:</td>
+        <td><?php echo $this->formText('Data[default_order_sold_to]', $this->sysUser->defaultOrderSoldTo); ?></td>
+    </tr>
+    <tr>
+        <td>Stock Adjust:</td>
+        <td><?php echo $this->formText('Data[stock_adjust]', $this->sysUser->stockAdjust); ?></td>
+    </tr>
+</table>
+<div id="buttons">
+<input type="button" value="Cancel" onclick="location='<?php echo $this->url(array('action' => 'show', 'id' => $this->sysUser->userId)); ?>'" />
+<input type="submit" value="Save" />
+</div>
+<form>
+
+<?php echo $this->render('footer.phtml'); ?>

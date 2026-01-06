@@ -1,0 +1,709 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<div id="search_form_container">
+    <?php echo $this->sysScreenSearchForm2($this->searchFormSsName, array('search_fields' => $this->searchFields));?>
+</div>
+
+<div id="orders_container">
+</div>
+
+<div id="lines_container">
+</div>
+
+<div id="sublines_container">
+</div>
+
+<div style="clear: both;">&nbsp;</div>
+
+<div style="display: none;" id="detail_line_form_container">
+</div>
+
+<?php 
+    echo $this->StandardSRTemplate(array('SRTabs', 'SRROField'));
+?>
+
+<script type="text/x-jquery-tmpl" id="ro-tmpl">
+    <label>
+        {{if $item.parent.parent.parent.parent.parent.data.namespace == '<?php echo $this->ordersNamespace;?>'}}
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin() || $this->minder->isStatusAdjustPurchaseOrderT()) {?>
+                <a href="<?php echo $this->url(array('action' => 'order-edit-form'));?>/order/{{= $item.parent.parent.data.row_id}}">{{= $item.value}}</a>
+            <?php } else {?>
+                {{= $item.value}}
+            <?php }?>
+        {{else $item.parent.parent.parent.parent.parent.data.namespace == '<?php echo $this->linesNamespace;?>'}}
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin() || $this->minder->isStatusAdjustPoLine()) {?>
+                <a href="<?php echo $this->url(array('action' => 'line-edit-form'));?>/line/{{= $item.parent.parent.data.row_id}}">{{= $item.value}}</a>
+            <?php } else {?>
+                {{= $item.value}}
+            <?php }?>
+        {{else $item.parent.parent.parent.parent.parent.data.namespace == '<?php echo $this->sublinesNamespace;?>'}}
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin() || $this->minder->isStatusAdjustPoLine()) {?>
+                <a href="" class="edit_subline" record_id="{{= $item.parent.parent.data.row_id}}" onclick="return false;">{{= $item.value}}</a>
+            <?php } else {?>
+                {{= $item.value}}
+            <?php }?>
+        {{else}}
+            {{= $item.value}}
+        {{/if}}
+    </label>    
+</script>
+
+<script type="text/x-jquery-tmpl" id="tabs-tmpl">
+    <div class="ui-tabs-panel" id="TAB-{{= SS_NAME + '-' + SST_TAB_NAME}}" style="border-color: rgb(81, 158, 45); border-style: none solid solid; border-width: 0px 1px 1px; padding: 0px 5px 5px;">
+        <!-- tab content starts -->
+            {{tmpl($item.data) '#tab-content-tmpl'}}
+        
+            {{if $item.parent.data.hasFooter}}
+                {{tmpl($item.parent.data) '#footer-tmpl'}}
+            {{/if}}
+        
+            {{if $item.parent.data.hasButtons}}
+                {{if $item.parent.data.namespace == '<?php echo $this->ordersNamespace;?>'}}
+                    {{tmpl($item.parent.data) '#order-buttons-tmpl'}}
+                {{else $item.parent.data.namespace == '<?php echo $this->linesNamespace;?>'}}
+                    {{tmpl($item.parent.data) '#line-buttons-tmpl'}}
+                {{else $item.parent.data.namespace == '<?php echo $this->sublinesNamespace;?>'}}
+                    {{tmpl($item.parent.data) '#subline-buttons-tmpl'}}
+                {{else}}
+                    {{tmpl($item.parent.data) '#buttons-tmpl'}}
+                {{/if}}
+            {{/if}}
+        <!-- tab content ends -->
+    </div>    
+</script>
+
+<script type="text/x-jquery-tmpl" id="order-buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        <ul class="toolbar">
+            
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin()) {?>
+                <li><input type="submit" onclick="return false;" value="NEW ORDER" class="order-button" name="new_order"></li>
+            <?php }?>
+            <li><input type="submit" onclick="return false;" value="REPORT: CSV" class="order-button report_csv_btn" name="report_format"></li>
+            <li><input type="submit" onclick="return false;" value="REPORT: XLS" class="order-button report_xls_btn" name="report_format"></li>
+            <?php if ($this->minder->isSysAdmin() || $this->minder->isStatusAdjustPurchaseOrderT()) {?>
+                <li><input type="submit" onclick="return false;" value="SET STATUS" class="order-button" name="set_order_status"></li>
+                <li><?php echo $this->formSelect('new_order_status', '', array(), $this->statusList);?></li>
+            <?php }?>
+
+            {{each $item.data.buttons}}
+                <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+            {{/each}}
+        </ul>
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="line-buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        <ul class="toolbar">
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin()) {?>
+                <li><input type="submit" onclick="return false;" value="ADD LINE" class="order-button" name="add_line"></li>
+                <li><input type="submit" onclick="return false;" value="DELETE LINE" class="order-button" name="delete_line"></li>
+            <?php }?>
+            <li><input type="submit" onclick="return false;" value="REPORT: CSV" class="order-button report_csv_btn" name="report_format"></li>
+            <li><input type="submit" onclick="return false;" value="REPORT: XLS" class="order-button report_xls_btn" name="report_format"></li>
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin()) {?>
+                <li><input type="submit" onclick="return false;" value="IMPORT LINES" class="order-button" name="import_lines"></li>
+            <?php }?>
+            <?php if ($this->minder->isSysAdmin() || $this->minder->isStatusAdjustPoLine()) {?>
+                <li><input type="submit" onclick="return false;" value="SET STATUS" class="order-button" name="set_line_status"></li>
+                <li><?php echo $this->formSelect('new_line_status', '', array(), $this->statusList);?></li>
+            <?php }?>
+            
+            {{each $item.data.buttons}}
+                <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+            {{/each}}
+        </ul>
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="subline-buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        <ul class="toolbar">
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin()) {?>
+                <li><input type="submit" onclick="return false;" value="ADD DETAIL" class="order-button" name="add_detail"></li>
+                <li><input type="submit" onclick="return false;" value="DELETE" class="order-button" name="delete_detail"></li>
+            <?php }?>
+            <li><input type="submit" onclick="return false;" value="REPORT: CSV" class="order-button report_csv_btn" name="report_format"></li>
+            <li><input type="submit" onclick="return false;" value="REPORT: XLS" class="order-button report_xls_btn" name="report_format"></li>
+            <?php if ($this->minder->isEditable || $this->minder->isSysAdmin()) {?>
+                <li><input type="submit" onclick="return false;" value="CREATE ISSNs" class="order-button" name="create_issns"></li>
+                <li><input type="submit" onclick="return false;" value="IMPORT SUBLINES" class="order-button" name="import_sublines"></li>
+            <?php }?>
+        </ul>
+    </div>
+</script>
+
+<div id="dialog_import_lines" class="flora" title="Import Lines" style="display: none;">
+    <form id="prompt_import_lines" name="prompt" method="post" action="" enctype="multipart/form-data">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    File:
+                </th>
+                <td>
+                     <?php echo $this->formFile('import_lines_file', '', array()); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<div id="dialog_import_sublines" class="flora" title="Import Sublines" style="display: none;">
+    <form id="prompt_import_sublines" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <table class="summary" style="width:99%">
+            <tbody>
+            <tr>
+                <th>
+                    File:
+                </th>
+                <td>
+                    <?php echo $this->formFile('import_sublines_file', '', array()); ?>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
+            
+
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+        
+        $('#orders_container').minderSearchResult(response.sysScreens['<?php echo $this->ordersNamespace;?>']);
+        $('#lines_container').minderSearchResult(response.sysScreens['<?php echo $this->linesNamespace;?>']);
+
+        <?php if ($this->renderSublines) {?>
+        $('#sublines_container').minderSearchResult(response.sysScreens['<?php echo $this->sublinesNamespace;?>']);
+        <?php }?>
+        initButtons();
+
+        $(document).dequeue();
+    }
+    
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->ordersNamespace;?>':
+                paginator = $('#orders_container').minderSearchGetPaginatorState();
+                break;
+            case '<?php echo $this->linesNamespace;?>':
+                paginator = $('#lines_container').minderSearchGetPaginatorState();
+                break;
+            case '<?php echo $this->sublinesNamespace;?>':
+                paginator = $('#sublines_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+        
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+        
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function loadData() {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+        
+        dataToSend.sysScreens['<?php echo $this->ordersNamespace?>'] = {
+            'paginator' : $('#orders_container').minderSearchGetPaginatorState()
+        };
+
+        dataToSend.sysScreens['<?php echo $this->linesNamespace?>'] = {
+            'paginator' : $('#lines_container').minderSearchGetPaginatorState()
+        };
+
+        <?php if ($this->renderSublines) {?>
+        dataToSend.sysScreens['<?php echo $this->sublinesNamespace?>'] = {
+            'paginator' : $('#sublines_container').minderSearchGetPaginatorState()
+        };
+        <?php }?>
+        
+        
+        
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function tabContainerOnPageChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnShowByChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnPreSort(evt) {
+
+    }
+
+    function tabContainerOnSort(evt) {
+        loadData();
+    }
+    
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+        dataToSend.action = 'search';
+        
+        $('#barcode').val('').parent().block();
+        $('#search_form_container').block();
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+    
+    function setOrderStatusOnClick(evt) {
+        evt.preventDefault();
+        var status = $('#new_order_status').val();
+        if (status == '') {
+            showWarnings(['Select status.']);
+            return;
+        }
+        
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Order Status...');?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Order Status...');?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Order Status...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'set-order-status'));?>',
+                {'status' : status},
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function newOrderOnClick(evt) {
+        evt.preventDefault();
+        location.href = '<?php echo $this->url(array('action' => 'order-edit-form', 'order' => 'new'));?>';
+    }
+    
+    function setLineStatusOnClick(evt) {
+        evt.preventDefault();
+        var status = $('#new_line_status').val();
+        if (status == '') {
+            showWarnings(['Select status.']);
+            return;
+        }
+        
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Line Status...');?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Line Status...');?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Updating Line Status...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'set-line-status'));?>',
+                {'status' : status},
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function addLineOnClick() {
+        location.href = '<?php echo $this->url(array('action' => 'line-edit-form', 'line' => 'new'));?>';
+    }
+    
+    function deleteLineOnClick(evt) {
+        evt.preventDefault();
+        var totalSelected   =   parseInt($('.selected-container.<?php echo $this->linesNamespace;?>').text());
+        totalSelected = isNaN(totalSelected) ? 0 : totalSelected;
+    
+        if(totalSelected > 0){
+            var result          = confirm('Do you want to Delete PURCHASE_ORDER_LINE?');
+            
+            if (result) {
+                $(document).queue(function() {
+                    $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Deleting Lines...');?>'));
+                    $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Deleting Lines...');?>'));
+                    $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Deleting Lines...');?>'));
+                    $.post(
+                        '<?php echo $this->url(array('action' => 'delete-lines'));?>',
+                        {},
+                        onDataReady,
+                        'json'
+                    );
+                }).queue(function() {
+                    $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+                    $(this).dequeue();
+                });
+            }
+        }
+    }
+    
+    function openImportDialog(evt) {
+        $('#dialog_import_lines').dialog('open');
+    }
+
+    function openImportSublineDialog(evt) {
+        $('#dialog_import_sublines').dialog('open');
+    }
+    
+    function closeImportDialog(evt) {
+        $('#dialog_import_lines').dialog('close');
+    }
+
+    function closeImportSublineDialog(evt) {
+        $('#dialog_import_sublines').dialog('close');
+    }
+
+
+    function runImportLines() {
+        if ($('#import_lines_file').val() == '')
+            showErrors(['Select file to import']);
+        else 
+            $.ajaxFileUpload(
+                {
+                    url:'<?php echo $this->url(array('action' => 'import-lines')); ?>',
+                    secureuri:false,
+                    fileElementId:'import_lines_file',
+                    dataType: 'json',
+                    success: onDataReady,
+                    error: function (data, status, e) {
+                        showErrors([e]);
+                    }
+                }
+            )
+    }
+
+    function runImportSubLines() {
+        if ($('#import_sublines_file').val() == '')
+            showErrors(['Select file to import']);
+        else
+            $.ajaxFileUpload(
+                {
+                    url:'<?php echo $this->url(array('action' => 'import-sublines')); ?>',
+                    secureuri:false,
+                    fileElementId:'import_sublines_file',
+                    dataType: 'json',
+                    success: onDataReady,
+                    error: function (data, status, e) {
+                        showErrors([e]);
+                }
+            }
+        )
+    }
+    
+    function createIssnsOnClick(evt) {
+        evt.preventDefault();
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Creating ISSNs...');?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Creating ISSNs...');?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Creating ISSNs...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'create-issns'));?>',
+                {},
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function addDetailOnClick(evt) {
+        evt.preventDefault();
+        $('#detail_line_form_container').load('<?php echo $this->url(array('action' => 'get-line-detail-form'))?>', {'record-id': 'new'}, detailLineFormContainerOnLoad);
+    }
+    
+    function detailLineFormContainerOnLoad() {
+        $('#detail_line_form_container').unbind('cancel.purchase-order').bind('cancel.purchase-order', detailLineFormContainerOnCancel);
+        $('#detail_line_form_container').unbind('save.purchase-order').bind('save.purchase-order', detailLineFormContainerOnSave);
+        $('#detail_line_form_container').show();
+    }
+    
+    function detailLineFormContainerOnCancel(evt) {
+        $('#detail_line_form_container').hide();
+    }
+    
+    function detailLineFormContainerOnSave(evt) {
+        $(document).queue(function() {
+            $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Saving Line Details...');?>'));
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Saving Line Details...');?>'));
+            $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Saving Line Details...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'save-line-details'));?>',
+                evt.formData,
+                onDataReadyAfterSaveDetails,
+                'json'
+            );
+        }).queue(function() {
+            $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function onDataReadyAfterSaveDetails(response) {
+        if (!(response.errors && response.errors.length > 0))
+            $('#detail_line_form_container').hide();
+        
+        onDataReady(response);
+    }
+
+    function editSublineOnClick(evt) {
+        evt.preventDefault();
+        
+        var recordId = $(this).attr('record_id');
+        
+        $('#detail_line_form_container').load('<?php echo $this->url(array('action' => 'get-line-detail-form'))?>', {'record-id': recordId}, detailLineFormContainerOnLoad);
+    }
+    
+    function deleteDetailOnClick(evt) {
+        evt.preventDefault();
+        var totalSelected   =   parseInt($('.selected-container.<?php echo $this->sublinesNamespace;?>').text());
+        totalSelected = isNaN(totalSelected) ? 0 : totalSelected;
+    
+        if(totalSelected > 0){
+            var result          = confirm('Do you want to Delete PURCHASE_ORDER_DETAIL_LINE?');
+            
+            if (result) {
+                $(document).queue(function() {
+                    $('#orders_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Deleting Line Details...');?>'));
+                    $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Deleting Line Details...');?>'));
+                    $('#sublines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Deleting Line Details...');?>'));
+                    $.post(
+                        '<?php echo $this->url(array('action' => 'delete-line-details'));?>',
+                        {},
+                        onDataReady,
+                        'json'
+                    );
+                }).queue(function() {
+                    $('#orders_container > div, #lines_container > div, #sublines_container > div, #search_form_container').unblock();
+                    $(this).dequeue();
+                });
+            }
+        }
+        
+    }
+
+    function initButtons() {
+        $('#orders_container input[name=set_order_status]').unbind('click.purchase-order').bind('click.purchase-order', setOrderStatusOnClick);
+        $('#orders_container input[name=new_order]').unbind('click.purchase-order').bind('click.purchase-order', newOrderOnClick);
+        $('#orders_container').find('.report_csv_btn, .report_xls_btn').unbind('click.purchase-order').bind('click.purchase-order', onOrderReportButtonClick);
+
+        $('#lines_container input[name=set_line_status]').unbind('click.purchase-order').bind('click.purchase-order', setLineStatusOnClick);
+        $('#lines_container input[name=import_lines]').unbind('click.purchase-order').bind('click.purchase-order', openImportDialog);
+        $('#lines_container input[name=delete_line]').unbind('click.purchase-order').bind('click.purchase-order', deleteLineOnClick);
+        $('#lines_container input[name=add_line]').unbind('click.purchase-order').bind('click.purchase-order', addLineOnClick);
+        $('#lines_container').find('.report_csv_btn, .report_xls_btn').unbind('click.purchase-order').bind('click.purchase-order', onOrderLineReportButtonClick);
+
+        $('#sublines_container input[name=create_issns]').unbind('click.purchase-order').bind('click.purchase-order', createIssnsOnClick);
+        $('#sublines_container input[name=delete_detail]').unbind('click.purchase-order').bind('click.purchase-order', deleteDetailOnClick);
+        $('#sublines_container input[name=add_detail]').unbind('click.purchase-order').bind('click.purchase-order', addDetailOnClick);
+        $('#sublines_container a.edit_subline').unbind('click.purchase-order').bind('click.purchase-order', editSublineOnClick);
+        $('#sublines_container').find('.report_csv_btn, .report_xls_btn').unbind('click.purchase-order').bind('click.purchase-order', onOrderSubLineReportButtonClick);
+        $('#sublines_container input[name=import_sublines]').unbind('click.purchase-order').bind('click.purchase-order', openImportSublineDialog);
+
+    }
+
+    function getNamespaceMap() {
+        return {
+            '<?php echo $this->orderSsName;?>': '<?php echo $this->ordersNamespace?>',
+            '<?php echo $this->linesSsName;?>': '<?php echo $this->linesNamespace?>',
+            '<?php echo $this->sublinesSsName;?>': '<?php echo $this->sublinesNamespace?>'
+        };
+    }
+
+    function onOrderReportButtonClick(evt) {
+        makeReport($(this).val(), '<?php echo $this->orderSsName;?>');
+    }
+
+    function onOrderLineReportButtonClick(evt) {
+        makeReport($(this).val(), '<?php echo $this->linesSsName;?>');
+    }
+
+    function onOrderSubLineReportButtonClick(evt) {
+        makeReport($(this).val(), '<?php echo $this->sublinesSsName;?>');
+    }
+
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        var namespaceMap = getNamespaceMap();
+
+        if (typeof namespaceMap[sysScreen] == 'undefined')
+            throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(namespaceMap[sysScreen]);
+    }
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#orders_container').minderSearchResult(<?php echo json_encode($this->jsSearchResult(
+                                                                            $this->orderSsName, 
+                                                                            $this->ordersNamespace, 
+                                                                            array(
+                                                                                'sysScreenCaption' => 'PURCHASE ORDERS',
+                                                                                'usePagination'    => true
+                                                                            )
+        ));?>);
+        
+        $('#orders_container').minderSearchResult({autosorter:true, customSort: true});
+
+        $('#orders_container').minderSearchResult(<?php echo json_encode($this->jsSearchResultDataset(
+                                                                                $this->orderSsName, 
+                                                                                $this->sysScreens[$this->ordersNamespace]['rows'], 
+                                                                                $this->sysScreens[$this->ordersNamespace]['selectedRows'], 
+                                                                                $this->sysScreens[$this->ordersNamespace]['paginator']
+        ));?>);
+
+        $('#lines_container').minderSearchResult(<?php echo json_encode($this->jsSearchResult(
+                                                                            $this->linesSsName, 
+                                                                            $this->linesNamespace, 
+                                                                            array(
+                                                                                'sysScreenCaption' => 'PO LINES',
+                                                                                'usePagination'    => true
+                                                                            )
+        ));?>);
+        $('#lines_container').minderSearchResult({autosorter:true, customSort:true});
+
+        $('#lines_container').minderSearchResult(<?php echo json_encode($this->jsSearchResultDataset(
+                                                                                $this->linesSsName, 
+                                                                                $this->sysScreens[$this->linesNamespace]['rows'], 
+                                                                                $this->sysScreens[$this->linesNamespace]['selectedRows'], 
+                                                                                $this->sysScreens[$this->linesNamespace]['paginator']
+        ));?>);
+
+        <?php if ($this->renderSublines) {?>
+        $('#sublines_container').minderSearchResult(<?php echo json_encode($this->jsSearchResult(
+                                                                            $this->sublinesSsName, 
+                                                                            $this->sublinesNamespace, 
+                                                                            array(
+                                                                                'sysScreenCaption' => 'LINE DETAILS',
+                                                                                'usePagination'    => true
+                                                                            )
+        ));?>);
+        $('#sublines_container').minderSearchResult({autosorter:true, customSort:true});
+
+        
+        $('#sublines_container').minderSearchResult(<?php echo json_encode($this->jsSearchResultDataset(
+                                                                                $this->sublinesSsName, 
+                                                                                $this->sysScreens[$this->sublinesNamespace]['rows'], 
+                                                                                $this->sysScreens[$this->sublinesNamespace]['selectedRows'], 
+                                                                                $this->sysScreens[$this->sublinesNamespace]['paginator']
+        ));?>);
+        <?php }?>
+
+        $('#orders_container, #lines_container, #sublines_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', tabContainerOnPageChanged)
+            .bind('show-by-changed', tabContainerOnShowByChanged).bind('pre-sort', tabContainerOnPreSort)
+            .bind('sort', tabContainerOnSort);
+        
+        $('#dialog_import_lines').dialog({buttons: {'Import': runImportLines, 'Close': closeImportDialog},
+             width: '330px',
+             height: '125px',
+             autoOpen: false
+        }).bind('dialogopen', function(event, ui) {
+            $('#import_lines_file').val('');
+            $(this).show();     
+        });
+
+        $('#dialog_import_sublines').dialog({buttons: {'Import': runImportSubLines, 'Close': closeImportSublineDialog},
+             width: '330px',
+             height: '125px',
+             autoOpen: false
+        }).bind('dialogopen', function(event, ui) {
+            $('#import_sublines_file').val('');
+            $(this).show();
+        });
+    
+        initButtons();
+
+        $.minderReport({
+            "printServiceUrl": '<?php echo $this->url(array('module' => 'default', 'controller' => 'service', 'action' => 'run-report'));?>',
+            'viewServiceUrl': '<?php echo $this->url(array('module' => 'default', 'controller' => 'service', 'action' => 'show-report'));?>',
+            'namespaceMap' : {
+                '<?php echo $this->orderSsName;?>': '<?php echo $this->ordersNamespace;?>',
+                '<?php echo $this->linesSsName;?>': '<?php echo $this->linesNamespace;?>',
+                '<?php echo $this->sublinesSsName;?>': '<?php echo $this->sublinesNamespace;?>'
+            }
+        });
+
+        $(document).bind('do-search', documentOnDoSearch);
+        $('#SEARCH_RESULTS_FORM_search_btn').bind('click', searchBtnOnClick);
+    });
+    
+  
+/* ]]> */
+</script>
+<?php echo $this->render('footer.phtml'); ?>

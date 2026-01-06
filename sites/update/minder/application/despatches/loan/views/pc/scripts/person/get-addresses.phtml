@@ -1,0 +1,187 @@
+<span style="display: none;" id="JSON"><?php echo json_encode(array('errors' =>  $this->errors));?></span>
+
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+?>
+
+<form name="address_results" id="address_results" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="addresses_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div class="sys-screen-title" title="<?php echo $this->addressSysScreenName;?>">Addresses List<span class="modification_flag <?php echo $this->addressSelectionNamespace;?>"></span></div>
+             <div class="paginator-container">
+                <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalAddresses == $this->selectedAddressesCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->addressSelectionNamespace));?>
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by', 
+                                              $this->navigation['show_by'],
+                                              array(),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="addresses_selected" class="selected_count <?php echo $this->addressSelectionNamespace;?>"><?php echo $this->selectedAddressesCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+            <?php echo $resultsForm->renderTabContent(
+                                        $tabId, 
+                                        array(
+                                            'select_all_checked'    => (count($this->addresses) == count($this->selectedAddresses)), 
+                                            'selection_namespace'   => $this->addressSelectionNamespace, 
+                                            'switch_selection_mode' => $this->selectMode,
+                                            'tab_content_class'     => 'withborder tablesorter person_address_list'
+                                        ), 
+                                        $this->addresses, 
+                                        $this->selectedAddresses
+            );?>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->addressSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records. <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <?php
+                                foreach ($this->personAddressButtons as $buttonDescription) {
+                                    echo '<li>' . $this->sysScreenFormButton(array('class' => 'green-button'), $buttonDescription) . '</li>';
+                                }
+                            ?>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#addresses_tabs #show_by, #addresses_tabs #pageselector').change(function(){ getAddresses(); });
+        
+        $("#addresses_tabs > ul").tabs();
+        
+        $('.person_address_list').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('#addresses_report_csv_btn').unbind('click.person-address-results').bind('click.getAddress', function(evt) {
+            evt.preventDefault();
+            makeReport('REPORT: CSV', '<?php echo $this->addressSysScreenName;?>');
+        });
+
+        $('#addresses_report_xls_btn').unbind('click.person-address-results').bind('click.getAddress', function(evt) {
+            evt.preventDefault();
+            makeReport('REPORT: XLS', '<?php echo $this->addressSysScreenName;?>');
+        });
+
+        $('.row_selector.<?php echo $this->addressSelectionNamespace;?>, .select_all_rows.<?php echo $this->addressSelectionNamespace;?>, .select_complete.<?php echo $this->addressSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->addressSelectionModule, 'controller' => $this->addressSelectionController, 'action' => $this->addressSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#addresses_tabs',
+                'selectionNamespace'  : '<?php echo $this->addressSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->addressSelectionAction;?>',
+                'selectionController' : '<?php echo $this->addressSelectionController;?>'
+            }
+        );
+        
+        $('.person_address_list').minderEditResults(
+            '<?php echo $this->url(array('action' => 'save-changes', 'controller' => 'person', 'module' => 'despatches'), null, true);?>',
+            {
+                'cancelButtonSelector'     : null,
+                'saveButtonSelector'       : null,
+                'addRowButtonSelector'     : null,
+                'modificationFlagSelector' : '#addresses_tabs .modification_flag',
+                'namespace'                : '<?php echo $this->addressSelectionNamespace?>',
+                'addRowUrl'                : '<?php echo $this->url(array('action' => 'get-new-row', 'controller' => 'person', 'module' => 'despatches'), null, true);?>',
+                'tabDatasetSelector'       : '.data_set'
+            }, 
+            {
+                'onSuccess' : function(response) {
+                    if (response.warnings && response.warnings.length > 0)
+                        showWarnings(response.warnings);
+
+                    if (response.messages && response.messages.length > 0)
+                        showMessage(response.messages);
+                    
+                    getAddresses();
+                }
+            }
+        );
+
+        $('#addresses_tabs .save_btn').unbind('click.person-address-results').bind('click.person-address-results', function(evt) {
+            evt.preventDefault();
+
+            if ($('.person_address_list').minderEditResults('isModified'))
+                $('.person_address_list').minderEditResults('save');
+        });
+        
+        $('#addresses_tabs .cancel_btn').unbind('click.person-address-results').bind('click.person-address-results', function(evt) {
+            evt.preventDefault();
+
+            if ($('.person_address_list').minderEditResults('isModified'))
+                $('.person_address_list').minderEditResults('cancel');
+        });
+
+        $('#add_person_address_btn').unbind('click.person-address-results').bind('click.person-address-results', function(evt) {
+            evt.preventDefault();
+            $('.person_address_list').minderEditResults('addRow');
+        });
+
+        $('#address_label_btn').unbind('click.person-address-results').bind('click.person-address-results', printAddressLabelOnClick);
+        
+    });
+
+    function printAddressLabel() {
+        $.getJSON(
+            '<?php echo $this->url(array('action' => $this->addresLabelAction, 'controller' => $this->addresLabelController, 'module' => $this->addresLabelModule), null, true);?>',
+            {
+                'selection_namespace'  : '<?php echo $this->addressSelectionNamespace?>',
+                'selection_action'     : '<?php echo $this->addressSelectionAction;?>',
+                'selection_controller' : '<?php echo $this->addressSelectionController;?>'
+            },
+            function(response) {
+                if (response.errors && response.errors.length) {
+                    showErrors(response.errors);
+                }
+
+                if (response.warnings && response.warnings.length) {
+                    showWarnings(response.warnings);
+                }
+
+                if (response.messages && response.messages.length) {
+                    showMessage(response.messages);
+                }
+            }
+        );
+    }
+
+    function printAddressLabelOnClick(evt) {
+        evt.preventDefault();
+        printAddressLabel();
+    }
+    
+    /* ]]> */
+</script>

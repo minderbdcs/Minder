@@ -1,0 +1,174 @@
+<?php
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<div id="canceled_lines"></div>
+
+<script  type="text/javascript">
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#canceled_lines').minderSearchResult(response.sysScreens['<?php echo $this->linesNamespace;?>']);
+        $('#canceled_lines .data-table-<?php echo $this->linesSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+        $(document).dequeue();
+    }
+
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->linesNamespace;?>':
+                paginator = $('#canceled_lines').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#canceled_lines > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-unpick-assembly-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#canceled_lines > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('.selected-container.<?php echo $this->linesNamespace;?>').html(response.selectedRowsTotal);
+
+        var rowsOnPage = $('#canceled_lines .data-set:first tr').length;
+        var totalRows  = parseInt($('.total-container.<?php echo $this->linesNamespace;?>').html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == response.selectedRowsOnPage) {
+            $('.select_all_rows.<?php echo $this->linesNamespace;?>').attr('checked', true);
+        } else {
+            $('.select_all_rows.<?php echo $this->linesNamespace;?>').removeAttr('checked');
+        }
+
+        if (totalRows == response.selectedRowsTotal) {
+            $('.select_complete.<?php echo $this->linesNamespace;?>').attr('checked', true);
+        } else {
+            $('.select_complete.<?php echo $this->linesNamespace;?>').removeAttr('checked');
+        }
+
+        $('.row_selector.<?php echo $this->linesNamespace;?>').each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (response.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+        $(document).dequeue();
+    }
+
+    function loadData() {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens['<?php echo $this->linesNamespace?>'] = {
+            'paginator' : $('#canceled_lines').minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#canceled_lines > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#canceled_lines > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnPageChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnShowByChanged(evt) {
+        loadData();
+    }
+
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        switch (sysScreen) {
+            case '<?php echo $this->linesSsName;?>' :
+                nameSpace = '<?php echo $this->linesNamespace?>';
+                break;
+            default:
+                throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+        }
+
+        location.href = '<?php echo $this->url(array('action' => 'unpick-assembly-report'));?>/report_format/' + escape(format) + '/namespace/' + escape(nameSpace);
+    }
+
+    $(document).ready(function() {
+        <?php
+            if (count($this->sysScreenErrors) > 0 ) {
+        ?>
+            showErrors(<?php echo json_encode($this->sysScreenErrors)?>);
+        <?php
+            } else{
+        ?>
+                $('#canceled_lines').minderSearchResult(<?php echo json_encode($this->linesJsSearchResults);?>);
+                $('#canceled_lines').minderSearchResult(<?php echo json_encode($this->linesJsSearchResultsDataset);?>);
+                $('#canceled_lines .data-table-<?php echo $this->linesSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+                $('#canceled_lines').bind('select-row', tabContainerOnSelectRow).bind('page-changed', tabContainerOnPageChanged).bind('show-by-changed', tabContainerOnShowByChanged);
+        <?php                
+            }
+        ?>
+
+    });
+</script>
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+            <ul class="toolbar">
+                {{each $item.data.buttons}}
+                    <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+</script>

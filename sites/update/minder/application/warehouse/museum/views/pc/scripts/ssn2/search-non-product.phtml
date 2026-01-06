@@ -1,0 +1,440 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all();?>
+
+<h2 title="<?php echo $this->issnSysScreenName;?>"><?php echo $this->escape($this->pageTitle);?></h2>
+
+<?php 
+    $searchForm = $this->getHelper('SysScreenTabbedSearchForm');
+    $tabsAttribs = array('tab_reference_prefix' => 'sf_tab_id_');
+    $searchForm->setTabs($this->searchTabs)->setFields($this->searchFields)->setActions($this->searchActions);
+?>
+
+<form name="ssn_search_form" id="ssn_search_form" action="<?php $this->url();?>" method="POST">
+    <!-- tabs container start -->
+        <div id="ssn_search_form_tabs" class="ui-tabs-container" style="min-width: 800px;">
+            <?php echo $searchForm->renderTabsList($tabsAttribs); ?>
+            <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">&nbsp;</div>
+            <?php
+                foreach ($searchForm->getTabs() as $tabId => $tabCaption)
+                    echo $searchForm->renderTab($tabId, $tabsAttribs);
+            ?>
+            <div>
+                <ul class="toolbar">
+                    <li><input class="green-button ssn_search_form_search_btn" type="submit" value="SUBMIT SEARCH" /></li>
+                    <li><input class="green-button ssn_search_form_clear_btn" type="submit" value="CLEAR" /></li>
+                </ul>
+            </div>
+        </div>
+    <!-- tabs container end -->
+        
+    <input type="hidden" name="SEARCH_FORM_ACTION" value="search">
+    <script type="text/javascript">
+        $("#ssn_search_form .ssn_search_form_clear_btn").click(function(evt) {
+            evt.preventDefault();
+            $("#ssn_search_form input[type=text]").val("");
+            $("#ssn_search_form select").attr("selectedIndex", 0);
+        });
+        
+        $(document).ready(function () {
+            $("#ssn_search_form_tabs > ul").tabs();
+        });
+    </script>
+    <?php echo $searchForm->renderActions(); ?>
+</form>
+
+
+<?php if ($this->makeSearch) {?>
+
+<?php
+    /**
+    * @var Minder_View_Helper_SysScreenSearchResult $resultsForm
+    */
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+    $conditionCompleted = ($this->summarySelected['TOTAL_QTY'] > 0);
+?>
+
+<div id="SSN_LIST_CONTAINER">
+<form name="ssn_result_form" id="ssn_result_form" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="ssn_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+            <div class="sys-screen-title" title="<?php echo $this->issnSysScreenName;?>">SSN List<span class="modification_flag <?php echo $this->rowSelectionNamespace;?>"></span></div>
+            <div class="paginator-container">
+                <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalSsns == $this->selectedSsnsCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->rowSelectionNamespace));?>
+                <label for="results_per_page">View By:</label>
+                <?php echo $this->formSelect('show_by', 
+                                                $this->navigation['show_by'],
+                                                array('class' => 'show_by'),
+                                                array(5  => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                      100 => 100)) ?>
+                <label for="page">Page:</label>
+                <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array('class' => 'pageselector'),
+                                                    $this->pages); ?>
+            </div>
+             
+            <ul class="black-top-border" style="clear: both;">
+                <li style="display: inline;">Selected: <span class="selected_count <?php echo $this->rowSelectionNamespace;?>"><?php echo $this->selectedSsnsCount;?></span></li>
+                <li style="display: inline; margin-left: 100px;">Total Selected Qty:  <input style="text-align: right; width: 8ex; <?php echo ($conditionCompleted) ? '' : 'background-color: red;';?>" type="text" name="total_qty" value="<?php echo $this->summarySelected['TOTAL_QTY'];?>" readonly="readonly" /></li>
+                <li style="display: inline; margin-left: 100px;">Required Qty for Order: <input style="text-align: right; width: 8ex;" type="text" name="required_qty" value="<?php echo $this->requiredQty;?>" /></li>
+            </ul>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <?php 
+                    $attribs         = array(
+                                            'select_all_checked'    => (count($this->ssns) == count($this->selectedSsns)), 
+                                            'selection_namespace'   => $this->rowSelectionNamespace, 
+                                            'switch_selection_mode' => $this->selectMode,
+                                            'tab_content_class'     => 'withborder tablesorter ssn_details'
+                    );
+                    
+                    $tabContentClass = 'withborder tablesorter ssn_details';
+                    $tabReference    = 'tab_id_' . $tabId;
+                    $style           = array(
+                                            'margin-bottom: 0;'
+                    );
+                    
+                    $xhtml =  '<!-- tab content starts -->';
+                    $xhtml .= '<div style="' . implode(' ', $style) . '">';
+                    $xhtml .= '<table class="' . $tabContentClass . '" tab_id="' . $this->escape($tabReference) . '" style="' . implode('', $style) . '">';
+                    $xhtml .= '<thead>';
+                    $xhtml .= $resultsForm->renderHeaders($tabId, $attribs);
+                    
+                    $datasetClass = 'data_set';
+                    $xhtml .= '<!-- data set starts --> ';
+                    $xhtml .= '<tbody class="' . $this->escape($datasetClass) . '">';
+        
+                    if (count($this->ssns) >0) {
+                        foreach ($this->ssns as $rowId => $rowData) {
+                            $rowAttribs = $attribs;
+                            $rowAttribs['selectable-row'] = (isset($this->notSelectableRows[$rowId])) ? false : true;
+                            $xhtml .= $resultsForm->renderSingleRow($tabId, $rowAttribs, $rowId, $rowData, $this->selectedSsns);
+                        }
+                    } else {
+                        $xhtml .= $resultsForm->renderEmptyRow($tabId, array());
+                    }
+        
+                    $xhtml .= "</tbody>";
+                    $xhtml .= '<!-- data set ends --> ';
+                    $xhtml .= '</thead>';
+                    $xhtml .= '</table>';
+                    $xhtml .= '</div>';
+                    $xhtml .= '<!-- tab content ends -->';
+                    
+                    echo $xhtml;
+                ?>
+
+                <!-- totals info start -->
+                <table class="withborder" width="100%">
+                    <tr>
+                        <td>Total <span class="total_count <?php echo $this->rowSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                    </tr>
+                </table>
+                <!-- totals info end -->
+           </div>    
+        <?php }?>
+
+        <div style="clear: both; padding-left: 10px; padding-top: 10px;">
+            <ul class="toolbar">
+                <li><input type="submit" name="add_non_product_btn" class="green-button" value="ADD" onclick="return false;" <?php echo ($conditionCompleted) ? '' : 'disabled="disabled"';?> /></li>
+                <li><input type="submit" name="add_and_continue_non_product_btn" class="green-button" value="ADD & CONTINUE" onclick="return false;" <?php echo ($conditionCompleted) ? '' : 'disabled="disabled"';?> /></li>
+                <li><input type="submit" name="cancel_add_non_product_btn" class="green-button" value="CANCEL ADD" onclick="return false;" /></li>
+                <li><!--spacer--><span style="margin-left: 200px;">&nbsp;</span></li>
+                <li><input type="submit" name="report_format" id="report_csv_btn" class="green-button" value="REPORT: CSV" onclick="return false;" /></li>
+                <li><input type="submit" name="report_format" id="report_xls_btn" class="green-button" value="REPORT: XLS" onclick="return false;" /></li>
+            </ul>
+        </div>
+    </div>
+    <!-- tabs container end -->
+</form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        function getSelectedRowsAmountContainer() {
+            return $('.selected_count.<?php echo $this->rowSelectionNamespace;?>');
+        }
+
+        function getSelectedRowsAmount() {
+            var rowSelected = parseInt(getSelectedRowsAmountContainer().html());
+            rowSelected = (isNaN(rowSelected)) ? 0 : rowSelected;
+            return rowSelected;
+        }
+
+        function setSelectedRowsAmount(amount) {
+            getSelectedRowsAmountContainer().html(amount);
+        }
+
+        function updateSelectionTotals(rowId, select) {
+            select = (typeof select == 'undefined') ? true : !! select;
+
+            var rowData = $ssnListContainer.data('row-data');
+            var rowSelected = getSelectedRowsAmount();
+            var $totalQty = $('[name="total_qty"]');
+            var totalQty = parseInt($totalQty.val());
+            totalQty = (isNaN(totalQty)) ? 0 : totalQty;
+
+            if (typeof rowData[rowId] == 'undefined') return;
+
+            if (select) {
+                rowSelected++;
+                totalQty += rowData[rowId].FIELD__CURRENT_QTY;
+            } else {
+                rowSelected--;
+                totalQty -= rowData[rowId].FIELD__CURRENT_QTY;
+            }
+
+            setSelectedRowsAmount(rowSelected);
+            $totalQty.val(totalQty);
+            afterTotalsChanged();
+        }
+
+        function selectRow(rowId, select, state) {
+            select = (typeof select == 'undefined') ? true : !!select;
+            state  = (typeof state  == 'undefined') ? false : !!state;
+
+            if (select)
+                $('.row_selector.<?php echo $this->rowSelectionNamespace;?>[row_id="' + rowId + '"]').attr('checked', true);
+            else
+                $('.row_selector.<?php echo $this->rowSelectionNamespace;?>[row_id="' + rowId + '"]').removeAttr('checked');
+
+            if (select != state)
+                updateSelectionTotals(rowId, select);
+        }
+
+        function selectAllRows(select) {
+            select = (typeof select == 'undefined') ? true : !!select;
+            $ssnListContainer.find('.data_set:first .row_selector.<?php echo $this->rowSelectionNamespace;?>').each(function(){
+                var $this = $(this);
+                var rowId = $this.attr('row_id');
+                selectRow(rowId, select, $this.attr('checked'));
+            });
+
+            if (select)
+                $selectAllRows.attr('checked', true);
+            else
+                $selectAllRows.removeAttr('checked');
+        }
+
+        function onSelectAllClick(evt) {
+            var $this = $(this);
+            var checked = $this.attr('checked');
+            selectAllRows(checked);
+            updateSelectCompleteState();
+            notifyRowSelect($this.attr('row_id'), checked);
+        }
+
+        function updateSelectAllState() {
+            var rowSelectors = $ssnListContainer.find('.row_selector.<?php echo $this->rowSelectionNamespace;?>');
+            var totalRowSelectors = rowSelectors.length;
+            rowSelectors.each(function(){
+                if ($(this).attr('checked'))
+                    totalRowSelectors--;
+            });
+
+            if (totalRowSelectors < 1)
+                $selectAllRows.attr('checked', true);
+            else
+                $selectAllRows.removeAttr('checked');
+        }
+
+        function getSelectableRowsAmount() {
+            var summary = $ssnListContainer.data('summary');
+            return getTotalRowsAmount() - summary.NOT_SELECTABLE_ROWS_AMOUNT;
+        }
+
+        function getTotalRowsAmount() {
+            var totalRows = parseInt($('.total_count.<?php echo $this->rowSelectionNamespace;?>').html());
+            return isNaN(totalRows) ? 0 : totalRows;
+        }
+
+        function updateSelectCompleteState() {
+            if (getSelectedRowsAmount() != getSelectableRowsAmount())
+                $selectComplete.removeAttr('checked');
+            else
+                $selectComplete.attr('checked', true);
+        }
+
+        function getSelectionMode() {
+            return $('.switch_selection.<?php echo $this->rowSelectionNamespace?>').attr('selection_mode');
+        }
+
+        function onSelectRowClick(evt) {
+            var $this = $(this);
+            var checked = $this.attr('checked');
+            var rowId = $this.attr('row_id');
+
+            if (getSelectionMode() == 'one') {
+                selectComplete(false);
+                selectRow(rowId, !checked, false);
+            }
+
+            selectRow(rowId, checked, !checked);
+            updateSelectAllState();
+            updateSelectCompleteState();
+            notifyRowSelect(rowId, checked);
+        }
+
+        function selectComplete(select) {
+            select = (typeof select == 'undefined') ? true : !!select;
+            selectAllRows(select);
+            var summary = $ssnListContainer.data('summary');
+
+            if (select) {
+                setSelectedRowsAmount(getSelectableRowsAmount());
+                $('[name="total_qty"]').val(summary.TOTAL_QTY);
+            } else {
+                setSelectedRowsAmount(0);
+                $('[name="total_qty"]').val(0);
+            }
+            afterTotalsChanged();
+        }
+
+        function onSelectCompleteClick(evt) {
+            var $this = $(this);
+            var checked = $this.attr('checked');
+            selectComplete(checked);
+            notifyRowSelect($this.attr('row_id'), checked);
+        }
+
+        function notifyRowSelect(rowId, state) {
+            $.post(
+                '<?php echo $this->url(array('module' => $this->rowSelectionModule, 'controller' => $this->rowSelectionController, 'action' => $this->rowSelectionAction), null, true);?>',
+                {
+                    'row_id'              : rowId,
+                    'state'               : state,
+                    'selection_mode'      : getSelectionMode(),
+                    'pageselector'        : $('#pageselector').val(),
+                    'show_by'             : $('#show_by').val(),
+                    'selection_action'    : '<?php echo $this->rowSelectionAction;?>',
+                    'selection_controller': '<?php echo $this->rowSelectionController;?>',
+                    'selection_namespace' : '<?php echo $this->rowSelectionNamespace?>'
+                }
+            );
+        }
+
+        function onSwitchSelectionClick(evt) {
+            evt.preventDefault();
+
+            var currentSelectionMode    = $(this).attr('selection_mode');
+
+            if (currentSelectionMode == 'all') {
+                $switchSelection.attr('checked', 'checked');
+                $switchSelection.attr('selection_mode', 'one');
+                $selectAllRows.attr('disabled', 'disabled');
+                $selectComplete.attr('disabled', 'disabled');
+            } else {
+                $switchSelection.removeAttr('checked');
+                $switchSelection.attr('selection_mode', 'all');
+                $selectAllRows.removeAttr('disabled', 'disabled');
+                $selectComplete.removeAttr('disabled', 'disabled');
+            }
+        }
+
+        function afterTotalsChanged() {
+            var selectedRows   = getSelectedRowsAmount();
+
+            var totalQtyInput    = $('#ssn_result_form input[name=total_qty]');
+            var selectedTotalQty = parseInt(totalQtyInput.val());
+            selectedTotalQty     = isNaN(selectedTotalQty) ? 0 : selectedTotalQty;
+
+            var requiredQty      = parseInt($('#ssn_result_form input[name=required_qty]').val());
+            requiredQty          = (isNaN(requiredQty)) ? 0 : requiredQty;
+
+            if (selectedRows < 1) {
+                totalQtyInput.css('background-color', 'red');
+                $('#ssn_result_form input[name=add_non_product_btn]').attr('disabled', 'disabled');
+                $('#ssn_result_form input[name=add_and_continue_non_product_btn]').attr('disabled', 'disabled');
+            } else if ((requiredQty > 0) && (selectedTotalQty >= requiredQty)) {
+                totalQtyInput.css('background-color', 'white');
+                $('#ssn_result_form input[name=add_non_product_btn]').removeAttr('disabled');
+                $('#ssn_result_form input[name=add_and_continue_non_product_btn]').removeAttr('disabled');
+            } else {
+                <?php if ($this->minder->defaultControlValues['CONFIRM_WITH_NO_PROD'] == 'T') {?>
+                    totalQtyInput.css('background-color', '#FFFF00');
+                    $('#ssn_result_form input[name=add_non_product_btn]').removeAttr('disabled');
+                    $('#ssn_result_form input[name=add_and_continue_non_product_btn]').removeAttr('disabled');
+                <?php } else {?>
+                    totalQtyInput.css('background-color', 'red');
+                    $('#ssn_result_form input[name=add_non_product_btn]').attr('disabled', 'disabled');
+                    $('#ssn_result_form input[name=add_and_continue_non_product_btn]').attr('disabled', 'disabled');
+                <?php }?>
+            }
+        }
+
+        var $ssnListContainer = $('#SSN_LIST_CONTAINER');
+
+        $ssnListContainer.find('#ssn_tabs > ul').tabs();
+        $ssnListContainer.data('row-data', <?php echo json_encode($this->ssns);?>);
+        $ssnListContainer.data('summary', <?php echo json_encode($this->summaryTotal)?>);
+
+        $('.ssn_details').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+        var $selectAllRows = $ssnListContainer.find('.select_all_rows.<?php echo $this->rowSelectionNamespace;?>');
+        $selectAllRows.click(onSelectAllClick);
+
+        $ssnListContainer.find('.row_selector.<?php echo $this->rowSelectionNamespace;?>').click(onSelectRowClick);
+
+        var $selectComplete = $ssnListContainer.find('.select_complete.<?php echo $this->rowSelectionNamespace;?>');
+        $selectComplete.click(onSelectCompleteClick);
+
+        var $switchSelection = $ssnListContainer.find('.switch_selection.<?php echo $this->rowSelectionNamespace?>');
+        $switchSelection.click(onSwitchSelectionClick);
+
+        $('#ssn_result_form input[name=required_qty]').keyup(function(evt){afterTotalsChanged()});
+
+        $('#SSN_LIST_CONTAINER .pageselector, #SSN_LIST_CONTAINER .show_by').change(function(){
+            $('#ssn_result_form').submit();
+        });
+
+        $('#report_csv_btn, #report_xls_btn').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(
+                array(
+                    'module' => $this->reportModule,
+                    'controller' => $this->reportController,
+                    'action' => $this->reportAction,
+                    'selection_namespace' => $this->rowSelectionNamespace,
+                    'selection_action' => $this->rowSelectionAction,
+                    'selection_controller' => $this->rowSelectionController
+                ),
+                null,
+                true
+            );?>' + '/report_format/' + escape($(this).val());
+        });
+
+        $('#ssn_result_form input[name=cancel_add_non_product_btn]').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn2', 'action' => 'cancel-add'), null, true)?>';
+        });
+
+        $('#ssn_result_form input[name=add_non_product_btn]').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn2', 'action' => 'add-non-product', 'add' => 'add'), null, true)?>';
+        });
+
+        $('#ssn_result_form input[name=add_and_continue_non_product_btn]').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn2', 'action' => 'add-non-product', 'add' => 'add_and_continue'), null, true)?>';
+        });
+        updateSelectAllState();
+        updateSelectCompleteState();
+        afterTotalsChanged();
+    });
+</script>
+<?php }?>
+<?php echo $this->render('footer.phtml'); 

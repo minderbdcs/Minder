@@ -1,0 +1,311 @@
+<?php echo $this->packDimensions('SSCC_PACK_DIMS', 'SSCC Pack Dimensions', $this->dim_screen->fields, $this->dim_screen->actions, $this->palletOwnerList, true); ?>
+
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/Pack.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/Uoms.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/PackCollection.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/Totals.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/Dimensions.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/PackView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/PackCollectionView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/PackDimensions/DimensionsView.js"></script>
+
+<script type="text/javascript">
+    minderNamespace('Minder.Despatches.AwaitingChecking.SsccPackDetails', function() {
+        var AcceptRequest = function(labelData, allLabelsData, totals, hasMoreSku, ssccList, isFillingDimensions, volumeRequired, weightRequired) {
+            this.labelData = labelData;
+            this.allLabels = allLabelsData;
+            this.totals = totals;
+            this.hasMoreSku = hasMoreSku;
+            this.sscc = ssccList;
+            this.isFillingDimensions = isFillingDimensions;
+            this.volumeRequired = volumeRequired;
+            this.weightRequired = weightRequired;
+        };
+
+        var
+            SSCC_ACCEPT_EVENT = 'sscc-accepted',
+            SSCC_CANCEL_EVENT = 'sscc-canceled',
+            SSCC_BEFORE_ACCEPT_EVENT = 'sscc-before-accept',
+            _acceptUrl = '',
+            _shouldGenerateSSCC = false,
+            _completed = false,
+            _started = false,
+            _$container = null,
+            _checkingSscc = null,
+            _checkedSscc = {},
+            _volumeRequired = false,
+            _weightRequired = false,
+            _dimensionView;
+
+        this.init = function($container, uoms, scannedLabels) {
+            var self = this;
+            _dimensionView = new DimensionsView({el: $container, uoms: uoms});
+            _acceptUrl = '<?php echo $this->url(array('action' => 'accept-sscc'));?>';
+
+            _$container = $container;
+
+            _dimensionView.addPacks(scannedLabels, {commit: true, lockOnCommit: true});
+
+            _$container.find('[name="CANCEL_ACCEPT_SSCC"]').click(function(evt){
+                evt.preventDefault();
+                self.cancelCheck();
+            });
+
+            _$container.find('[name="ACCEPT_SSCC"]').click(function(evt){
+                evt.preventDefault();
+                self.accept(false);
+            });
+
+            _$container.find('[name="REPACK_SSCC"]').click(function(evt){
+                evt.preventDefault();
+                Minder.Dlg.RePackSscc.show(packSscc, checkLineDetails);
+            });
+        };
+
+        this.setAcceptUrl = function(url) {
+            _acceptUrl = url;
+        };
+
+        this.setVolumeAndWeightPolicy = function(volumeRequired, weightRequired) {
+            _volumeRequired = volumeRequired;
+            _weightRequired = weightRequired;
+        };
+
+        this.off= function(namespace) {
+            _$container.unbind('.' + namespace);
+        };
+
+        this.onSsccLabelAccept = function(namespace, callback) {
+            var fullEventName = SSCC_ACCEPT_EVENT + '.' + namespace;
+            _$container.unbind(fullEventName).bind(fullEventName, callback);
+        };
+
+        this.onSsccLabelCancelAccept = function(namespace, callback) {
+            var fullEventName = SSCC_CANCEL_EVENT + '.' + namespace;
+            _$container.unbind(fullEventName).bind(fullEventName, callback);
+        };
+
+        this.onSsccLabelBeforeAccept = function(namespace, callback) {
+            var fullEventName = SSCC_BEFORE_ACCEPT_EVENT + '.' + namespace;
+            _$container.unbind(fullEventName).bind(fullEventName, callback);
+        };
+
+        this.setShouldGenerateSSCC = function(shouldGenerateSSCC) {
+            _shouldGenerateSSCC = shouldGenerateSSCC;
+        };
+
+        this.shouldGenerateSSCC = function() {
+            return _shouldGenerateSSCC && !_completed;
+        };
+
+        this.reset = function() {
+            _dimensionView.reset();
+            _dimensionView.hide();
+            _completed = false;
+            _started = false;
+            _checkingSscc = null;
+            _checkedSscc = {};
+        };
+
+        this.start = function() {
+            _dimensionView.show();
+            _started = true;
+        };
+
+        this.cancelCheck = function() {
+            var event = $.Event(SSCC_CANCEL_EVENT);
+            event.sscc = _checkingSscc;
+            _checkingSscc = null;
+            _dimensionView.removeUncommitted();
+            _$container.trigger(event);
+        };
+
+        this.isChecking = function() {
+            return !!_checkingSscc;
+        };
+
+        this.hasBeenChecked = function(ssccLabel) {
+            return !!_checkedSscc[ssccLabel];
+        };
+
+        this.startCheck = function(sscc) {
+            if (_dimensionView.hasUncommitted()) {
+                showErrors(['You should ACCEPT previous SSCC label.']);
+                return false;
+            }
+
+            if (this.hasBeenChecked(this.getSsccLabel(sscc))) {
+                showWarnings(['Already accepted.']);
+                return false;
+            }
+
+            _checkingSscc = sscc;
+
+            return true;
+        };
+
+        this.getSsccLabel = function(ssccList) {
+            return ssccList.length > 0 ? ssccList[0].PS_OUT_SSCC : undefined;
+        };
+
+        this.getCheckingLabel = function() {
+            return this.getSsccLabel(_checkingSscc);
+        };
+
+        this.startDimensions = function(sscc, totalWeight) {
+            if (this.getSsccLabel(sscc) !== this.getCheckingLabel()) {
+                showErrors(['SSCC label does not match.']);
+                return false;
+            }
+
+            return this.addLabel(this.getSsccLabel(sscc), totalWeight);
+        };
+
+        this.isGoing = function() {
+            return _shouldGenerateSSCC && _started && !_completed;
+        };
+
+        this.stop = function() {
+            _completed = true;
+        };
+
+        this.addLabel = function(ssccLabel, totalWeight) {
+            if (_dimensionView.hasUncommitted()) {
+                showErrors(['You should ACCEPT previous SSCC label.']);
+                return false;
+            }
+
+            _dimensionView.addPacks({'SSCC': ssccLabel, 'WT': totalWeight});
+            return true;
+        };
+
+        this.getAllRows = function() {
+            return _dimensionView.getAllRows();
+        };
+
+        this.getTotals = function() {
+            return _dimensionView.getTotals();
+        };
+
+        this.isAddingDimensions = function() {
+            return _dimensionView.hasUncommitted();
+        };
+
+        this.setAcceptedUoms = function(uoms) {
+            _dimensionView.setDimensions(uoms);
+        };
+
+        this.fillChecked = function(dimensionList) {
+            var self = this, uncommitted;
+
+            if (_dimensionView.hasUncommitted()) {
+                uncommitted = _dimensionView.removeUncommitted();
+            }
+
+            dimensionList = dimensionList.reduce(function(result, dimension){
+                if (!self.hasBeenChecked(dimension.SSCC)) {
+                    result.push(dimension);
+                }
+
+                _checkedSscc[dimension.SSCC] = true;
+
+                return result;
+            }, []);
+
+            _dimensionView.addPacks(dimensionList, {commit: true, lockOnCommit: true});
+
+            if (uncommitted) {
+                _dimensionView.addPacks(uncommitted);
+            }
+        };
+
+        /**
+         *
+         * @param {AcceptRequest} acceptRequest
+         * @param {Mdr.ProcessResult} [validateResult=new Mdr.ProcessResult]
+         * @returns {Mdr.ProcessResult}
+         */
+        this.validateAcceptRequest = function(acceptRequest, validateResult) {
+            validateResult = validateResult || new Mdr.ProcessResult();
+
+            if (!acceptRequest.isFillingDimensions) {
+                validateResult.addErrors(['You should scan SSCC label before.']);
+            } else {
+                if (!acceptRequest.labelData) {
+                    validateResult.addErrors(['No label data provided.']);
+                } else {
+                    if (acceptRequest.volumeRequired && (acceptRequest.labelData.CALCULATED.TOTAL_VOL.toFixed(4) < 0.0001)) {
+                        validateResult.addErrors(['Please fill volume information.']);
+                    }
+                    if (acceptRequest.weightRequired && (acceptRequest.labelData.CALCULATED.TOTAL_WT.toFixed(4) < 0.0001)) {
+                        validateResult.addErrors(['Please fill weight information.']);
+                    }
+                }
+            }
+
+            return validateResult;
+        };
+
+        this.accept = function(hasMoreSku) {
+            var acceptRequest = new AcceptRequest(
+                    _dimensionView.getUncommittedData().shift(),
+                    this.getAllRows(),
+                    this.getTotals(),
+                    hasMoreSku,
+                    _checkingSscc,
+                    _dimensionView.hasUncommitted(),
+                    _volumeRequired,
+                    _weightRequired
+                ),
+                validateResult = this.validateAcceptRequest(acceptRequest),
+                beforeAcceptEvent = $.Event(SSCC_BEFORE_ACCEPT_EVENT);
+
+            beforeAcceptEvent.acceptRequest = acceptRequest;
+            _$container.trigger(beforeAcceptEvent);
+
+            if (beforeAcceptEvent.isDefaultPrevented()) {
+                return;
+            }
+
+            showResponseMessages(validateResult);
+
+            if (validateResult.hasErrors()) {
+                return;
+            }
+
+            $.post(
+                _acceptUrl,
+                acceptRequest,
+                function(response) {
+                    var event = $.Event(SSCC_ACCEPT_EVENT);
+                    event.ssccData = acceptRequest.labelData;
+                    event.ssccTotals = acceptRequest.totals;
+                    event.packSscc = response.packSscc;
+                    event.hasMoreSku = response.hasMoreSku;
+                    event.orderStatistics = response.orderStatistics;
+
+                    showResponseMessages(response);
+
+                    if (response.errors && response.errors.length > 0) {
+                        return;
+                    }
+
+                    _checkingSscc = null;
+                    _dimensionView.commit(true);
+                    _$container.trigger(event);
+                    _checkedSscc[acceptRequest.labelData.SSCC] = true;
+                },
+                'json'
+            );
+        }
+    });
+
+    $(function(){
+        var $container = $('#SSCC_PACK_DIMENSIONS_CONTAINER');
+        Minder.Despatches.AwaitingChecking.SsccPackDetails.init(
+            $container,
+            <?php echo json_encode($this->packDimensions()->getUoms())?>,
+            <?php echo json_encode($this->scannedSsccLabels)?>
+        );
+    });
+</script>

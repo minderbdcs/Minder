@@ -1,0 +1,301 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php if (is_array($this->errors) && count($this->errors) > 0) { ?>
+    <ul class="errors">
+        <?php foreach ($this->errors as $error) { ?>
+            <li><?php echo $error; ?></li>
+        <?php } ?>
+    </ul>
+<?php } ?>
+
+<?php
+    $resultsForm = $this->getHelper('sysScreenSearchResult');
+    $resultsForm->setTabs($this->tabList);
+    $resultsForm->setFields($this->fieldList);
+?>
+
+<h3>Order #<?php echo $this->selected_order;?></h3>
+
+<table>
+    <tr><td>
+ <form name="lines_list" id="lines_list" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="lines_tabs" class="ui-tabs-container" style="">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div style="float: left; font-weight: bold; text-transform: uppercase;">Lines List</div>
+             <div style="position: relative; left:10px;">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by',
+                                              $this->navigation['show_by'],
+                                              array(),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->selectedLinesCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter order_lines" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->linesSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->linesSelectionNamespace), $this->linesDataSet, $this->selectedLines);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Ready For Despatch Rows Total: <span class="total_ready_for_desp_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->readyToDespTotal;?></span></td>
+                            <td>Ready For Despatch Rows Selected: <span class="selected_ready_for_desp_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->readyToDespSelected;?></span></td>
+                        </tr>
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records. <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <li><input type="submit" name="report_format" id="report_csv_btn" class="order-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="report_xls_btn" class="order-button" value="REPORT: XLS" onclick="return false;" /></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+
+    </td></tr>
+    <tr><td>
+<div id='CONNOTE_SCREEN_CONTAINER'></div>
+    </td></tr>
+</table>
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $("#lines_tabs > ul").tabs();
+        
+        $('.order_lines').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        $('#report_csv_btn, #report_xls_btn').click(printLinesAction);
+        
+        $('#lines_tabs #show_by, #lines_tabs #pageselector').change(function(evt){
+            evt.preventDefault();
+            
+            $('#lines_list').submit();
+        });
+        
+        $('#lines_tabs .row_selector.<?php echo $this->linesSelectionNamespace;?>, #lines_tabs .select_all_rows.<?php echo $this->linesSelectionNamespace;?>, #lines_tabs .select_complete.<?php echo $this->linesSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('action' => 'select-row', 'controller' => 'trolley'), null, true);?>',
+            {
+                'scopeSelector'       : '#lines_tabs',
+                'selectionNamespace'  : '<?php echo $this->linesSelectionNamespace?>',
+                'selectionAction'     : 'select-row',
+                'selectionController' : 'trolley'
+            },
+            {
+                'onSuccess' : function(response) {
+                    var showConnote = true;
+                    if (response.warnings && response.warnings.length > 0) {
+                        showWarnings(response.warnings);
+                        showConnote = false;
+                    }
+                    
+                    if (response.readyForDespSelected) {
+                        $('.selected_ready_for_desp_count.' + response.selectionNamespace).html(response.readyForDespSelected);
+                    } else {
+                        $('.selected_ready_for_desp_count.' + response.selectionNamespace).html('0');
+                        showErrors(['No lines selected for despatch.'], 0);
+                        showConnote = false;
+                    }
+                    
+                    if (showConnote) {
+                        $('#CONNOTE_SCREEN_CONTAINER').show();
+                    } else {
+                        $('#CONNOTE_SCREEN_CONTAINER').hide();
+                    }
+                }
+            }
+        );
+        
+        updateSelectionState('<?php echo $this->linesSelectionNamespace?>');
+        getConnoteScreen();
+        
+        var readyForDespSelected = parseInt($('.selected_ready_for_desp_count.<?php echo $this->linesSelectionNamespace?>').html());
+        readyForDespSelected = (isNaN(readyForDespSelected))? 0 : readyForDespSelected;
+        if (readyForDespSelected < 1) {
+            $('#CONNOTE_SCREEN_CONTAINER').hide();
+        }
+        
+    });
+    
+    function updateSelectionState(namespace) {
+        var totalRowsOnPage    = 0;
+        var rowsSelectedOnPage = 0;
+        var totalRows          = parseInt($('.total_count.' + namespace).html());
+        var totalRowsSelected  = parseInt($('.selected_count.' + namespace).html());
+        
+        $('.row_selector.' + namespace).each(function() {
+            totalRowsOnPage++;
+            if ($(this).attr('checked') === true) {
+                rowsSelectedOnPage++;
+            }
+        });
+        
+        $('.select_all_rows.' + namespace).each(function (){
+            if (totalRowsOnPage == rowsSelectedOnPage) {
+                $(this).attr('checked', true);
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+        
+        $('.select_complete.' + namespace).each(function (){
+            if (totalRows == totalRowsSelected) {
+                $(this).attr('checked', true);
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+    }
+    
+    function getConnoteScreen() {
+        
+        
+        $('#CONNOTE_SCREEN_CONTAINER').load(
+            '<?php echo $this->url(array('action' => 'index', 'controller' => 'connote'), null, true);?>',
+            {
+                callback: {
+                    on_success: {
+                        action: 'index',
+                        controller: 'trolley',
+                        module: 'default',
+                        restore_view: true
+                    },
+                    on_resume: {
+                        action: 'connote',
+                        controller: 'trolley',
+                        module: 'default'
+                    }
+                },
+                order_selection_namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                order_selection_action: '<?php echo $this->orderSelectionActionName;?>',
+                order_selection_controller: 'trolley',
+                order_selection_field: 'PICK_ORDER',
+                lines_selection_namespace: '<?php echo $this->linesSelectionNamespace;?>',
+                lines_selection_action: '<?php echo $this->linesSelectionActionName;?>',
+                lines_selection_controller: 'trolley',
+                lines_selection_field: 'PICK_LABEL_NO'
+            },
+            function() {
+                $('#CONNOTE_SCREEN_CONTAINER').unbind('.trolley_connote').bind('cancel.trolley_connote', function(){
+                    location.href = '<?php echo $this->url(array('module' => 'default', 'controller' => 'trolley', 'action' => 'index', 'restore_view' => true), null, true);?>';
+                });
+            }
+        );
+    }
+    
+    function beforeConnoteAccept() {
+        var totalRows    = parseInt($('.total_count.<?php echo $this->linesSelectionNamespace?>').html());
+        var selectedRows = parseInt($('.selected_count.<?php echo $this->linesSelectionNamespace?>').html());
+        totalRows        = (isNaN(totalRows))? 0 : totalRows;
+        selectedRows     = (isNaN(selectedRows))? 0 : selectedRows;
+
+        if ( selectedRows < totalRows) {
+            if (confirm('Not all available rows selected for despatch! Proceed anyway?')) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    function printLinesAction() {
+        var linesForm = $('#lines_list');
+        $('#REPORT_FORMAT').remove();
+        linesForm.prepend('<input type="hidden" id="REPORT_FORMAT" name="report_format" value="' + $(this).val() + '" />');
+        var oldAction = linesForm.attr('action');
+        linesForm.attr('action', '<?php echo $this->url(
+                                    array(
+                                        'action' => 'print', 
+                                        'controller' => 'trolley', 
+                                        'selection_namespace' => $this->linesSelectionNamespace,
+                                        'restore_view' => 'true'
+                                    ), 
+                                    null, true);?>').submit();
+        linesForm.attr('action', oldAction);
+    }
+    
+    function initConnote() {
+//this is for future use
+//        $("#consignment, #palletQty, #totalCartons, #totalSatchels").change(function () {
+//            updateStatus();
+//        });
+//        
+//        updateStatus();
+    }
+    
+    function updateStatus() {
+        var consignment = $('#consignment').val();
+        var palletOwner = $('#palletOwner').val();
+        var totalPalletQty = $('#palletQty').val();
+        var totalCartonsQty = $('#totalCartons').val();
+        var totalSatchelsQty = $('#totalSatchels').val();
+        totalPalletQty = isNaN(parseInt(totalPalletQty))?0:parseInt(totalPalletQty);
+        totalCartonsQty = isNaN(parseInt(totalCartonsQty))?0:parseInt(totalCartonsQty);
+        totalSatchelsQty = isNaN(parseInt(totalSatchelsQty))?0:parseInt(totalSatchelsQty);
+        
+        var enteredPalletQty = $('#total_pallets').html();
+        var enteredCartonsQty = $('#total_cartons').html();
+        var enteredSatchelsQty = $('#total_satchels').html();
+        enteredPalletQty = isNaN(parseInt(enteredPalletQty))?0:parseInt(enteredPalletQty);
+        enteredCartonsQty = isNaN(parseInt(enteredCartonsQty))?0:parseInt(enteredCartonsQty);
+        enteredSatchelsQty = isNaN(parseInt(enteredSatchelsQty))?0:parseInt(enteredSatchelsQty);
+        
+        var totalPackages = totalPalletQty + totalCartonsQty + totalSatchelsQty;
+        
+        var acceptAllowed = (consignment.length > 0) && (totalPackages > 0) && (enteredPalletQty == totalPalletQty) && (enteredCartonsQty == totalCartonsQty) && (enteredSatchelsQty && totalSatchelsQty);
+        
+        if (acceptAllowed) {
+            $('#accept').removeAttr('disabled');
+        } else {
+            $('#accept').attr('disabled', 'true');
+        }
+        
+        if (totalPackages > 0 && !hasRows) {
+            addNewRow();
+            hasRows = true;
+        }
+    }
+
+    function addNewRow() {
+        $('#pack_dimensions_row_sample').clone().attr('id','#pack_dimensions_new_row').removeClass('hidden').insertBefore('#pack_dimensions_row_sample');
+    }
+    /* ]]> */
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

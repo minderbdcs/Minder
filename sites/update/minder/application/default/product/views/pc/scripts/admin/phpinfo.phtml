@@ -1,0 +1,8 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->minderVariant('WAREHOUSE*Minder'); ?>&trade;</h2>
+
+<p>Welcome to <?php echo $this->minderVariant('WAREHOUSE*Minder'); ?>&trade; <?php echo $this->minderVariant()->edition(''); ?> version <?php echo $this->minder->version; ?> by <a href="http://www.barcoding.com.au/">Barcoding &amp; Data Collection Systems</a>.</p>
+
+<?php phpinfo(); ?>
+<?php echo $this->render('footer.phtml'); ?>

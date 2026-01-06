@@ -1,0 +1,23 @@
+<?php echo $this->render('header.phtml') ?>
+<form method="post" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'show')) ?>">
+<h2 style="margin-bottom: 1em;">Export to PDF</h2>
+<div class="floats" style="margin-bottom: .5em;">
+<fieldset id="orientation">
+    <legend>Page format</legend>
+    <div class="block-field"><?php echo $this->formLabel('font', 'Font:') ?><?php echo $this->formSelect('font', $this->font, null, array('- Choose font -') + (array) $this->fonts) ?> <?php echo $this->formSelect('size', $this->size, array('style' => 'width: auto;'), $this->sizes) ?></div>
+    <div class="block-field"><?php echo $this->formLabel('orientation', 'Orientation:') ?><?php echo $this->formRadio('orientation', $this->orientation, null, $this->orientations, '&nbsp; '); ?></div>
+    <div class="block-field"><?php echo $this->formLabel('format', 'Format:') ?><?php echo $this->formSelect('format', $this->format, null, array('- Choose format -') + (array) $this->formats) ?></div>
+</fieldset>
+<fieldset id="margins">
+    <legend>Margins</legend>
+    <div class="block-field"><?php echo $this->formLabel('margins[left]', 'Left margin:', array('style' => 'float: left; width: 10em;"')) ?><?php echo $this->formText('margins[left]', '10', array('size' => 2)) ?> (mm)</div>
+    <div class="block-field"><?php echo $this->formLabel('margins[right]', 'Right margin:', array('style' => 'float: left; width: 10em;"')) ?><?php echo $this->formText('margins[right]', '10', array('size' => 2)) ?> (mm)</div>
+    <div class="block-field"><?php echo $this->formLabel('margins[top]', 'Top margin:', array('style' => 'float: left; width: 10em;"')) ?><?php echo $this->formText('margins[top]', '10', array('size' => 2)) ?> (mm)</div>
+    <div class="block-field"><?php echo $this->formLabel('margins[bottom]', 'Bottom margin:', array('style' => 'float: left; width: 10em;"')) ?><?php echo $this->formText('margins[bottom]', '20', array('size' => 2)) ?> (mm)</div>
+</fieldset>
+</div>
+<input type="submit" value="Export" style="clear: both;" />
+<input type="hidden" name="step2" value="1" />
+<input type="hidden" name="action" value="REPORT: PDF" />
+</form>
+<?php echo $this->render('footer.phtml') ?>

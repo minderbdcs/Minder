@@ -1,0 +1,66 @@
+
+if status past 'OP' cannot edit the line
+
+in a screen after the lines GetOrd???
+	terms
+	payment_method
+	ship_via
+	order comments 1 and 2
+	customer_po_wo
+	
+amount fields in order and lines
+	tax only if field in product says so
+
+choosing issn by locn_id
+
+connotes
+
+In sales order entry - allow the despatch location to be altered
+
+========================================================================
+Only Sales managers can add issn's (only for fresh)
+========================================================================
+
+Done
+15/09/07
+buttons
+	confirm
+	approve - pick
+	approve - despatch
+
+17/09/07
+edit a line screen
+
+26/10/07
+Pick for Fresh
+	based on mgm pick.prod.order3
+	only products for the requested company and wh can be used
+
+Pick for Fresh
+	UnPick 
+
+Allocation
+	in the pick screens - not the sales order screens
+
+Picking of product uses orders wh and company
+
+Screen to reserve a group of issn's for a product line
+(only available to sales manager or above)
+thus use full wh's and companies available to the user
+(and cancelling the product line).
+
+wants to choose issns based on full rights of the user
+(up to order populated  wh and company - for non sales managers)
+( sales managers can add issns from other companys and wh's ) 
+
+Checking for confirm
+approve picking
+approve despatch
+  in the procedure - as per the screen.
+
+27/10/07
+In reserving - when issn is for more than the from line
+	the added line is for the difference 
+	currently just shifts up the order qty
+	ie force to split on this issn
+

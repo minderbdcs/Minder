@@ -1,0 +1,12 @@
+update issn set wh_id='XD' where issn_status='DX' and wh_id <> 'XD';
+update issn set wh_id='XX' where issn_status='XX' and wh_id not in('XX','XD');
+update issn set wh_id='XX', ISSN_STATUS='XX',CURRENT_QTY=0 where issn_status='PA' and current_qty < 0 and wh_id not in ('XX','XD');
+update issn set wh_id='XX', ISSN_STATUS='XX',CURRENT_QTY=0 where issn_status='ST' and current_qty < 0 and wh_id not in ('XX','XD');
+update issn set wh_id='XF' where issn_status='ST' and current_qty=0 and wh_id < 'XA';
+update issn set wh_id='XF' where issn_status='ST' and current_qty=0 and wh_id > 'X~';
+update issn set wh_id='XF' where issn_status='PA' and current_qty=0 and wh_id < 'XA';
+update issn set wh_id='XF' where issn_status='PA' and current_qty=0 and wh_id > 'X~';
+update issn set wh_id='XF' where issn_status='ST' and current_qty is null and wh_id < 'XA';
+update issn set wh_id='XF' where issn_status='ST' and current_qty is null and wh_id > 'X~';
+update issn set wh_id='XF' where issn_status='PA' and current_qty is null and wh_id < 'XA';
+update issn set wh_id='XF' where issn_status='PA' and current_qty is null and wh_id > 'X~';

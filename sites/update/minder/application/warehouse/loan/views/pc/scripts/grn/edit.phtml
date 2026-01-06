@@ -1,0 +1,63 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="" method="post">
+    <h1>EDIT GRN: <?php echo $this->escape($this->grnObj->grn); ?></h1>
+
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="SAVE"/></li>
+        <li><input name="action" type="submit" value="DISCARD"/></li>
+    </ul>
+    
+    <table class="summary">
+        <tr>
+            <?php $counter = 0;
+                  foreach($this->editInputs as $key => $value) { 
+                      if(array_key_exists($key, $this->grnObj->items)) {
+                        if($counter >= 2) { $counter = 0; echo '</tr><tr>'; }
+                            switch($value['SSV_INPUT_METHOD']) {
+                                case 'DD':
+            ?>
+                                    <th><?php echo $value['SSV_NAME'];  ?></th>
+                                    <td><?php echo $this->formSelect(strtolower($value['SSV_NAME']), $this->grnObj->items[$value['SSV_NAME']], array('style' => 'width: ' . $value['SSV_SIZE'] . 'px;'), $value['DD_VALUES']); ?></td>
+            <?php
+                                    break;
+                                case 'IN':
+            ?>
+                                    <th><?php echo $value['SSV_NAME'];  ?></th>
+                                    <td><?php echo $this->formText(strtolower($value['SSV_NAME']), $this->grnObj->items[$value['SSV_NAME']], array('style' => 'width: ' . $value['SSV_SIZE'] . 'px;')); ?></td>
+            <?php
+                                    break;
+                                case 'DP':
+            ?>
+                                    <th><?php echo $value['SSV_NAME'];  ?></th>
+                                    <td><?php echo $this->formText(strtolower($value['SSV_NAME']), $this->grnObj->items[$value['SSV_NAME']], array('style' => 'width: ' . $value['SSV_SIZE'] . 'px;', )); ?></td>
+                                    <script type="text/javascript">
+                                        $("#<?php echo strtolower($value['SSV_NAME']); ?>").datepicker({dateFormat: "yy-mm-dd"});
+                                    </script>
+            <?php
+                                    break;
+                                case 'RO':
+                                default:
+            ?>
+                                    <th><?php echo $value['SSV_NAME'];  ?></th>
+                                    <td style="width: <?php echo $value['SSV_SIZE']; ?>px;"><?php echo $this->grnObj->items[$value['SSV_NAME']]; ?></td>                           
+            <?php           }       
+                      }
+                        $counter++;
+                  } 
+            ?>
+        </tr>
+    </table>
+        
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="SAVE"/></li>
+        <li><input name="action" type="submit" value="DISCARD"/></li>
+    </ul>
+
+</form>
+<script type="text/javascript">
+$(document).ready(function (){
+    $("#limit_company").get(0).disabled = true;
+    $("#limit_warehouse").get(0).disabled = true;
+});
+</script>
+<?php echo $this->render('footer.phtml');

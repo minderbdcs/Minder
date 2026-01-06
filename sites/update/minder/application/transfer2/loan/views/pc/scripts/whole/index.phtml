@@ -1,0 +1,390 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<?php
+
+    echo $this->searchForm;
+?>
+
+<div id="lines_container">
+</div>
+
+<?php
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.sysScreens['<?php echo $this->linesNamespace;?>']) {
+            $('#lines_container').minderSearchResult(response.sysScreens['<?php echo $this->linesNamespace;?>']);
+        }
+
+        if (response.transferComplete) {
+            $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_FROM]').val('').focus();
+            $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_INTO]').val('');
+        }
+
+        $(document).dequeue();
+    }
+
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->linesNamespace;?>':
+                paginator = $('#lines_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#lines_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function setSelection(namespace, sysScreen) {
+        $('.selected-container.' + namespace).html(sysScreen.selectedRowsTotal);
+
+        var rowsOnPage = 0;
+
+        switch (namespace) {
+            case '<?php echo $this->linesNamespace;?>':
+                rowsOnPage = $('#lines_container .data-set:first tr').length;
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        var totalRows  = parseInt($('.total-container.' + namespace).html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == sysScreen.selectedRowsOnPage) {
+            $('.select_all_rows.' + namespace).attr('checked', true);
+        } else {
+            $('.select_all_rows.' + namespace).removeAttr('checked');
+        }
+
+        if (totalRows == sysScreen.selectedRowsTotal) {
+            $('.select_complete.' + namespace).attr('checked', true);
+        } else {
+            $('.select_complete.' + namespace).removeAttr('checked');
+        }
+
+        $('.row_selector.' + namespace).each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (sysScreen.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $.each(response.sysScreens, setSelection);
+
+        $(document).dequeue();
+    }
+
+    function loadData(namespace) {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        var containerId = '';
+
+        switch (namespace) {
+            case '<?php echo $this->linesNamespace;?>':
+                containerId = 'lines_container';
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        dataToSend.sysScreens[namespace] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function linesTabContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->linesNamespace;?>');
+    }
+
+    function linesTabContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->linesNamespace;?>');
+    }
+
+    function linesTabContainerOnPreSort(evt) {
+    }
+
+    function linesTabContainerOnSort(evt) {
+        loadData('<?php echo $this->linesNamespace;?>');
+    }
+
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+
+        dataToSend.push({
+            'name': 'sysScreens[<?php echo $this->linesNamespace;?>]',
+            'value': []
+        });
+
+        $('#barcode').val('').parent().block();
+        $('#search_form_container').block();
+        $(document).queue(function() {
+            $('#lines_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#lines_container > div, #search_form_container').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        switch (sysScreen) {
+            case '<?php echo $this->linesSsName;?>' :
+                nameSpace = '<?php echo $this->linesNamespace?>';
+                break;
+            default:
+                throw 'Unknown Sys Screen: "' + sysScreen + '"';
+        }
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(nameSpace);
+    }
+
+    function getSelectedRows(namespace) {
+        var selectedRows = parseInt($('.selected-container.' + namespace).html());
+        return isNaN(selectedRows) ? 0 : selectedRows;
+    }
+
+    function onUpdateButtonClick(evt) {
+        var fromLocationInput = $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_FROM]');
+        var intoLocationInput = $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_INTO]');
+        if (fromLocationInput.val() !== '') {
+            fromLocationInput.minderCheckBarcodeAsync();
+        }
+
+        if (intoLocationInput.val() !== '') {
+            intoLocationInput.minderCheckBarcodeAsync();
+        }
+    }
+
+    function initButtons() {
+        $('#TRANSFER_WHOLE_SEARCH_FORM button[name=SEARCH_BUTTON]').unbind('click.transfer-issn').bind('click.transfer-issn', onUpdateButtonClick);
+    }
+
+    function onBarcodeParseError(evt) {
+        var $_target = $(evt.target);
+
+        showErrors([evt.parseResult.errorMsg]);
+        $_target.val('');
+    }
+
+    function searchFromLocation(location) {
+        $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_FROM]').val(location);
+
+        var dataToSend = {
+            'fromLocation' : location,
+            'sysScreens' : {}
+        };
+
+        var containerId = 'lines_container';
+
+        dataToSend.sysScreens['<?php echo $this->linesNamespace;?>'] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Searching for LOCATION.');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search-location'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+            $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_INTO]').focus();
+        });
+    }
+
+    function transferIntoLocation(location) {
+        var dataToSend = {
+            'sysScreens' : {},
+            'intoLocation'   : location
+        };
+
+        var containerId = 'lines_container';
+
+        dataToSend.sysScreens['<?php echo $this->linesNamespace;?>'] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Transferring ISSNs.');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'transfer-to-location'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onSysScreenButtonClick(buttonName) {
+        $('button[name=' + buttonName + ']').click();
+    }
+
+    function onFromLocationParseSuccess(evt) {
+        var $_target = $(evt.target);
+
+        switch (evt.parseResult.paramDesc.param_name) {
+            case 'LOCATION':
+                searchFromLocation(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+            case 'SCREEN_BUTTON':
+                $_target.val('');
+                onSysScreenButtonClick(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+        }
+    }
+
+    function onIntoLocationParseSuccess(evt) {
+        var $_target = $(evt.target);
+
+        switch (evt.parseResult.paramDesc.param_name) {
+            case 'LOCATION':
+                $_target.val('');
+                transferIntoLocation(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+            case 'SCREEN_BUTTON':
+                $_target.val('');
+                onSysScreenButtonClick(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+        }
+    }
+
+    function initBarcodeFields() {
+        $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_FROM]').minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->locationBarcodeDescriptor;?>, <?php echo $this->screenButtonBarcodeDescriptor;?>]})
+                .bind('parse-error', onBarcodeParseError)
+                .bind('parse-success', onFromLocationParseSuccess);
+
+        $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_INTO]').minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->locationBarcodeDescriptor;?>, <?php echo $this->screenButtonBarcodeDescriptor;?>]})
+                .bind('parse-error', onBarcodeParseError)
+                .bind('parse-success', onIntoLocationParseSuccess);
+
+    }
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        $('#lines_container').minderSearchResult(<?php echo json_encode($this->linesJsSearchResults);?>);
+        $('#lines_container').minderSearchResult({autosorter:true, customSort:true});
+        $('#lines_container').minderSearchResult(<?php echo json_encode($this->linesJsSearchResultsDataset);?>);
+
+        $('#lines_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', linesTabContainerOnPageChanged)
+            .bind('show-by-changed', linesTabContainerOnShowByChanged)
+            .bind('pre-sort', linesTabContainerOnPreSort)
+            .bind('sort', linesTabContainerOnSort);
+
+        initBarcodeFields();
+        initButtons();
+        $('#TRANSFER_WHOLE_SEARCH_FORM [name=LOCATION_FROM]').focus();
+    });
+
+
+/* ]]> */
+</script>
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+            <ul class="toolbar">
+                {{each $item.data.buttons}}
+                    <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+</script>
+<?php echo $this->render('footer.phtml'); ?>

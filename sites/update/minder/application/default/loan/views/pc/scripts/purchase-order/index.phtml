@@ -1,0 +1,504 @@
+<?php
+echo $this->render('header.phtml');
+echo $this->messenger()->all(); 
+$attr = array();
+?>
+<h2><?php echo $this->pageTitle; ?></h2>
+<form id="nav" name="nav" method="post">
+<table>
+    <tbody>
+        <tr>
+        	<?php if(isset($this->searchFields[1])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[1]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[1]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[1],
+							$this->valueSearchFields[1],
+							$attr,
+							$this->listSearchFields[1]);   
+                	} elseif ($this->typesSearchFields[1]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[1], 
+                			$this->valueSearchFields[1], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[1]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php									
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[1], 
+                			$this->valueSearchFields[1], 
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+            
+            
+            
+            <?php if(isset($this->searchFields[2])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[2]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[2]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[2],
+							$this->valueSearchFields[2],
+							$attr,
+							$this->listSearchFields[2]);   	
+                	} elseif ($this->typesSearchFields[2]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[2], 
+                			$this->valueSearchFields[2], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[2]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php								
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[2], 
+                			$this->valueSearchFields[2], 
+                			$attr);
+                	}
+               	?>
+            </td>  
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>      
+		</tr>
+        <tr>
+        
+        	<?php if(isset($this->searchFields[3])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[3]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[3]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[3],
+							$this->valueSearchFields[3],
+							$attr,
+							$this->listSearchFields[3]);
+                	} elseif ($this->typesSearchFields[3]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[3], 
+                			$this->valueSearchFields[3], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[3]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[3], 
+                			$this->valueSearchFields[3], 
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+            
+            
+            
+            
+            <?php if(isset($this->searchFields[4])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[4]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[4]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[4],
+							$this->valueSearchFields[4],
+							$attr,
+							$this->listSearchFields[4]);   	
+                	} elseif ($this->typesSearchFields[4]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[4], 
+                			$this->valueSearchFields[4], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[4]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php								
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[4], 
+                			$this->valueSearchFields[4],
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+            
+        </tr>
+        <tr>
+        	<?php if(isset($this->searchFields[5])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[5]; ?> : 
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[5]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[5],
+							$this->valueSearchFields[5],
+							$attr,
+							$this->listSearchFields[5]);   
+                	} elseif ($this->typesSearchFields[5]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[5], 
+                			$this->valueSearchFields[5], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[5]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php									
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[5], 
+                			$this->valueSearchFields[5], 
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+            
+            
+            <?php if(isset($this->searchFields[6])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[6]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[6]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[6],
+							$this->valueSearchFields[6],
+							$attr,
+							$this->listSearchFields[6]);   	
+                	} elseif ($this->typesSearchFields[6]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[6], 
+                			$this->valueSearchFields[6], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[6]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php								
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[6], 
+                			selectFilterValue('purchase_order', 
+                			$this->conditions), 
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+            
+        </tr>
+        <tr>
+        	<?php if(isset($this->searchFields[7])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[7]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[7]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[7],
+							$this->valueSearchFields[7],
+							$attr,
+							$this->listSearchFields[7]);   	
+                	} elseif ($this->typesSearchFields[7]=='DP') {
+                		echo $this->formText(
+                			$this->searchFields[7], 
+                			$this->valueSearchFields[7], 
+                			$attr);
+                		?>
+                			<script type="text/javascript">$(document).ready(function(){
+								$('#<?php echo $this->searchFields[7]; ?>').datepicker({dateFormat: 'yy-mm-dd'});
+							});</script>
+                		<?php								
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[7], 
+                			$this->valueSearchFields[7], 
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+            
+            
+            
+            <?php if(isset($this->searchFields[8])) { ?>
+            <td class="rightalign">
+                <?php echo $this->descSearchFields[8]; ?> :
+            </td>
+            <td>
+                <?php
+                	if ($this->typesSearchFields[8]=='DD') {
+						echo $this->formSelect(
+							$this->searchFields[8],
+							selectFilterValue('person_id', $this->conditions),
+							$attr,
+							$this->personList);   		
+                	} else {
+                		echo $this->formText(
+                			$this->searchFields[8], 
+                			selectFilterValue('purchase_order', 
+                			$this->conditions), 
+                			$attr);
+                	}
+               	?>
+            </td>
+            <?php } else { ?>
+            <td colspan="2">&nbsp;</td>
+            <?php } ?>
+        </tr>
+    </tbody>
+</table>
+
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SEARCH', array('onclick' => 'frmSubmit()')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+    	<li><?php echo $this->formSubmit('action', 'CLEAR SELECTION', array('class' => 'order-button', 'onclick' => 'return frmSubmit(this)')); ?></li>        
+    	<li><?php echo $this->formSubmit('action', 'NEW ORDER', array('class' => 'order-button', 'onclick' => "location.href = '/minder/purchase-order/new'; return false;")); ?></li>        
+    </ul>
+    <div id="order-list">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left;">
+                            <b>
+                                Selected: <span  id="selected_num">0</span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+<table id="orders" class="withborder tablesorter">
+    <thead>
+        <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           '',
+                                           array('onclick' => 'selectAll(this)', 'checked' => $this->checkedAll)) ;?>
+            </th>
+<?php
+    foreach ($this->headers as $val) {
+        echo '<th>' . $this->escape($val) . '</th>';
+    }
+?>
+        </tr>
+    </thead>
+    <tbody>
+<?php
+if (count($this->data) > 0) {
+    foreach ($this->data as $obj) {
+        echo '<tr>';
+        echo '<th>';
+        echo $this->formCheckbox('lines[' . $this->escape($obj->id) .  ']',
+                                 $this->escape($obj->id),
+                                 array('class' => 'line_selector',
+                                       'checked' => selectFilterValue($this->escape($obj->id), $this->conditions),
+                                       'onclick' => 'showSelected(this, \'auto\')'));
+        echo '</th>';
+        foreach ($this->headers as $key => $val) {
+            echo '<td class="' . $key . '"><a href="' . $this->url(array('controller' => 'purchase-order', 'action' => 'edit', 'order' => $obj->id), '', true) . '">'. $this->escape($obj[$key]) . '</a></td>';
+        }
+        echo '</tr>';
+    }
+} else {
+    // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+    echo "<tr><th/>";
+    foreach($this->headers as $propertyName => $v) {
+        echo '<td/>';
+    }
+    echo "</tr>\n";
+}
+?>
+    </tbody>
+</table>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+        </ul>
+<div>
+    <ul class="toolbar">
+
+        <li><input type="submit" class="order-button" name="action" id="REPORT: XLS" value="REPORT: XLS" onclick="return frmSubmit(this)" /></li>
+        <li><?php echo $this->formSubmit('action', 'SET STATUS', array('onclick' => 'return changeStatus(\'orders\')')); ?></li>
+        <li><?php echo $this->formSelect('status', '', array(), $this->statusList); ?></li>
+    </ul>
+</div>
+</form>
+<div id="lines-list" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999;"></div>
+
+
+<script type="text/javascript">
+<!--
+var cacheValue = 50;
+$(document).ready(function() {
+    
+    $('#orders').tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+    
+    $('#po_due_date').datepicker({dateFormat: 'yy/mm/dd'});
+    
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'purchase-lines', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: 'init', 
+        id:     'select_all'
+    }, function(){
+        showLinesAndShowSelected();
+    });
+
+
+});
+
+
+function changeStatus(id) {
+
+    var items = $('.line_selector', '#' + id).filter(':checked');
+    var l = items.length;
+    $.getJSON('<?php echo $this->url(array('controller' => 'purchase-order', 'action' => 'set-status')); ?>?' + items.serialize()+'&'+$('#status').serialize(),
+            function (response) {
+                var msg = '';
+                for (var line in response.data) {
+                    if (response.data[line]) {
+                        $('.PO_STATUS', $('#lines-' + line).parent().parent()).text($('#status')[0].value);
+                        msg = msg + 'success order - ' + line + '\n';
+                    } else {
+                        msg = msg + 'failed order - ' + line + '\n';
+                    }
+                }
+                alert(response.status.msg + '\n' + msg);
+            });
+}
+function frmSubmit()
+{
+    document.getElementById('nav').submit();
+}
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+
+function frmClear()
+{
+    $('input:text').each(function() {
+        this.value = '';
+        });
+    $('form select').each(function() {
+        if (this.id != 'show_by' && this.id != 'pageselector' && this.id != 'PO_STATUS') {
+            this.selectedIndex = 0;
+        }
+        
+	    });
+    return false;
+}
+
+// The handler the one element selection.
+function showSelected(target) {
+    
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'purchase-lines', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     target.value, 
+        value:  target.value
+    }, function(target){
+        showLinesAndShowSelected();
+    });
+}
+
+function selectAll(target) {
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'purchase-lines', 'controller' => 'purchase-order', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     'select_all'
+    }, function(){
+        $('.line_selector').attr('checked', target.checked);
+        showLinesAndShowSelected();
+    });
+}
+
+function showLinesAndShowSelected() {
+    
+    var totalSelectedLines = $('#total_lines').text();
+    var totalSelectedOrders= $('#total_orders_selected').val();
+    var totalOrders        = $('#total_orders').val();
+   
+    if(totalSelectedOrders == totalOrders){
+        $('#select_all').attr('checked', 'checked');
+    } else {
+        $('#select_all').attr('checked', false);    
+    }
+    
+    $('#selected_num').text(totalSelectedOrders);
+  
+    if(totalSelectedOrders > 0){ 
+        $('#lines-list').show(); 
+    } else { 
+        $('#lines-list').hide();    
+    }
+    
+    onAjaxSuccess();
+}
+//-->
+</script>
+<?php
+echo $this->render('footer.phtml');

@@ -1,0 +1,875 @@
+<?php
+include "../login.inc";
+if (isset($_COOKIE['BDCSData']))
+{
+	list($orig_reference, $orig_location, $orig_ssn) = explode("|", $_COOKIE["BDCSData"]);
+	if (isset($_POST['ssn'])) 
+	{
+		$ssn = $_POST['ssn'];
+	}
+	if (isset($_GET['ssn'])) 
+	{
+		$ssn = $_GET['ssn'];
+	}
+	if ($orig_ssn != $ssn)
+	{
+		// ssn changed so go back
+		$header_line = "Location: GetSSN.php?reference=";
+		if (isset($_POST['reference'])) 
+		{
+			$header_line .= $_POST['reference'];
+		}
+		if (isset($_GET['reference'])) 
+		{
+			$header_line .= $_GET['reference'];
+		}
+		$header_line .= "&location=";
+		if (isset($_POST['location'])) 
+		{
+			$header_line .= $_POST['location'];
+		}
+		if (isset($_GET['location'])) 
+		{
+			$header_line .= $_GET['location'];
+		}
+		$header_line .= "&ssn=";
+		if (isset($_POST['ssn'])) 
+		{
+			$header_line .= $_POST['ssn'];
+		}
+		if (isset($_GET['ssn'])) 
+		{
+			$header_line .= $_GET['ssn'];
+		}
+		setcookie("BDCSData","", time()+86400, "/");
+		//$header_line .= "&cook=".$_COOKIE["BDCSData"];
+		header ($header_line);
+	}
+}
+else
+{
+	// 1st time in screen
+	// save original fields
+	$cookiedata = "";
+	if (isset($_POST['reference'])) 
+	{
+		$cookiedata .= $_POST['reference'];
+	}
+	if (isset($_GET['reference'])) 
+	{
+		$cookiedata .= $_GET['reference'];
+	}
+	$cookiedata .= '|';
+	if (isset($_POST['location'])) 
+	{
+		$cookiedata .= $_POST['location'];
+	}
+	if (isset($_GET['location'])) 
+	{
+		$cookiedata .= $_GET['location'];
+	}
+	$cookiedata .= '|';
+	if (isset($_POST['ssn'])) 
+	{
+		$cookiedata .= $_POST['ssn'];
+	}
+	if (isset($_GET['ssn'])) 
+	{
+		$cookiedata .= $_GET['ssn'];
+	}
+	setcookie("BDCSData","$cookiedata", time()+86400, "/");
+}
+?>
+<HTML>
+ <HEAD>
+  <TITLE>Get the Description you are applying to the SSN</TITLE>
+ </HEAD>
+<!-- Background white, links blue (unvisited), navy (visited), red (active) -->
+ <BODY BGCOLOR="#FFFFFF">
+
+<?php
+/*
+	still to do
+	scanning of type to change the labels used when entering data
+	use trans_class
+	use sources ???
+	interprete location and ssn in description
+	changing of ssn and location fields
+		(ssn means must auob - )
+		currently on change of ssn go to previous screen
+		enforces an auob when reneter screen
+	scanning of products
+		- qtys
+	use trans_qtys for products
+	scanning of pr ssn's (ie ask for qty) still 'A' class
+*/
+// Set the variables for the database access:
+require_once('DB.php');
+require('db_access.php');
+
+$tran_tranclass = "A";
+$tran_qty = 1;
+list($tran_user, $tran_device) = explode("|", $_COOKIE["LoginUser"]);
+
+if (!($Link = ibase_connect($DBName2, $User, $Password)))
+{
+	print("Unable to Connect!<BR>\n");
+	exit();
+}
+$dbTran = ibase_trans(IBASE_DEFAULT, $Link);
+
+if (isset($_POST['addssn'])) 
+{
+	$tran_tranid = "AUOB";
+	$tran_procedure = "PC_AUOB";
+	/* write transaction */
+	$Query = "EXECUTE PROCEDURE ADD_TRAN('";
+	if (isset($_POST['location'])) 
+	{
+		$Query .= substr($_POST['location'],0,2)."','";
+		$Query .= substr($_POST['location'],2,strlen($_POST['location']) - 2)."','";
+	}
+	if (isset($_GET['location'])) 
+	{
+		$Query .= substr($_GET['location'],0,2)."','";
+		$Query .= substr($_GET['location'],2,strlen($_GET['location']) - 2)."','";
+	}
+	if (isset($_POST['ssn'])) 
+	{
+		$Query .= $_POST['ssn']."','";
+	}
+	if (isset($_GET['ssn'])) 
+	{
+		$Query .= $_GET['ssn']."','";
+	}
+	$Query .= $tran_tranid."','";
+	$Query .= $tran_tranclass."','";
+	$tran_trandate = date("Y-M-d H:i:s");
+	$Query .= $tran_trandate."','";
+	if (isset($_POST['reference'])) 
+	{
+		$Query .= $_POST['reference']."',";
+	}
+	if (isset($_GET['reference'])) 
+	{
+		$Query .= $_GET['reference']."',";
+	}
+	$Query .= $tran_qty.",'F','','MASTER',0,'','SSSSSSSSS','";
+	$Query .= $tran_user."','";
+	$Query .= $tran_device."')";
+
+	if (!($Result = ibase_query($Link, $Query)))
+	{
+		print("Unable to Add Transaction!<BR>\n");
+		exit();
+	}
+	/* ibase_free_result($Result); */
+	unset($Result); 
+	/* must get the record id just created */
+	$Query = "SELECT RECORD_ID FROM TRANSACTIONS WHERE WH_ID ='";
+	if (isset($_POST['location'])) 
+	{
+		$Query .= substr($_POST['location'],0,2)."' AND LOCN_ID = '";
+		$Query .= substr($_POST['location'],2,strlen($_POST['location']) - 2)."' AND OBJECT = '";
+	}
+	if (isset($_GET['location'])) 
+	{
+		$Query .= substr($_GET['location'],0,2)."' AND LOCN_ID = '";
+		$Query .= substr($_GET['location'],2,strlen($_GET['location']) - 2)."' AND OBJECT = '";
+	}
+	if (isset($_POST['ssn'])) 
+	{
+		$Query .= $_POST['ssn']."' AND TRN_DATE = '";
+	}
+	if (isset($_GET['ssn'])) 
+	{
+		$Query .= $_GET['ssn']."' AND TRN_DATE = '";
+	}
+	$Query .= $tran_trandate."' AND TRN_CODE = '";
+	$Query .= $tran_tranclass."' AND DEVICE_ID = '";
+	$Query .= $tran_device."' AND COMPLETE = 'F'";
+	/* print($Query); */
+	$tran_recordid = NULL;
+	if (!($Result = ibase_query($Link, $Query)))
+	{
+/*
+		 print("Unable to Read Transaction!<BR>\n"); 
+		 exit(); 
+*/
+		 //transaction is archived - is ok 
+	}
+	else
+	if (($row = ibase_fetch_row($Result)))
+	{
+		$tran_recordid =  $row[0];
+		ibase_free_result($Result);
+		unset($Result); 
+	}
+
+	/* print("got record id ".$tran_recordid); */
+	/* process procedure */
+	if (isset($tran_recordid))
+	{
+		/* must get the record id just updated */
+		$Query = "SELECT error_text, complete RECORD_ID FROM TRANSACTIONS WHERE RECORD_ID = ".$tran_recordid;
+		/* print($Query); */
+		if (!($Result = ibase_query($Link, $Query)))
+		{
+			print("Unable to query table!<BR>\n");
+			exit();
+		}
+		$tran_error = NULL;
+		$tran_complete = NULL;
+		if (($row = ibase_fetch_row($Result)))
+		{
+			$tran_error =  $row[0];
+			$tran_complete =  $row[1];
+		}
+		ibase_free_result($Result);
+		unset($Result); 
+		if (isset($tran_complete))
+		{
+			print($tran_error);
+			/*
+			if ($tran_complete == "F")
+			{
+				$Query = "UPDATE TRANSACTIONS SET complete = 'T' WHERE RECORD_ID = ".$tran_recordid;
+				if (!($Result = ibase_query($Link, $Query)))
+				{
+					print("Unable to Update Transaction!<BR>\n");
+				}
+				/* ibase_free_result($Result); *-
+				unset($Result);
+			}
+			*/
+		}
+		else
+		{
+			$Query = "UPDATE TRANSACTIONS SET complete = 'T' WHERE RECORD_ID = ".$tran_recordid;
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to Update Transaction!<BR>\n");
+			}
+			/* ibase_free_result($Result); */
+			unset($Result);
+		}
+	}
+	else
+	{
+		print("Processed OK\n");
+	}
+}
+$getmore_desc = NULL;
+if (isset($_POST['description'])) 
+{
+	/* got a description */
+	/* print("<BR> Received Description:".$_POST['description'].":"); */
+	/* find its type */
+	$description = trim($_POST['description']);
+	if (substr($description, 0, 1) == '/')
+	{
+	  /* if it begin a slash look at 2nd char for the type of desc */
+		$tran_notok = FALSE;
+		$desc_type = substr($description, 1, 1);
+		$tran_procedure = "PC_NIXX";
+		switch($desc_type)
+		{
+		case '1':
+			$tran_label = 'SSN Type';
+			$tran_tranid = 'NITP';
+			break;
+		case '2':
+			$tran_label = 'Generic Description';
+			$tran_tranid = 'NIOB';
+			break;
+		case '3':
+			$tran_label = 'Brand';
+			$tran_tranid = 'NIBC';
+			break;
+		case '4':
+			$tran_label = 'Model';
+			$tran_tranid = 'NIMO';
+			break;
+		case '5':
+			$tran_label = 'Cost Center';
+			$tran_tranid = 'NICC';
+			break;
+		case '6':
+			$tran_label = 'Serial Number';
+			$tran_tranid = 'NISN';
+			break;
+		case '7':
+			$tran_label = 'Status';
+			$tran_tranid = 'NIST';
+			break;
+		case '8':
+			$tran_label = 'Location Type';
+			$tran_tranid = 'NILT';
+			$tran_procedure = "PC_NILT_NILS";
+			break;
+		case '9':
+			$tran_label = 'Location Status';
+			$tran_tranid = 'NILS';
+			$tran_procedure = "PC_NILT_NILS";
+			break;
+		case 'A':
+			$tran_label = 'Appearance';
+			$Query = "SELECT field1 from ssn_group where ssn_group = 'DEFAULT'";
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query ssn_group!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO1';
+			break;
+		case 'B':
+			$tran_label = 'Operating Condition';
+			$Query = "SELECT field2 from ssn_group where ssn_group = 'DEFAULT'";
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query ssn_group!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO2';
+			break;
+		case 'C':
+			$tran_label = 'Completeness';
+			$Query = "SELECT field3 from ssn_group where ssn_group = 'DEFAULT'";
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query ssn_group!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO3';
+			break;
+		case 'D':
+			$tran_label = 'GID No.';
+			$Query = "SELECT field4 from ssn_group where ssn_group = 'DEFAULT'";
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query ssn_group!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO4';
+			break;
+		case 'E':
+			$tran_label = 'Grid Reference No.';
+			$Query = "SELECT field5 from ssn_group where ssn_group = 'DEFAULT'";
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query ssn_group!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO5';
+			break;
+		case 'F':
+			$tran_label = 'Other 6';
+			$Query = "SELECT ssn_type.field1 from issn join ssn on issn.original_ssn = ssn.ssn_id join ssn_type on ssn.ssn_type = ssn_type.code where issn.ssn_id = '";
+			if (isset($_POST['ssn'])) 
+			{
+				$Query .= $_POST['ssn']."'";
+			}
+			if (isset($_GET['ssn'])) 
+			{
+				$Query .= $_GET['ssn']."'";
+			}
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query type description!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO6';
+			break;
+		case 'G':
+			$tran_label = 'Other 7';
+			$Query = "SELECT ssn_type.field2 from issn join ssn on issn.original_ssn = ssn.ssn_id join ssn_type on ssn.ssn_type = ssn_type.code where issn.ssn_id = '";
+			if (isset($_POST['ssn'])) 
+			{
+				$Query .= $_POST['ssn']."'";
+			}
+			if (isset($_GET['ssn'])) 
+			{
+				$Query .= $_GET['ssn']."'";
+			}
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query type description!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO7';
+			break;
+		case 'H':
+			$tran_label = 'Other 8';
+			$Query = "SELECT ssn_type.field3 from issn join ssn on issn.original_ssn = ssn.ssn_id join ssn_type on ssn.ssn_type = ssn_type.code where issn.ssn_id = '";
+			if (isset($_POST['ssn'])) 
+			{
+				$Query .= $_POST['ssn']."'";
+			}
+			if (isset($_GET['ssn'])) 
+			{
+				$Query .= $_GET['ssn']."'";
+			}
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query type description!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO8';
+			break;
+		case 'I':
+			$tran_label = 'Other 9';
+			$Query = "SELECT ssn_type.field4 from issn join ssn on issn.original_ssn = ssn.ssn_id join ssn_type on ssn.ssn_type = ssn_type.code where issn.ssn_id = '";
+			if (isset($_POST['ssn'])) 
+			{
+				$Query .= $_POST['ssn']."'";
+			}
+			if (isset($_GET['ssn'])) 
+			{
+				$Query .= $_GET['ssn']."'";
+			}
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query type description!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIO9';
+			break;
+		case 'J':
+			$tran_label = 'Other 10';
+			$Query = "SELECT ssn_type.field5 from issn join ssn on issn.original_ssn = ssn.ssn_id join ssn_type on ssn.ssn_type = ssn_type.code where issn.ssn_id = '";
+			if (isset($_POST['ssn'])) 
+			{
+				$Query .= $_POST['ssn']."'";
+			}
+			if (isset($_GET['ssn'])) 
+			{
+				$Query .= $_GET['ssn']."'";
+			}
+			if (!($Result = ibase_query($Link, $Query)))
+			{
+				print("Unable to query type description!<BR>\n");
+			}
+			if (($row = ibase_fetch_row($Result)))
+			{
+				$tran_label =  $row[0];
+			}
+			ibase_free_result($Result); 
+			unset($Result);
+			$tran_tranid = 'NIOA';
+			break;
+		case 'K':
+			$tran_label = 'Not New Cond. Items';
+			$tran_tranid = 'NIAP';
+			$tran_procedure = "PC_ADD_PROD_COND_STATUS";
+			break;
+		case 'L':
+			$tran_label = 'Label Status';
+			$tran_tranid = 'NILX';
+			break;
+		case 'M':
+			$tran_label = 'Faulty Cond. Items';
+			$tran_tranid = 'NIOP';
+			$tran_procedure = "PC_ADD_PROD_COND_STATUS";
+			break;
+		case 'N':
+			$tran_label = 'Incomplete Cond. Items';
+			$tran_tranid = 'NICP';
+			$tran_procedure = "PC_ADD_PROD_COND_STATUS";
+			break;
+		case 'O':
+			$tran_label = 'Copy Code';
+			$tran_tranid = 'NIGC';
+			break;
+		case 'P':
+			$tran_label = 'Legacy Item No';
+			$tran_tranid = 'NILG';
+			break;
+		case 'Q':
+			$tran_label = 'Maint. Support No';
+			$tran_tranid = 'NIOC';
+			break;
+		case 'R':
+			$tran_label = 'Admin Type';
+			$tran_tranid = 'NIRM';
+			break;
+		case 'T':
+			$tran_label = 'Product';
+			$tran_tranid = 'NIPC';
+			break;
+		default:
+			$tran_notok = TRUE;
+			print("Unknown Description - Can't Process\n");
+			break;
+		}
+		
+		if ($tran_notok == FALSE)
+		{
+			if (strlen($description) == 2 )
+			{
+				if (isset($_POST['description2'])) 
+				{
+					$description2 = $_POST['description2'];
+					if (substr($description2, 0, 1) == '/')
+					{
+						$description = $_POST['description2'];
+					}
+					else
+					{
+						$description .= $_POST['description2'];
+					}
+				}
+				else
+				{
+	  				/* if data length 2 must go to prompt for data */
+					$getmore_desc = "Y";
+				}
+			}
+			if (strlen($description) > 2 )
+			{
+				/* write transaction */
+				$Query = "EXECUTE PROCEDURE ADD_TRAN('";
+				if (isset($_POST['location'])) 
+				{
+					$Query .= substr($_POST['location'],0,2)."','";
+					$Query .= substr($_POST['location'],2,strlen($_POST['location']) - 2)."','";
+				}
+				if (isset($_GET['location'])) 
+				{
+					$Query .= substr($_GET['location'],0,2)."','";
+					$Query .= substr($_GET['location'],2,strlen($_GET['location']) - 2)."','";
+				}
+				if (isset($_POST['ssn'])) 
+				{
+					$Query .= $_POST['ssn']."','";
+				}
+				if (isset($_GET['ssn'])) 
+				{
+					$Query .= $_GET['ssn']."','";
+				}
+				$Query .= $tran_tranid."','";
+				$Query .= $tran_tranclass."','";
+				$tran_trandate = date("Y-M-d H:i:s");
+				$Query .= $tran_trandate."','";
+				$Query .= substr($description,2,strlen($description) - 2)."',";
+				$Query .= $tran_qty.",'F','','MASTER',0,'','SSSSSSSSS','";
+				$Query .= $tran_user."','";
+				$Query .= $tran_device."')";
+
+				if (!($Result = ibase_query($Link, $Query)))
+				{
+					print("Unable to Add Transaction!<BR>\n");
+					exit();
+				}
+				/* ibase_free_result($Result); */
+				unset($Result); 
+				/* must get the record id just created */
+				$Query = "SELECT RECORD_ID FROM TRANSACTIONS WHERE WH_ID ='";
+				if (isset($_POST['location'])) 
+				{
+					$Query .= substr($_POST['location'],0,2)."' AND LOCN_ID = '";
+					$Query .= substr($_POST['location'],2,strlen($_POST['location']) - 2)."' AND OBJECT = '";
+				}
+				if (isset($_GET['location'])) 
+				{
+					$Query .= substr($_GET['location'],0,2)."' AND LOCN_ID = '";
+					$Query .= substr($_GET['location'],2,strlen($_GET['location']) - 2)."' AND OBJECT = '";
+				}
+				if (isset($_POST['ssn'])) 
+				{
+					$Query .= $_POST['ssn']."' AND TRN_DATE = '";
+				}
+				if (isset($_GET['ssn'])) 
+				{
+					$Query .= $_GET['ssn']."' AND TRN_DATE = '";
+				}
+				$Query .= $tran_trandate."' AND TRN_CODE = '";
+				$Query .= $tran_tranclass."' AND DEVICE_ID = '";
+				$Query .= $tran_device."' AND COMPLETE = 'F'";
+				/* print($Query); */
+				$tran_recordid = NULL;
+				if (!($Result = ibase_query($Link, $Query)))
+				{
+/*
+					print("Unable to Read Transaction!<BR>\n");
+					exit();
+*/
+					//processed ok
+				}
+				else
+				if (($row = ibase_fetch_row($Result)))
+				{
+					$tran_recordid =  $row[0];
+					ibase_free_result($Result);
+					unset($Result); 
+				}
+
+				/* print("got record id ".$tran_recordid); */
+				/* process procedure */
+				if (isset($tran_recordid))
+				{
+					/* must get the record id just updated */
+					$Query = "SELECT error_text, complete RECORD_ID FROM TRANSACTIONS WHERE RECORD_ID = ".$tran_recordid;
+					/* print($Query); */
+					if (!($Result = ibase_query($Link, $Query)))
+					{
+						print("Unable to query table!<BR>\n");
+						exit();
+					}
+					$tran_error = NULL;
+					$tran_complete = NULL;
+					if (($row = ibase_fetch_row($Result)))
+					{
+						$tran_error =  $row[0];
+						$tran_complete =  $row[1];
+					}
+					ibase_free_result($Result);
+					unset($Result); 
+					if (isset($tran_complete))
+					{
+						print($tran_error);
+						/*
+						if ($tran_complete == "F")
+						{
+							$Query = "UPDATE TRANSACTIONS SET complete = 'T' WHERE RECORD_ID = ".$tran_recordid;
+							if (!($Result = ibase_query($Link, $Query)))
+							{
+								print("Unable to Update Transaction!<BR>\n");
+							}
+							/* ibase_free_result($Result); *-
+							unset($Result);
+						}
+						*/
+					}
+					else
+					{
+						$Query = "UPDATE TRANSACTIONS SET complete = 'T' WHERE RECORD_ID = ".$tran_recordid;
+						if (!($Result = ibase_query($Link, $Query)))
+						{
+							print("Unable to Update Transaction!<BR>\n");
+						}
+						/* ibase_free_result($Result); */
+						unset($Result);
+					}
+					/* ibase_free_result($Result); */
+				}
+				else
+				{
+					print("Processed OK \n");
+				}
+			}
+		}
+	}
+	else
+	{
+	  /* if its a location -> update the location */
+	  /* if its an ssn -> update the ssn */
+	  /* otherwise print error */
+		print("Not a Description - Cannot DO this yet\n");
+	}
+}
+
+//release memory
+if (isset($Result)) 
+{
+	ibase_free_result($Result);
+}
+
+//commit
+ibase_commit($dbTran);
+
+//close
+ibase_close($Link);
+
+print("<FONT size=\"2\">\n");
+print("<H5 ALIGN=\"LEFT\">Scan Description</H5>\n");
+print("<FORM action=\"GetSlash.php\" method=\"post\" name=getdesc>");
+print("<P>\n");
+print("<I><INPUT type=\"hidden\" name=\"reference\"");
+if (isset($_POST['reference'])) 
+{
+	print(" value=\"".$_POST['reference']."\"");
+}
+if (isset($_GET['reference'])) 
+{
+	print(" value=\"".$_GET['reference']."\"");
+}
+print(">\n");
+print("Loc <INPUT type=\"text\" name=\"location\"");
+if (isset($_POST['location'])) 
+{
+	print(" value=\"".$_POST['location']."\"");
+}
+if (isset($_GET['location'])) 
+{
+	print(" value=\"".$_GET['location']."\"");
+}
+print(" size=\"10\"");
+print(" maxlength=\"10\">\n");
+if (isset($getmore_desc)) 
+{
+	/* if data length 2 must go to prompt for data */
+	print("</I><INPUT type=\"hidden\" name=\"ssn\"");
+	if (isset($_POST['ssn'])) 
+	{
+		print(" value=\"".$_POST['ssn']."\"");
+	}
+	if (isset($_GET['ssn'])) 
+	{
+		print(" value=\"".$_GET['ssn']."\"");
+	}
+	print(">\n");
+	print("<INPUT type=\"hidden\" name=\"description\"");
+	if (isset($_POST['description'])) 
+	{
+		print(" value=\"".$_POST['description']."\"");
+	}
+	if (isset($_GET['description'])) 
+	{
+		print(" value=\"".$_GET['description']."\"");
+	}
+	print(">\n");
+	print("</FONT>\n");
+	print("<FONT size=\"2\">\n");
+	print($tran_label.": <INPUT type=\"text\" name=\"description2\"");
+}
+else
+{
+	print("SSN <INPUT type=\"text\" name=\"ssn\"");
+	if (isset($_POST['ssn'])) 
+	{
+		print(" value=\"".$_POST['ssn']."\"");
+	}
+	if (isset($_GET['ssn'])) 
+	{
+		print(" value=\"".$_GET['ssn']."\"");
+	}
+	print(" size=\"8\"");
+	print(" maxlength=\"20\"></I>\n");
+	print("</FONT>\n");
+	print("<FONT size=\"2\">\n");
+	print("DESCRIPTION: <INPUT type=\"text\" name=\"description\"");
+}
+print(" size=\"40\"");
+print(" maxlength=\"40\"><BR>\n");
+print("</FONT>\n");
+print("<FONT size=\"2\">\n");
+if ($_SERVER['HTTP_USER_AGENT'] < "Mozilla/4.0")
+{
+	// html 3.2 browser
+	print("<INPUT type=\"submit\" name=\"send\" value=\"Send!\">\n");
+	print("</FORM>\n");
+		$header_line = "Location: GetSSN.php?reference=";
+		if (isset($_POST['reference'])) 
+		{
+			$header_line .= $_POST['reference'];
+		}
+		if (isset($_GET['reference'])) 
+		{
+			$header_line .= $_GET['reference'];
+		}
+		$header_line .= "&location=";
+		if (isset($_POST['location'])) 
+		{
+			$header_line .= $_POST['location'];
+		}
+		if (isset($_GET['location'])) 
+		{
+			$header_line .= $_GET['location'];
+		}
+	print("<FORM action=\"GetSSN.php\" method=\"post\" name=nextssn>\n");
+	print("<INPUT type=\"hidden\" name=\"reference\" value=\"");
+	if (isset($_POST'reference'])) 
+	{
+		print ($_POST['reference']);
+	}
+	if (isset($_GET['reference'])) 
+	{
+		print ($_GET['reference']);
+	}
+	print("\"");
+	print("<INPUT type=\"hidden\" name=\"reference\" value=\"");
+	if (isset($_POST'reference'])) 
+	{
+		print ($_POST['reference']);
+	}
+	if (isset($_GET['reference'])) 
+	{
+		print ($_GET['reference']);
+	}
+	print("\"");
+	print("<INPUT type=\"submit\" name=\"nextssn\" value=\"Next SSN\">\n");
+	print("</FORM>\n");
+	print("<FORM action=\"../mainmenu.php\" method=\"post\" name=goback>\n");
+	print("<INPUT type=\"submit\" name=\"back\" value=\"Back\">\n");
+	print("</FORM>\n");
+}
+else
+{
+	// html 4.0 browser
+	print("<BUTTON name=\"send\" value=\"Send!\" type=\"submit\">\n");
+	print("Send<IMG SRC=\"/icons/forward.gif\" alt=\"forward\"></BUTTON>\n");
+	print("</FORM>\n");
+	print("<BUTTON name=\"nextssn\" type=\"button\" onfocus=\"location.href='GetSSN.php';\">\n");
+	print("Back<IMG SRC=\"/icons/back.gif\" alt=\"nextssn\"></BUTTON>\n");
+	print("<BUTTON name=\"back\" type=\"button\" onfocus=\"location.href='../mainmenu.php';\">\n");
+	print("Back<IMG SRC=\"/icons/back.gif\" alt=\"back\"></BUTTON>\n");
+}
+print("</P>\n");
+print("</BODY>\n");
+print("<SCRIPT>\n");
+if (isset($getmore_desc)) 
+{
+	print("document.getdesc.description2.focus();\n");
+}
+else
+{
+	print("document.getdesc.description.focus();\n");
+}
+?>
+</SCRIPT>
+</HTML>

@@ -1,0 +1,53 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<form action="<?php echo $this->url(); ?>" method="post">
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Allocate Picks" class="order-button" /></li>
+        <li><input type="submit" name="action" value="Cancel" onclick="javascript:window.location='<?php echo $this->url(array('controller' => 'pick-order'), '', true); ?>'; return false;" class="order-button" /></li>
+    </ul>
+
+    <div style="border-top: 1px solid #999999; text-transform: uppercase; font-weight: bold;">Available Devices</div>
+    <table id="devices" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+<?php
+    foreach ($this->devices as $deviceId => $device) {
+        echo '<tr>';
+        echo '<th><input type="radio" id="device_id_' . $this->escape($deviceId) . '" class="order_checkbox" name="device_id" value="' . $this->escape($deviceId) . '|' . $this->escape($this->userId) . '"/></th>';
+        foreach ($device as $val) {
+            echo '<td>'. $this->escape($val) . '</td>';
+        }
+        echo "</tr>\n";
+    }
+?>
+        </tbody>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Allocate Picks" class="order-button" /></li>
+        <li><input type="submit" name="action" value="Cancel" onclick="javascript:window.location='<?php echo $this->url(array('controller' => 'pick-order'), '', true); ?>'; return false;" class="order-button" /></li>
+    </ul>
+
+<?php
+foreach ($this->allocates as $allocate) {
+    echo '<input type="hidden" name="allocate[]" value="' . $this->escape($allocate) . '" />';
+}
+?>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#devices').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,0]], widgets: ['zebra']});
+})
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

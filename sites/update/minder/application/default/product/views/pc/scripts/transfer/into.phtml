@@ -1,0 +1,225 @@
+<?php echo $this->render('header.phtml'); ?>
+<div id="tooltip">
+    <ul class="messages">
+        <li>Key in the WH ID + Location ID + &lt;Enter&gt; or Scan Location ID Barcode</li>
+    </ul>
+</div>
+<div id="flash_error">
+    <?php echo $this->messenger()->all() ?> 
+</div>
+<div class="errors" style="display: none;" id ="div_errors">
+    <li id="js_error"></li>
+</div>
+<form name="main" id="main_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'transfer', 'action' => 'into'), null, true); ?>" method="post">
+<h2><?php echo $this->pageTitle; ?></h2>
+<div id="update_form" style="width:99%;">
+        <table>
+            <tr>
+                <th>
+                    <b>PLACE ISSN INTO:</b>
+                </th>
+            </tr>
+            <tr>
+                <th style="align:right">Location InTo:</th>
+                <td><?php echo $this->formText('locn_id', $this->locn_id); ?></td>
+                <th></th>
+                <td><span id="locn_name"></span></td>
+            </tr>
+            <tr>
+                <th style="align:right">ISSN:</th>
+                <td><?php echo $this->formText('ssn_id', $this->ssn_id, null); ?></td>
+                <th>&nbsp;</th>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formButton('action', 'UPDATE', array('onclick' => 'checkParam()')); ?></li>
+        <li><?php echo $this->formButton('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+    </ul>
+</div>
+<div id="issn_lines">
+
+</div>
+</form>   
+
+
+<script type="text/javascript">
+<!--
+
+$(document).ready(function(){
+    var cacheValue      = 1;
+    var numPressEnter   = 0;
+    
+    window.isSsnPrefix = false;
+    window.isLocnPrefix= false;
+
+    $('#locn_id, #ssn_id').minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->ssnBarcodeDescriptor;?>, <?php echo $this->locationBarcodeDescriptor;?>]})
+            .bind('parse-error', barcodeParseError)
+            .bind('parse-success', barcodeParseSuccess);
+      
+    <?php if($this->displayInto) { ?>
+        // Load Locn ID
+        getLocnId();
+        // Load lines after UPDATE.
+        $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default')); ?>', {method: 'init', id: 'select_all', locn_id: $('#locn_id')[0].value});
+    <?php } ?>
+    
+    // focus on LOCN_ID
+    if($('#locn_id')[0].value == '') {
+        $('#locn_id')[0].focus();
+    } else {
+        if($('#ssn_id')[0].value == '') {
+            $('#ssn_id')[0].focus();
+        }
+    }
+    
+});
+
+function barcodeParseError(evt) {
+    var $_target = $(evt.target);
+
+    showError(': "' + $_target.val() + '"', true);
+    $_target.val('');
+}
+
+function barcodeParseSuccess(evt) {
+    showError('', false);
+    var $_target = $(evt.target);
+
+    switch (evt.parseResult.paramDesc.param_name) {
+        case 'BARCODE':
+            $_target.val('');
+            $('#ssn_id').val(evt.parseResult.paramDesc.param_filtered_value);
+            window.isLocnPrefix = (evt.parseResult.paramDesc.param_prefix.length > 0);
+            checkParam(false);
+            break;
+        case 'LOCATION':
+            $_target.val('');
+            $('#locn_id').val(evt.parseResult.paramDesc.param_filtered_value);
+            $('#ssn_id').val('').focus();
+            window.isSsnPrefix = (evt.parseResult.paramDesc.param_prefix.length > 0);
+            getLocnId();
+            break;
+    }
+}
+
+function frmClear()
+{
+    $("form#main_form input:text").each(function() {
+        this.value = "";
+    });
+    $("form#main_form select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+    });
+    $('#locn_name').text('');
+    
+    showError('', false);
+    window.isLocnPrefix = false;
+    window.isSsnPrefix  = false;
+     
+    return false;
+}
+
+function getLocnId() {
+    $('#locn_name').text('');
+    var locnId    = $('#locn_id')[0];
+    $.getJSON('<?php echo $this->url(array('controller' => 'transfer', 'action' => 'search'), '', false); ?>', 
+               {
+                   q: locnId.value, field: 'locn_id'}, 
+                   function(json){
+                   $('#locn_name').text(json.locn_name);     
+               }
+    );
+}
+function loandIssnLines() {
+    locn_id = $('#locn_id')[0].value;
+    $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default')); ?>', 
+                          {locn_id: locn_id}
+                         );
+}
+
+function formUpdate() {
+    
+    var ssnPrefixExp = '<?php echo $this->ssnFilter['SYMBOLOGY_PREFIX']; ?>';
+    var locPrefixExp = '<?php echo $this->locFilter['SYMBOLOGY_PREFIX']; ?>';
+   
+    
+    oldForm = $("#main_form");
+    $("#main_form").action = $("#main_form").action + '/into';
+    
+    if(window.isLocnPrefix == true) {
+        $("#main_form").append('<input type="hidden" id="toDelete2" name="hid_locn_id" value="' + locPrefixExp + $('#locn_id')[0].value +'" />');
+    } else {
+        $("#main_form").append('<input type="hidden" id="toDelete2" name="hid_locn_id" value="' + $('#locn_id')[0].value +'" />');
+    }
+    
+    if(window.isSsnPrefix == true) {
+        $("#main_form").append('<input type="hidden" id="toDelete3" name="hid_ssn_id" value="' + ssnPrefixExp + $('#ssn_id')[0].value + '" />');
+    } else {
+        $("#main_form").append('<input type="hidden" id="toDelete3" name="hid_ssn_id" value="' + $('#ssn_id')[0].value + '" />');
+    }
+    $("#main_form").append('<input type="hidden" id="toDelete" name="action" value="update" />')[0].submit();
+    $('#toDelete').remove();
+    $('#toDelete2').remove();
+    $('#toDelete3').remove();
+    $("#main_form").action = oldForm;
+    return false;
+}
+
+function checkParam(checkPrefixes) {
+    checkPrefixes = (typeof checkPrefixes !== 'boolean')? true : checkPrefixes;
+    var $_issn = $('#ssn_id');
+    var $_locn = $('#locn_id');
+    var issnInputCheckResult = $_issn.minderCheckBarcode();
+    var locnInputCheckResult = $_locn.minderCheckBarcode();
+
+    if ($_issn.val() != '') {
+        if (issnInputCheckResult.error || issnInputCheckResult.paramDesc.param_name != 'BARCODE') {
+            showError("of the field ISSN - " + $_issn.val(), true);
+            $_issn.focus();
+        }
+    } else {
+        $_issn.focus();
+    }
+
+    if ($_locn.val() != '') {
+        if (locnInputCheckResult.error || locnInputCheckResult.paramDesc.param_name != 'LOCATION') {
+            showError("of the field Location inTo - " + $_locn.val(), true);
+            $_locn.focus();
+        }
+    } else {
+        $_locn.focus();
+    }
+    
+    if ((!issnInputCheckResult.error)
+            && (!locnInputCheckResult.error)
+            && issnInputCheckResult.paramDesc.param_name == 'BARCODE'
+            && locnInputCheckResult.paramDesc.param_name == 'LOCATION'
+            ) {
+
+        if (checkPrefixes) {
+            window.isLocnPrefix = (locnInputCheckResult.paramDesc.param_prefix.length > 0);
+            window.isSsnPrefix = (issnInputCheckResult.paramDesc.param_prefix.length > 0);
+        }
+        showError('', false);
+        formUpdate();
+    }
+}
+
+function showError(message, disabled) {
+    $('#js_error').text("Unrecognised input " + message);
+    if(disabled) {
+        $('#div_errors').css("display", "block");
+    } else {
+        $('#div_errors').css("display", "none")
+    }         
+}
+
+//-->
+</script>   
+   
+<?php echo $this->render('footer.phtml');
+    
+     

@@ -1,0 +1,678 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    echo $this->messenger()->all();
+
+    $attributes = array('autocomplete' => 'off', 'onkeyup' => 'checkKeys(event)');
+    //$attributesForSelect = array('onchange'=>'seek_changed(this.name)');
+    $attributesForSelect = array();
+?>
+<?php if ($this->from == 'transfer-order' || $this->from == 'fso' || $this->from == 'pick-order') : ?>
+<form action="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn', 'action' => 'index', 'from' => $this->from, 'without' => $this->without), null, true); ?>" method="post" id="main_form">
+<ul class="toolbar">
+    <li><?php echo $this->formSubmit('action', 'Products', array('style' => 'background: #01ff01'))?></li>
+    <li><?php echo $this->formSubmit('action', 'Non-Products', array('style' => 'background: #349967')) ?></li>
+</ul>
+</form>
+<?php endif ?>
+<form name="main" id="main" action="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn', 'action' => 'index', 'from' => $this->from), null, true); ?>" method="post">
+<h2><?php echo $this->pageTitle; ?></h2>
+ <div id="search_tabs" style="width:99%;">
+   <div id="basic_tab">
+    <table>
+        <tr>
+            <th class="rightalign">Description:</th>
+            <td colspan="3">
+                <?php echo $this->formText('ssn_description', selectFilterValue('ssn_description', $this->conditions), array('autocomplete' => 'off', 'style' => 'width:100ex')); ?>
+            </td>
+        </tr>
+        <tr>
+           <th class="rightalign"><?php echo $this->minder->getLabelName('SSN', 'SSN_TYPE'); ?>:</th>
+            <td><?php echo $this->formSelectStrict('ssn_type',
+                                                   selectFilterValue('ssn_type', $this->conditions),
+                                                   array('onchange' => 'updateSsnTypeII()'),
+                                                   $this->ssnTypeList); ?>
+            </td>
+
+            <th class="rightalign"><?php echo $this->minder->getLabelName('SSN', 'GENERIC'); ?>:</th>
+            <td><?php echo $this->formSelectStrict('generic',
+                                                   selectFilterValue('generic', $this->conditions),
+                                                   array('onchange' => 'updateSsnTypeIII()'),
+                                                   $this->varietyList); ?>
+            </td>
+        </tr>
+        <tr>
+            <th class="rightalign"><?php echo $this->minder->getLabelName('SSN', 'SUB_TYPE'); ?>:</th>
+            <td><?php echo $this->formSelectStrict('ssn_sub_type',
+                                                   selectFilterValue('ssn_sub_type', $this->conditions),
+                                                   array(),
+                                                   $this->ssnSubTypeList); ?>
+            </td>
+            <th class="rightalign"><?php echo $this->minder->getLabelName('SSN', 'BRAND'); ?>:</th>
+            <td>
+                <?php echo $this->formText('brand', selectFilterValue('brand', $this->conditions), $attributes); ?>
+            </td>
+        </tr>
+        <tr>
+            <th class="rightalign"><?php echo $this->minder->getLabelName('SSN', 'MODEL'); ?>:</th>
+            <td>
+                <?php echo $this->formText('model', selectFilterValue('model', $this->conditions), $attributes); ?>
+            </td>
+            <th class="rightalign">Company ID:</th>
+            <td>
+                <?php echo $this->formSelectStrict('company_id', selectFilterValue('company_id', $this->conditions), '', $this->companyIdList); ?>
+            </td>
+        </tr>
+    </table>
+  </div>
+</div>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SEARCH', array('onclick' => 'frmSubmit()')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+<?php if ($this->from != 'transfer-order' && $this->from != 'fso') : ?>
+        <li><?php echo $this->formSubmit('action', 'ADD SSN', array('onclick' => 'frmSubmit()')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CREATE SSN', array('onclick' => 'frmSubmit()')); ?></li>
+<?php endif ?>
+    </ul>
+    <div id="table-wrapper">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999; visibility: <?php echo $this->tabShow; ?>">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left; font-weight: bold;">
+                            Selected: <span  id="selected_num">0</span>
+                        </div>
+                    </td>
+                    <?php if ($this->from == 'transfer-order' || $this->from == 'fso') : ?>
+                    <td>
+                        <div>
+                            <b>
+                                Total Selected Qty =
+                                <?php echo $this->formText('total_qty', $this->qtyProducts1, array('readonly' => true, 'style' => 'width:8ex;text-align:right;')); ?>
+                                <!-- <span id="total_qty"><?php echo $this->qtyProducts1; ?></span> -->
+                            </b>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <b>
+                                Required Qty for Order:
+                                <?php echo $this->formText('required_qty', $this->requiredQty1, array('style' => 'width:8ex;text-align:right;', 'onKeyUp' => 'activateAddButton();')); ?>
+                            </b>
+                        </div>
+                    </td>
+                    <td>
+                         <?php echo $this->formButton('selected_rows', 'SELECT ROWS' ); ?>
+                    </td>
+                    <?php endif ?>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline; visibility: <?php echo $this->tabShow; ?>">
+            Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', '', array('checked' => $this->allSelected)); ?>
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+<?php if ($this->tabShow != 'hidden') { ?>
+        <table id="<?php echo $this->escape($this->tableId) ?>" class="withborder tablesorter">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           '',
+                                           array('onclick' => 'selectAll(this)')) ;?>
+            </th>
+<?php
+    foreach ($this->headers as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->ssns) > 0) if (count($this->ssns) > 0) {
+        for ($i = 0; $i < count($this->ssns); $i++) {
+            $ssnLine = $this->ssns[$i];
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox($this->escape($ssnLine->id),
+                                     $this->escape($ssnLine->id),
+                                     array('class' => 'line_selector',
+                                           'checked' => selectFilterValue($this->escape($ssnLine->id), $this->conditions),
+                                           'onclick' => 'showSelected(this, \'auto\')'));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                    $val = $ssnLine->items[$propertyName];
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                                                'controller'  => 'ssn',
+                                                'action'      => 'edit'),
+                                                '',
+                                                true);
+                 switch($propertyName) {
+                        case 'LOAN_STATUS':
+                                            $val = trim($ssnLine->items[$propertyName]);
+                                            if(!empty($val)) {
+                                                list($val, $color) = explode('|', $this->loanSafetyColors[$val]);
+                                                $color = $this->colorsCodes[$color];
+                                            }
+                        case 'LOAN_SAFETY_CHECK':
+                                            $val = trim($ssnLine->items[$propertyName]);
+                                            if(!empty($val)) {
+                                                list($val, $color) = explode('|', $this->loanSafetyColors[$val]);
+                                                $color = $this->colorsCodes[$color];
+                                            }
+                        case 'LOAN_CALIBRATE_CHECK':
+                                            $val = trim($ssnLine->items[$propertyName]);
+                                            if(!empty($val)) {
+                                                list($val, $color) = explode('|', $this->loanCalibrateColors[$val]);
+                                                $color = $this->colorsCodes[$color];
+                                            }
+                    }
+                    // calculate value if the filed name = CURRENT_QTY
+                    if($propertyName === 'CURRENT_QTY') {
+                        $line = null;
+                        foreach($this->loanRateData as $loanRate) {
+                            if($loanRate['LR_COMPANY_ID'] == $this->licensee && $loanRate['LR_SSN_TYPE'] == $ssnLine->items['SSN_TYPE']) {
+                                $line = $loanRate;
+                            }
+                        }
+                        if(is_null($line)) {
+                            foreach($this->loanRateData as $loanRate) {
+                               if($loanRate['LR_COMPANY_ID'] == strtoupper($this->licensee) && $loanRate['LR_SSN_TYPE'] === 'DEFAULT') {
+                                    $line = $loanRate;
+                                }
+                            }
+                        }
+                        
+                        if($this->totalDays >= 1 && $this->totalDays <=7) {
+                            $prefix = 'LR_DAY';
+                        }
+                        if($this->totalDays >7 && $this->totalDays <=30) {
+                            $prefix = 'LR_WEEK';
+                        }
+                        if($this->totalDays >30 && $this->totalDays <=90) {
+                            $prefix = 'LR_MONTH';
+                        }
+                        if($this->totalDays >90 && $this->totalDays <=365) {
+                            $prefix = 'LR_QUARTER';
+                        }
+                        if($this->totalDays >365 ) {
+                            $prefix = 'LR_ANNUAL';
+                        }
+
+                        $val = $loanRate[$prefix]/100 * $ssnLine->items[$loanRate['LR_APPLIED_TO']];
+
+                    }
+                    // added tooltip
+                    if($propertyName === 'LOAN_STATUS' ) {
+                        if (array_key_exists($ssnLine->items[$propertyName], $this->ssnStatusList)) {
+                            $tooltip = $this->ssnStatusList[$ssnLine->items[$propertyName]];
+                        } else {
+                            $tooltip = 'No description';
+                        }
+                    } else {
+                        $tooltip = '';
+                    }
+                    if(!empty($color)) {
+                        echo '<td title="' . $tooltip .'" style="background-color:' . $color . '"><a href="'. $urlEdit .'/edit_ssn_ssn_id/'.$ssnLine->id.'">'. $this->escape($val) . '</a></td>'."";
+                        unset($color);
+                    } else {
+                         echo '<td title="' . $tooltip .'"><a href="'. $urlEdit .'/edit_ssn_ssn_id/'.$ssnLine->id.'">'. $this->escape($val) . '</a></td>'."";
+                    }
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999; visibility: <?php echo $this->tabShow; ?>">Total
+            <?php echo $this->numRecords . " records. ";?>
+            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno);?>
+        </div>
+    </div>
+<?php
+if ($this->from == 'fso' || $this->from == 'transfer-order' || $this->from == 'pick-order') : ?>
+    <ul class="toolbar" style="clear: both;">
+        <li>
+            <?php echo $this->formSubmit('action', 'ADD', array('onclick' => 'return frmSubmit();', 'id' => 'add_action'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'ADD & CONTINUE', array('onclick' => 'return frmSubmit();', 'disabled' => 'disabled'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'CANCEL ADD')?>
+        </li>
+         <li>
+            <?php echo $this->formSubmit('action', 'VIEW AVAILABILITY', array('onclick' =>'return newPrompt();', 'disabled' => 'disabled', 'id' => 'view'))?>
+        </li>
+        <li>
+            <?php echo $this->formButton('jsbutton', 'CLEAR SELECTION')?>
+        </li>
+    </ul>
+<?php else : ?>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: TXT', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: XML', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+    </ul>
+<?php endif ?>
+</form>
+<?php if ($this->from == 'transfer-order') { ?>
+<div id="dialog" class="flora" title="SSN Gantt Chart's for all Selected SSN's " style="display: none;">
+    <div style="overflow: auto; width: 100%; height: 100%; text-align:center;">
+        <img src="<?php echo $this->url(array('controller' => 'graphic', 'action' => 'linediagram'), '', true); ?>" id="issnGraph" />
+    </div>
+</div>
+<?php } ?>
+<script type="text/javascript">
+<!--
+var acc_closed = false;
+var selectedNum = 0;
+var cacheValue = 50;
+$(document).ready( function (){
+        $.ajaxSetup({async: false,
+                     complete: onAjaxSuccess,
+                     error: onAjaxError,
+                     beforeSend: onAjaxBeforeSend});
+        $("#table").tablesorter({headers: {0: {sorter:false}}, sortList:[[1,1]], widgets: ['zebra']});
+        $('#table').dragCols({
+            'drop': savePosition,
+            'params': ['<?php echo $this->url(array('module'    => 'warehouse',
+                                                   'controller' => 'settings',
+                                                   'action'     => 'save-position')) ?>', 'ssn', 'index']
+        });
+        $("#search_tabs > ul").tabs();
+        $("#create_date").datepicker({dateFormat: 'yy/mm/dd'});
+        $("#select_complete").bind("click", selectWholeTable);
+        $("#jsbutton").bind("click", selectWholeTableFromButton);
+        $("#selected_rows").bind("click", sendRequiredQty);
+<?php if ($this->from == 'fso' || $this->from == 'transfer-order' || $this->from == 'pick-order') { ?>
+        $("#required_qty").bind("keyup", checkRequired).keyup();
+<?php } ?>
+
+        showSelected($('#select_all').get(0), "init");
+        $('#dialog').dialog({buttons: {},
+             modal: true,
+             width: 1100,
+             height: 500,
+             autoOpen: false,
+        
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();     
+         });
+<?php
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'ssn',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithoutDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+});
+
+function newPrompt()
+{
+    sendRequest();
+    $("#dialog").dialog("open");
+    return false;
+}
+
+function closeDialog()
+{
+    $('#dialog').dialog("close");
+    return false;
+}
+
+function sendRequest()
+{
+    $.ajax({url: '<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn', 'action' => 'index', 'from' => $this->from, 'without' => $this->without)); ?>',
+           data:  'action=view availability',
+           beforeSend: onAjaxBeforeSend,
+           complete: onAjaxSuccess,
+            success: function(result) {
+                        var d  = new Date();
+                        var curDate = d.getMinutes() + d.getSeconds();
+                        var imgSrc = $("#issnGraph").attr("src");
+                           $("#issnGraph").attr("src", imgSrc + '?date=' + curDate);
+                     },
+           type: "POST"
+           });
+
+    return false;
+}
+function limitChanged()
+{
+    frmSubmit();
+    return true;
+}
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function selectWholeTable()
+{
+    var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+    var checkOnOff = this.checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    calcOther(this, $($(this).parent().parent()[0]));
+    return true;
+}
+
+function selectWholeTableFromButton()
+{
+    var selectChk = $('#select_complete');
+        if(selectChk[0].checked == true) {
+            selectChk[0].checked = false;
+        }
+    var chk = $('table input:checkbox', '#' + selectChk.parent().parent()[0].id);
+    for (i=0; i < chk.length; i++) {
+        if(chk[i].checked == true) {
+            chk[i].checked = false;
+        }
+    }
+
+     $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'ssn', 'module' => 'warehouse')); ?>',
+             {    field: 'QTY',
+               inAction: 'index',
+                     id: 'select_complete',
+              activeTab: '#table-wrapper',
+               method: false
+             }, function(json) {
+                   var answer = eval(json);
+                   $("#selected_num", '#table-wrapper').text(answer.selected_num);
+                   $("#total_qty").attr('value', answer.selected_num);
+                   $('#required_qty').attr('value', answer.selected_num);
+
+
+               });
+
+    activateAddButton();
+    activateViewButton();
+
+    return true;
+}
+
+function checkKeys(e)
+{
+    if (e.keyCode == 13) {
+        frmSubmit();
+    }
+    return true;
+}
+function frmClear()
+{
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+function showBasic()
+{
+    //$("#basic_tab").show();
+    $("#other_tab").hide();
+    return false;
+}
+function showOther()
+{
+    //$("#basic_tab").hide();
+    $("#other_tab").show();
+    return false;
+}
+
+function calcOther(element, method)
+{
+    var countEl = 0;
+    if ('auto' == method) {
+        var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = element.checked;
+    } else if ('init' == method) {
+        var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = 'init';
+    } else {
+        var container_id = '#' + $(method)[0].id;
+        var method = element.checked;
+    }
+    $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'ssn', 'module' => 'warehouse')); ?>',
+             { field: 'QTY',
+               inAction: '<?php echo 'index'; ?>',
+               activeTab: container_id,
+               method: method,
+               id: element.id,
+               value: element.value }, function(json) {
+                   var answer = eval(json);
+                   $("#selected_num", container_id).text(answer.selected_num);
+                   $("#total_qty").attr('value', answer.total_qty);
+<?php if ($this->from == 'fso' || $this->from == 'transfer-order' || $this->from == 'pick-order') { ?>
+                   checkRequired();
+<?php } ?>
+               });
+}
+
+<?php
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'ssn',
+                        'action'     => 'seek'));
+?>
+function updateSsnTypeII()
+{
+    $.ajax(
+           {
+            type: "GET",
+            url: "<?php echo $url; ?>",
+            cache: false,
+            data: {
+                   field:     "generic",
+                   ssn_type: $("#ssn_type").get(0).value
+            },
+            success: function (data) {
+                $("#generic").get(0).length = 0;
+                $("#ssn_sub_type").get(0).length = 0;
+                var options = eval('(' + data + ')');
+                var i = 0;
+                $("#generic").get(0).options[i] = new Option('', '');
+                for (var key in options) {
+                    i++;
+                    var newOpt = new Option(options[key], key);
+                    $("#generic").get(0).options[i] = newOpt;
+                }
+            },
+            error: function () {
+                alert("Try again");
+            }
+           }
+          );
+}
+
+function updateSsnTypeIII()
+{
+$.ajax(
+       {
+        type: "GET",
+        url: "<?php echo $url; ?>",
+        cache: false,
+        data: {
+            field:     "ssn_sub_type",
+            ssn_type: $("#ssn_type").get(0).value,
+            generic:  $("#generic").get(0).value
+        },
+        success: function (data) {
+            $("#ssn_sub_type").get(0).length = 0;
+            var options = eval('(' + data + ')');
+            var i = 0;
+            $("#ssn_sub_type").get(0).options[i] = new Option('', '');
+            for (var key in options) {
+                i++;
+                var newOpt = new Option(options[key], key);
+                $("#ssn_sub_type").get(0).options[i] = newOpt;
+            }
+        },
+        error: function () {
+            alert("Try again");
+        }
+       }
+      );
+}
+
+function sendRequiredQty() {
+
+    var reqQty = $("#required_qty").attr('value');
+    if(!isNaN(reqQty ) && (reqQty != 0) ) {
+        totalSelected = $("#required_qty").attr('value');
+    } else {
+        totalSelected = 1;
+    }
+
+    $.ajax({url: '<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'ssn', 'action' => 'index', 'from' => $this->from, 'without' => $this->without)); ?>',
+            data:  'action=select rows&'+'required_qty=' + totalSelected,
+            beforeSend: onAjaxBeforeSend,
+            complete: onAjaxSuccess,
+            success: function(result) {
+                        var result = eval(result);
+                        $("#selected_num", '#table-wrapper').text(result.length);
+                        $("#total_qty").attr('value', result.length);
+
+                        checkRequired();
+
+                        var selectChk = $('#select_complete');
+                        var chk = $('table input:checkbox', '#' + selectChk.parent().parent()[0].id);
+                                    toFalseCheckboxes();
+                        for (i=0; i < chk.length; i++) {
+                            for(j=0; j<result.length; j++) {
+                                if(chk[i].id == result[j]) {
+                                     chk[i].checked = true;
+                                }
+                            }
+                         }
+
+
+                     },
+            type: "POST"
+            });
+
+    return false;
+
+}
+function toFalseCheckboxes() {
+    var selectChk = $('#select_complete');
+    var chk = $('table input:checkbox', '#' + selectChk.parent().parent()[0].id);
+    for (i=0; i < chk.length; i++) {
+        if(chk[i].checked == true) {
+            chk[i].checked = false;
+        }
+    }
+
+}
+
+<?php if ($this->from == 'fso' || $this->from == 'transfer-order' || $this->from == 'pick-order') { ?>
+function checkRequired()
+{
+    activateAddButton();
+    activateViewButton();
+    if (!$('#total_qty').length) {
+        return;
+    }
+    var fieldToColor = $('#total_qty');
+    var requiredQty = $('#required_qty').attr('value');
+    if (parseInt(fieldToColor.attr('value')) >= parseInt(requiredQty)) {
+        $('.action_button').removeAttr('disabled').removeClass('disabled');
+        fieldToColor.css("background-color", "#00FF00");
+        activateAddButton();
+    } else {
+        $('.action_button').attr('disabled', 'disabled').addClass('disabled');
+        $(fieldToColor).css("background-color", "#FF0000");
+    }
+}
+
+function activateAddButton() {
+
+    var rQty        = parseInt($("#required_qty").val());
+    var totalQty    = parseInt($("#total_qty").val());
+    if(totalQty != 0 && !isNaN(rQty) && totalQty >= rQty) {
+        $('#add_action').removeAttr("disabled").removeClass('disabled');
+    } else {
+        $('#add_action')[0].disabled = "disabled";
+        $('#add_action').addClass("disabled");
+    }
+}
+function activateViewButton() {
+
+    var totalQty    = parseInt($("#total_qty").val());
+    if(totalQty > 0) {
+        $('#view').removeAttr("disabled").removeClass('disabled');
+    } else {
+        $('#view')[0].disabled = "disabled";
+        $('#view').addClass("disabled");
+    }
+}
+function reportCsv() {
+    
+    oldForm =  $("#main_form").action;
+    $("#main_form").action = $("#main_form").action;
+    $("#main_form").append('<input type="hidden" id="toDelete" name="action" value="report: gd" />')[0].submit();
+    $('#toDelete').remove();
+    $("#main_form").action = oldForm;
+    return false;
+
+}
+<?php } ?>
+//-->
+</script>
+<?php } //tabShow ?>
+<?php echo $this->render('footer.phtml');

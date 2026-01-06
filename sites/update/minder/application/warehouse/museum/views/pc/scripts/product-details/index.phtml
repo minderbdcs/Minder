@@ -1,0 +1,300 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all();?>
+
+<h2 title="<?php echo $this->productsSysScreenName;?>"><?php echo $this->escape($this->pageTitle);?></h2>
+
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs);
+    $resultsForm->setFields($this->fields);
+?>
+
+<?php 
+    echo $this->sysScreenSearchForm(array('name' => 'prod_details_search_form'), $this->searchFields, $this->searchActions);
+?>
+
+<div id="PRODUCTS_LIST_CONTAINER">
+<form name="products_results_form" id="products_results_form" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="product_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+            <div class="sys-screen-title" title="<?php echo $this->productsSysScreenName;?>">Products List<span class="modification_flag <?php echo $this->rowSelectionNamespace;?>"></span></div>
+            <div class="paginator-container">
+                <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalCount == $this->selectedCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->rowSelectionNamespace));?>
+                <label for="results_per_page">View By:</label>
+                <?php echo $this->formSelect('show_by', 
+                                                $this->navigation['show_by'],
+                                                array(),
+                                                array(5  => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                      100 => 100)) ?>
+                <label for="page">Page:</label>
+                <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+            </div>
+             
+            <ul class="black-top-border" style="clear: both;">
+                <li style="display: inline;">Selected: <span id="prods_selected" class="selected_count <?php echo $this->rowSelectionNamespace;?>"><?php echo $this->selectedCount;?></span></li>
+            </ul>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <?php echo $resultsForm->renderTabContent(
+                                        $tabId, 
+                                        array(
+                                            'select_all_checked'    => (count($this->products) == count($this->selectedProducts)), 
+                                            'selection_namespace'   => $this->rowSelectionNamespace, 
+                                            'switch_selection_mode' => $this->selectMode,
+                                            'tab_content_class'     => 'withborder tablesorter product_details'
+                                        ), 
+                                        $this->products, 
+                                        $this->selectedProducts
+                );?>
+
+                <!-- totals info start -->
+                <table class="withborder" width="100%">
+                    <tr>
+                        <td>Total <span class="total_count <?php echo $this->rowSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                    </tr>
+                </table>
+                <!-- totals info end -->
+           </div>    
+        <?php }?>
+
+        <div style="clear: both; padding-left: 10px;">
+            <ul class="toolbar">
+                <li><input type="submit" id="save_btn" disabled="disabled" class="green-button" value="SAVE" /></li>
+
+                <?php
+                    $printLabelAttr = array('class' => 'green-button');
+                    if ($this->selectedCount != 1)
+                        $printLabelAttr['disabled'] = 'disabled';
+                ?>
+                <li><?php echo $this->formSubmit('print_label', 'PRINT LABEL', $printLabelAttr)?></li>
+
+                <li><input type="submit" name="report_format" id="report_csv_btn" class="green-button" value="REPORT: CSV" onclick="return false;" /></li>
+                <li><input type="submit" name="report_format" id="report_xls_btn" class="green-button" value="REPORT: XLS" onclick="return false;" /></li>
+                
+                <?php if ($this->minder->isAdmin) {?>
+                    <li><input type="submit" id="add_product_btn" class="green-button" value="ADD PRODUCT" onclick="return false;" /></li>
+                <?php }?>
+                
+                <li><input type="submit" id="cancel_btn" disabled="disabled" class="green-button" value="CANCEL" onclick="return false;" /></li>
+            </ul>
+        </div>
+    </div>
+    <!-- tabs container end -->
+</form>
+</div>
+
+<!-- product label dialog -->
+<div style="display: none;" id="product_label_dialog" title="Print Product Labels" class="flora">
+    <form name="product_label_form" id='product_label_form' action="" method="POST">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td colspan="2">
+                    <input type="radio" name="product_label_type" value="PRODUCT_LABEL" checked="checked" /> Item Barcode &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="product_label_type" value="PRODUCT_INNER" /> Inner Pack &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="product_label_type" value="PRODUCT_OUTER" /> Outer Pack
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <div class="disabled" style="padding: 0 10px; text-align: center; border: blue 1px solid;">Product Id: <span class="PROD_ID"><?php echo ((isset($this->firstSelectedLine['PROD_ID'])) ? $this->firstSelectedLine['PROD_ID'] : '&nbsp;');?></span></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <div class="disabled" style="padding: 0 10px; text-align: center; border: blue 1px solid;"><span class="PROD_DESCRIPTION"></span><?php echo ((isset($this->firstSelectedLine['SHORT_DESC'])) ? $this->firstSelectedLine['SHORT_DESC'] : '&nbsp;');?></div>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <td>Qty of Labels</td>
+                            <td><input style="width: 40px;" type="text" name="first_label_qty" value="1" /></td>
+                            <td>Total Printed on Label</td>
+                            <td><input style="width: 40px;" type="text" name="first_label_total" value="1" /></td>
+                        </tr>
+                        <tr>
+                            <td>Qty of Labels</td>
+                            <td><input style="width: 40px;" type="text" name="second_label_qty" value="0" /></td>
+                            <td>Total Printed on Label</td>
+                            <td><input style="width: 40px;" type="text" name="second_label_total" value="0" /></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td align="center">
+                    <button name="PRINT" class="green-button">PRINT</button>
+                </td>
+                <td align="center">
+                    <button name="CANCEL" class="yellow-button">CANCEL</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- product label dialog -->
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#PRODUCTS_LIST_CONTAINER #product_tabs > ul').tabs();
+        $('#PRODUCTS_LIST_CONTAINER #pageselector, #PRODUCTS_LIST_CONTAINER #show_by').change(function(){
+            $('#products_results_form').submit();
+        });
+        $('.product_details').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('#report_csv_btn, #report_xls_btn').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(
+                array(
+                    'module' => $this->reportModule, 
+                    'controller' => $this->reportController, 
+                    'action' => $this->reportAction, 
+                    'selection_namespace' => $this->rowSelectionNamespace,
+                    'selection_action' => $this->rowSelectionAction,
+                    'selection_controller' => $this->rowSelectionController
+                ),
+                null, 
+                true
+            );?>' + '/report_format/' + escape($(this).val());
+        });
+        
+        $('.row_selector.<?php echo $this->rowSelectionNamespace;?>, .select_all_rows.<?php echo $this->rowSelectionNamespace;?>, .select_complete.<?php echo $this->rowSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->rowSelectionModule, 'controller' => $this->rowSelectionController, 'action' => $this->rowSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#PRODUCTS_LIST_CONTAINER',
+                'selectionNamespace'  : '<?php echo $this->rowSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->rowSelectionAction;?>',
+                'selectionController' : '<?php echo $this->rowSelectionController;?>'
+            }, 
+            {
+                'onSuccess': function(response) {
+                    if(response.warnings && response.warnings.length > 0)
+                        showWarnings(response.warnings);
+                    
+                    if(response.messages && response.messages.length > 0)
+                        showMessage(response.messages);
+                    
+                    if (response.selected == 1)
+                        $('#PRODUCTS_LIST_CONTAINER #print_label').removeAttr('disabled');
+                    else 
+                        $('#PRODUCTS_LIST_CONTAINER #print_label').attr('disabled', true);
+                    
+                    if (response.firstSelectedRow) {
+                        if (typeof response.firstSelectedRow['PROD_ID'] !== 'undefined')
+                            $('#product_label_dialog .PROD_ID').html(response.firstSelectedRow['PROD_ID']);
+
+                        if (typeof response.firstSelectedRow['SHORT_DESC'] !== 'undefined')
+                            $('#product_label_dialog .PROD_DESCRIPTION').html(response.firstSelectedRow['SHORT_DESC']);
+                    }
+                }
+            }
+        );
+        
+        $('.product_details').minderEditResults(
+            '<?php echo $this->url(array('action' => 'save-changes', 'controller' => 'product-details', 'module' => 'warehouse'), null, true);?>',
+            {
+                'saveButtonSelector'       : '#PRODUCTS_LIST_CONTAINER #save_btn',
+                'cancelButtonSelector'     : '#PRODUCTS_LIST_CONTAINER #cancel_btn',
+                'modificationFlagSelector' : '#PRODUCTS_LIST_CONTAINER .modification_flag',
+                'namespace'                : '<?php echo $this->rowSelectionNamespace?>',
+                'addRowButtonSelector'     : '#add_product_btn',
+                'addRowUrl'                : '<?php echo $this->url(array('action' => 'get-new-row', 'controller' => 'product-details', 'module' => 'warehouse'), null, true);?>',
+                'tabDatasetSelector'       : '.data_set'
+            }
+        );
+        initProductLabelDialog();
+        $('#PRODUCTS_LIST_CONTAINER #print_label').click(function(evt){
+            evt.preventDefault();
+            $('#product_label_dialog').dialog("open");
+        });
+    });
+    
+    function initProductLabelDialog() {
+        $('#product_label_dialog').dialog(
+            { 
+                autoOpen  : false,
+                width     : 360,
+                height    : 255,
+                resizable : false
+            }
+        ).unbind('dialogopen.product-details-search-results-form').bind('dialogopen.product-details-search-results-form', function(event, ui) {
+            $(this).show();
+            $(this).find('input[name=qty1]').focus();
+        });
+        
+        $('#product_label_dialog button[name=CANCEL]').unbind('click.product-details-search-results-form').bind('click.product-details-search-results-form', function(evt){
+            evt.preventDefault();
+            $('#product_label_dialog').dialog('close');
+        });
+        
+        $('#product_label_dialog button[name=PRINT]').unbind('click.product-details-search-results-form').bind('click.product-details-search-results-form', productLabelDialogPrintOnClick);
+    }
+    
+    function destroyProductLabelDialog() {
+        $('#product_label_dialog').dialog('destroy').remove();
+    }
+    
+    function productLabelDialogPrintOnClick(evt) {
+        evt.preventDefault();
+        
+        var dataToSubmit = {
+            'selection_namespace'  : '<?php echo $this->rowSelectionNamespace?>',
+            'selection_action'     : '<?php echo $this->rowSelectionAction;?>',
+            'selection_controller' : '<?php echo $this->rowSelectionController;?>'
+        };
+        $.map($('#product_label_form').serializeArray(), function(elementOfArray, indexInArray){
+            dataToSubmit[elementOfArray.name] = elementOfArray.value;
+            return null;
+        });
+        
+        if (dataToSubmit.first_label_qty > 100) {
+            if (!confirm('You try to print ' + dataToSubmit.first_label_qty + ' labels. Are you sure?'))
+                return;
+        }
+
+        if (dataToSubmit.second_label_qty > 100) {
+            if (!confirm('You try to print ' + dataToSubmit.second_label_qty + ' labels. Are you sure?'))
+                return;
+        }
+
+        $.getJSON(
+            '<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'product-details', 'action' => 'print-product-label'), null, true);?>',
+            dataToSubmit,
+            function(response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                }
+
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+            }
+        );
+    }
+
+</script>
+<?php echo $this->render('footer.phtml');

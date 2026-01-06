@@ -1,0 +1,98 @@
+@otc-dialogs-font-size-high: @otc-font-size-base;
+@otc-dialogs-line-height-high: @otc-line-height-base;
+
+@otc-dialogs-font-size-normal: 14pt;
+@otc-dialogs-line-height-normal: 20pt;
+
+@otc-dialogs-font-size-low: 12pt;
+@otc-dialogs-line-height-low: 16pt;
+
+@media screen {
+    .otc-image-capture-dialog,
+    .otc-dispose_tool_dialog,
+    .otc-confirm_tool-transfer_dialog,
+    .otc-confirm_expiration_dialog,
+    .otc-confirm_borrower_rename_dialog,
+    .otc-confirm_borrower_prefix_dialog,
+    .otc-add_cost_centre_dialog,
+    .otc-add-product-dialog,
+    .otc-add-tool-dialog,
+    .otc-import_audit_dialog,
+    .otc-add-borrower-dialog
+    {
+        .otc-dialog-fonts(@otc-dialogs-font-size-high, @otc-dialogs-line-height-high);
+    }
+
+    .otc-confirm_borrower_prefix_dialog {
+        .ui-dialog-buttonpane {
+            button.otc-dialog-button {
+                width: 200px;
+            }
+        }
+    }
+
+    .otc-dispose_tool_dialog {
+        table.summary {
+            th, td {
+                width: auto;
+            }
+
+            input, textarea {
+                width: 90%;
+            }
+        }
+    }
+
+
+    @media (min-width: 1460px) {
+        .otc-dialogs-image-capture(680px, 320px);
+        .otc-dialogs-query(900px);
+
+        .otc-history_dialog,
+        .otc-list_loans_dialog,
+        .otc-query-dialog
+        {
+            .otc-dialog-fonts(@otc-dialogs-font-size-high, @otc-dialogs-line-height-high);
+            .otc-dialogs-dimensions(95%; 700px);
+        }
+
+        .otc-confirm_borrower_prefix_dialog{ .otc-dialogs-dimensions(1100px, 280px); }
+        .otc-image-capture-dialog{ .otc-dialogs-dimensions(1080px, 700px); }
+    }
+
+    @media (min-width: 1024px) and (max-width: 1459px) {
+        .otc-dialogs-image-capture(550px, 260px);
+        .otc-dialogs-query(840px);
+
+        .otc-history_dialog,
+        .otc-list_loans_dialog,
+        .otc-query-dialog
+        {
+            .otc-dialog-fonts(@otc-dialogs-font-size-normal, @otc-dialogs-line-height-normal);
+            .otc-dialogs-dimensions(95%; 700px);
+        }
+
+        .otc-confirm_borrower_prefix_dialog{ .otc-dialogs-dimensions(950px, 300px); }
+        .otc-image-capture-dialog{ .otc-dialogs-dimensions(950px, 640px); }
+    }
+
+    @media (max-width: 1023px) {
+        .otc-dialogs-image-capture(550px, 260px);
+        .otc-dialogs-query(780px);
+
+        .otc-history_dialog,
+        .otc-list_loans_dialog,
+        .otc-query-dialog
+        {
+            .otc-dialog-fonts(@otc-dialogs-font-size-low, @otc-dialogs-line-height-low);
+            .otc-dialogs-dimensions(95%; 700px);
+
+            &.flora.ui-dialog .ui-dialog-title {
+                top: 4px;
+            }
+        }
+
+        .otc-confirm_borrower_prefix_dialog{ .otc-dialogs-dimensions(800px, 300px); }
+        .otc-image-capture-dialog{ .otc-dialogs-dimensions(950px, 640px); }
+    }
+}

@@ -1,0 +1,281 @@
+<?php echo $this->render('header.phtml'); ?>
+<div id="tooltip">
+    <ul class="messages">
+        <li>Key in the WH ID + Location ID +  &lt;Enter&gt; or Scan Location ID Barcode</li>
+    </ul>
+</div>
+<div id="flash_error">
+    <?php echo $this->messenger()->all() ?> 
+</div>
+<div class="errors" style="display: none;" id ="div_errors">
+    <li id="js_error"></li>
+</div>
+<form name="main" id="main_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'transfer', 'action' => 'whole'), null, true); ?>" method="post">
+<h2><?php echo $this->pageTitle; ?></h2>
+<div id="update_form" style="width:99%;">
+        <table>
+            <tr>
+                <th>
+                    <b>FROM LOCATION:</b>
+                </th>
+            </tr>
+            <tr>
+                <th style="align:right">Location ID:</th>
+                <td><?php echo $this->formText('locn_id', $this->locn_id, null); ?></td>
+                <th>&nbsp;</th>
+                <td><span id="locn_name"></span></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+            </tr>
+            <tr>
+                <th>
+                    <b>INTO LOCATION:</b>
+                </th>
+            </tr>
+            <tr>
+                <th style="align:right">Location ID:</th>
+                <td><?php echo $this->formText('locn_id_2', $this->locn_id_2, null); ?></td>
+                <th>&nbsp;</th>
+                <td><span id="locn_name_2"></span></td>
+            </tr>
+        </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formButton('action', 'UPDATE', array('onclick' => 'checkParam()')); ?></li>
+        <li><?php echo $this->formButton('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+    </ul>
+</div>
+<div id="issn_lines">
+
+</div>
+</form>   
+
+
+<script type="text/javascript">
+<!--
+$(document).ready(function(){
+    var cacheValue      = 1;
+    
+    window.isLocnPrefix = false;
+    window.isLocnPrefix2= false;
+   
+    $('#locn_id, #locn_id_2').minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->locationBarcodeDescriptor;?>]})
+            .bind('parse-error', barcodeParseError)
+            .bind('parse-success', barcodeParseSuccess);
+
+    checkParam(true);
+
+    // added sort
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+    
+    <?php if($this->displayWhole) { ?>
+        // Load Locn ID and Warehouse Description
+        getLocnId();
+        if($('#locn_id')[0].value != '') {
+            // Load lines after UPDATE.
+            $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default')); ?>', {method: 'init', id: 'select_all', locn_id: $('#locn_id')[0].value});
+        }
+    <?php } ?>
+});
+
+function barcodeParseError(evt) {
+    var $_target = $(evt.target);
+
+    showError(': "' + $_target.val() + '"', true);
+    $_target.val('');
+}
+
+function barcodeParseSuccess(evt) {
+    if (typeof console != 'undefined' && typeof console.debug == 'function') console.debug(evt);
+    showError('', false);
+    var $_target = $(evt.target);
+
+    switch (evt.parseResult.paramDesc.param_name) {
+        case 'LOCATION':
+            $_target.val(evt.parseResult.paramDesc.param_filtered_value);
+            if ($_target.attr('id') == 'locn_id') {
+                $('#locn_id_2').val('');
+                getLocnId();
+                window.isLocnPrefix  = (evt.parseResult.paramDesc.param_prefix.length > 0);
+            } else {
+                getLocnId2();
+                window.isLocnPrefix2 = (evt.parseResult.paramDesc.param_prefix.length > 0);
+            }
+            checkParam(false);
+            break;
+    }
+}
+
+function getLocnId() {
+    $('#locn_name').text('');
+    var locnId    = $('#locn_id')[0];
+    $.getJSON('<?php echo $this->url(array('controller' => 'transfer', 'action' => 'search'), '', false); ?>', 
+               {
+                   q: locnId.value, field: 'locn_id'}, 
+                   function(json){
+                   $('#locn_name').text(json.locn_name);     
+               }
+    );
+}
+
+function getLocnId2() {
+    $('#locn_name_2').text('');
+    var locnId    = $('#locn_id_2')[0];
+    $.getJSON('<?php echo $this->url(array('controller' => 'transfer', 'action' => 'search'), '', false); ?>', 
+               {
+                   q: locnId.value, field: 'locn_id'}, 
+                   function(json){
+                   $('#locn_name_2').text(json.locn_name);     
+               }
+    );
+}
+
+function frmClear()
+{
+    $("form#main_form input:text").each(function() {
+        this.value = "";
+    });
+    $("form#main_form select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+    });
+    $('#locn_name').text('');
+    
+    window.isLocnPrefix = false;
+    window.isLocnPrefix2= false;
+    
+     return false;
+}
+
+
+
+function loandIssnLines() {
+    locn_id = $('#locn_id')[0].value;
+    $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default')); ?>', 
+                          {locn_id: locn_id}
+                         );
+    // added sort
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+}
+
+function formUpdate() {
+    
+    var ssnPrefixExp = '<?php echo $this->ssnFilter['SYMBOLOGY_PREFIX']; ?>';
+    var locPrefixExp = '<?php echo $this->locFilter['SYMBOLOGY_PREFIX']; ?>';
+   
+    oldForm = $("#main_form");
+    $("#main_form").action = $("#main_form").action + '/whole';
+    if(window.isLocnPrefix == true) {
+        $("#main_form").append('<input type="hidden" id="toDelete2" name="hid_locn_id" value="' + locPrefixExp + $('#locn_id')[0].value +'" />');
+    } else {
+        $("#main_form").append('<input type="hidden" id="toDelete2" name="hid_locn_id" value="' + $('#locn_id')[0].value +'" />');
+    }
+    if(window.isLocnPrefix2 == true) {
+        $("#main_form").append('<input type="hidden" id="toDelete3" name="hid_locn_id_2" value="' + locPrefixExp + $('#locn_id_2')[0].value +'" />');
+    } else {
+        $("#main_form").append('<input type="hidden" id="toDelete3" name="hid_locn_id_2" value="' + $('#locn_id_2')[0].value +'" />');
+    }
+    
+    
+    $("#main_form").append('<input type="hidden" id="toDelete" name="action" value="update" />')[0].submit();
+    $('#toDelete').remove();
+    $('#toDelete2').remove();
+    $('#toDelete3').remove();
+    $("#main_form").action = oldForm;
+    return false;
+}
+
+function checkParam(supressUpdate) {
+    supressUpdate = (typeof supressUpdate == 'undefined') ? false : supressUpdate;
+    var $_locn1 = $('#locn_id');
+    var $_locn2 = $('#locn_id_2');
+    var locnInputCheckResult1 = $_locn1.minderCheckBarcode();
+    var locnInputCheckResult2 = $_locn2.minderCheckBarcode();
+
+
+    if ($_locn2.val() != '') {
+        if (locnInputCheckResult2.error || locnInputCheckResult2.paramDesc.param_name != 'LOCATION') {
+            showError("of the field Location inTo - " + $_locn2.val(), true);
+            $_locn2.focus();
+        }
+    } else {
+        $_locn2.focus();
+    }
+
+    if ($_locn1.val() != '') {
+        if (locnInputCheckResult1.error || locnInputCheckResult1.paramDesc.param_name != 'LOCATION') {
+            showError("of the field Location inTo - " + $_locn1.val(), true);
+            $_locn1.focus();
+        }
+    } else {
+        $_locn1.focus();
+    }
+
+    if ((!locnInputCheckResult1.error)
+            && (!locnInputCheckResult2.error)
+            && (locnInputCheckResult1.paramDesc.param_name == 'LOCATION')
+            && (locnInputCheckResult2.paramDesc.param_name == 'LOCATION')
+            ) {
+
+        showError('', false);
+        if (!supressUpdate) formUpdate();
+    }
+}
+
+function isLocn(value) {
+    var locPrefixExp = new RegExp("(\<?php echo $this->locFilter['SYMBOLOGY_PREFIX']; ?>)+");
+    var locRegExp    = new RegExp("<?php echo $this->locFilter['DATA_EXPRESSION']; ?>"); 
+    
+    if(locPrefixExp.test(value)) {
+        locn_id = value.substr(3, value.length);
+        if(locRegExp.test(locn_id)) {
+            $('#locn_id')[0].value = locn_id
+            window.isLocnPrefix = true;
+            return true;
+        } else {
+            return false;
+        }    
+    } else if(locRegExp.test(value)) {
+            return true;
+    } else {
+            return false;
+    } 
+}
+
+function isLocn2(value) {
+    var locPrefixExp = new RegExp("(\<?php echo $this->locFilter['SYMBOLOGY_PREFIX']; ?>)+");
+    var locRegExp    = new RegExp("<?php echo $this->locFilter['DATA_EXPRESSION']; ?>"); 
+    
+    if(locPrefixExp.test(value)) {
+        locn_id = value.substr(3, value.length);
+        if(locRegExp.test(locn_id)) {
+            $('#locn_id_2')[0].value = locn_id
+            window.isLocnPrefix2 = true;
+            return true;
+        } else {
+            return false;
+        }    
+    } else if(locRegExp.test(value)) {
+            return true;
+    } else {
+            return false;
+    } 
+}
+
+
+function showError(message, disabled) {
+    $('#js_error').text("Unrecognised input " + message);
+    if(disabled) {
+        $('#div_errors').css("display", "block");
+    } else {
+        $('#div_errors').css("display", "none")
+    }         
+}
+                            
+//-->
+</script>   
+   
+<?php echo $this->render('footer.phtml');
+   
+     

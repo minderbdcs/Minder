@@ -1,0 +1,361 @@
+ <?php echo $this->render('header.phtml'); ?>
+
+<!-- flash messages -->
+<?php 
+    $messenger = $this->messenger();
+    $wasErrors = $messenger->getMessenger()->setNamespace('errors')->hasCurrentMessages();
+    echo $messenger->all(); 
+    if ($wasErrors) {
+        exit();
+    }
+?>
+<!-- flash messages -->
+ 
+<h2 title="<?php echo $this->grnSysScreenName;?>"><?php echo $this->escape($this->pageTitle);?></h2>
+
+<!-- search form -->
+<?php 
+    if (count($this->searchFields) > 0) {
+        echo $this->sysScreenSearchForm(array('name' => 'person_search_form'), $this->searchFields, $this->searchActions);
+    }
+?>
+<!-- search form -->
+
+<!-- grn search results -->
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+    //date update
+ $session = new Zend_Session_Namespace();
+            $tz_to=$session->BrowserTimeZone;
+
+
+            $key_array=array_keys($this->grns);
+
+
+ foreach($this->grns as $key=>$val){
+
+                    foreach($val as $key1=>$val1){
+
+ if(DateTime::createFromFormat('Y-m-d H:i:s', $val1)!== FALSE  || DateTime::createFromFormat('Y-m-d',$val1)!==FALSE) {
+
+
+                                $dt = new DateTime($val1, new DateTimeZone('UTC'));
+                                $tz = new DateTimeZone($tz_to); 
+                                $dt->setTimezone($tz);
+                                $val1=$dt->format('Y-m-d H:i:s');
+                                $this->grns[$key][$key1]=$val1;
+
+                    } 
+
+
+            }
+
+}
+//date update
+
+?>
+
+<div id="GRN_LIST_CONTAINER">
+    <form id="grn_results_form" name="grn_results_form" action="<?php echo $this->url(); ?>" method="post">
+        <!-- tabs container start -->
+        <div id="grn_tabs" class="ui-tabs-container">
+            <?php echo $resultsForm->renderTabsList(array()); ?>
+
+            <div class="ui-tabs-panel-header">
+                <div class="sys-screen-title" title="<?php echo $this->grnSysScreenName;?>">GRN List<span class="modification_flag <?php echo $this->grnSelNamespace;?>"></span></div>
+                <div class="paginator-container">
+                    <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                    <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalCount == $this->selectedCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->grnSelNamespace));?>
+                    <label for="results_per_page">View By:</label>
+                    <?php echo $this->formSelect('show_by', 
+                                                $this->navigation['show_by'],
+                                                array(),
+                                                array(5  => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                      100 => 100)) ?>
+                    <label for="page">Page:</label>
+                    <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+                </div>
+             
+                <ul class="black-top-border" style="clear: both;">
+                    <li style="display: inline;">Selected: <span id="prods_selected" class="selected_count <?php echo $this->grnSelNamespace;?>"><?php echo $this->selectedCount;?></span></li>
+                </ul>
+            </div>
+
+            <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+
+                <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <?php $s=$resultsForm->renderTabContent(
+                                        $tabId, 
+                                        array(
+                                           'select_all_checked'    => (count($this->grns) == count($this->selectedGrns)), 
+                                          'selection_namespace'   => $this->grnSelNamespace, 
+                                      'switch_selection_mode' => $this->selectMode,
+                                           'tab_content_class'     => 'withborder tablesorter grn_list'
+                                       ),
+                                        $this->grns, 
+                                        $this->selectedGrns 
+                );
+                echo $s;?>
+                    <!-- totals info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->grnSelNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <!-- totals info end -->
+
+                </div>    
+            <?php }?>
+
+            <div style="clear: both; padding-left: 10px;">
+                <?php echo $resultsForm->renderButtons($this->grnButtons); ?>
+
+                <script type="text/javascript">
+                    <?php echo $resultsForm->renderButtonActions($this->grnButtons); ?>
+                </script>
+            </div>
+        </div>
+        <!-- tabs container end -->
+    </form>
+</div>
+
+<!-- grn search results -->
+
+<div id="GRN_LINE_LIST_CONTAINER"></div>
+
+<div id="GRN_PRODUCT_DETAILS_CONTAINER"></div>
+
+<div id="GRN_ISSN_DETAILS_CONTAINER"></div>
+
+<div id="GRN_SSN_DETAILS_CONTAINER"></div>
+
+<div id="CHANGE_LINES_CONTAINER" class="hidden" style="clear: both;"></div>
+
+<?php echo $this->render('footer.phtml'); ?>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#GRN_LIST_CONTAINER #grn_tabs > ul').tabs();
+        $('#GRN_LIST_CONTAINER #pageselector, #GRN_LIST_CONTAINER #show_by').change(function(){
+            $('#grn_results_form').submit();
+        });
+        $('.grn_list').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+        
+        $('.row_selector.<?php echo $this->grnSelNamespace;?>, .select_all_rows.<?php echo $this->grnSelNamespace;?>, .select_complete.<?php echo $this->grnSelNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->grnSelModule, 'controller' => $this->grnSelController, 'action' => $this->grnSelAction), null, true);?>',
+            {
+                'scopeSelector'       : '#GRN_LIST_CONTAINER',
+                'selectionNamespace'  : '<?php echo $this->grnSelNamespace?>',
+                'selectionAction'     : '<?php echo $this->grnSelAction;?>',
+                'selectionController' : '<?php echo $this->grnSelController;?>'
+            },
+            {
+                'onSuccess': getGrnLines
+            }
+        );
+
+        $('#GRN_LIST_CONTAINER .grn_list .data_set label').each(function(){
+
+            //replece all labels with hyperlink to show page
+
+            var rowId = $(this).attr('row-id');
+            var newHyperlink = $('<a href="<?php echo $this->url(array('module' => 'receipts', 'controller' => 'grn', 'action' => 'show'), null, true);?>/row_id/' + rowId + '"></a>');
+            $(this).after(newHyperlink);
+            newHyperlink.append($(this).html());
+            $(this).remove();
+        });
+
+        getGrnLines();
+
+        $.minderLabel({
+            printServiceUrl: '<?php echo $this->url(array(
+                'module' => 'services',
+                'controller' => 'label',
+                'action' => 'print-label',
+                'selection_action' => $this->grnSelAction,
+                'selection_controller' => $this->grnSelController
+            ))?>',
+            namespaceMap: {
+                'GRN': 'GRN',
+                'GRNLINE': 'GRNLINE',
+                'GRNPRODUCTDETAILS': 'GRNPRODUCTDETAILS'
+            }
+        });
+    });
+
+
+    function getGrnLines() {
+        var data = {};
+        var showBy = parseInt($('#GRN_LINE_LIST_CONTAINER #show_by').val());
+        var pageselector = parseInt($('#GRN_LINE_LIST_CONTAINER #pageselector').val());
+        if (!(isNaN(showBy) || showBy === 0)) {
+            data.show_by = showBy;
+        }
+
+        
+        if (!isNaN(pageselector)) {
+            data.pageselector = pageselector;
+        }
+
+        if (typeof destroyProductLabelDialog === 'function')
+            destroyProductLabelDialog();
+
+        $('#GRN_LINE_LIST_CONTAINER').html('');
+        $('#GRN_LINE_LIST_CONTAINER').load(
+            '<?php echo $this->url(array('module' => 'receipts', 'controller' => 'grn', 'action' => 'get-grn-lines'), null, true);?>',
+            data,
+            function(){}
+        );
+    }
+    function makeReport(format, sysScreen) {
+        location.href = getReportUrl(sysScreen) + '/report_format/' + escape(format);
+    }
+
+    function getReportUrl(sysScreen) {
+        switch (sysScreen) {
+            case '<?php echo $this->grnSysScreenName;?>' :
+                return '<?php echo $this->url(
+                    array(
+                         'module' => $this->reportModule,
+                         'controller' => $this->reportController,
+                         'action' => $this->reportAction,
+                         'selection_namespace' => $this->grnSelNamespace,
+                         'selection_action' => $this->grnSelAction,
+                         'selection_controller' => $this->grnSelController
+                    ),
+                    null,
+                    true
+                );?>';
+            case '<?php echo $this->grnPDSysScreenName;?>' :
+                return '<?php echo $this->url(
+                    array(
+                        'module' => $this->reportModule,
+                        'controller' => $this->reportController,
+                        'action' => $this->reportAction,
+                        'selection_namespace' => $this->grnPDSelectionNamespace,
+                        'selection_action' => $this->grnPDSelectionAction,
+                        'selection_controller' => $this->grnPDSelectionController
+                    ),
+                    null,
+                    true
+                );?>';
+            case '<?php echo $this->grnLineSysScreenName;?>' :
+                return '<?php echo $this->url(
+                    array(
+                        'module' => $this->reportModule,
+                        'controller' => $this->reportController,
+                        'action' => $this->reportAction,
+                        'selection_namespace' => $this->grnLineSelectionNamespace,
+                        'selection_action' => $this->grnLineSelectionAction,
+                        'selection_controller' => $this->grnLineSelectionController
+                    ),
+                    null,
+                    true
+                );?>';
+            case '<?php echo $this->changeProdIdSysScreenName;?>' :
+                return '<?php echo $this->url(
+                    array(
+                        'module' => $this->reportModule,
+                        'controller' => $this->reportController,
+                        'action' => $this->reportAction,
+                        'selection_namespace' => $this->changeProdIdSelectionNamespace,
+                        'selection_action' => $this->changeProdIdSelectionAction,
+                        'selection_controller' => $this->changeProdIdSelectionController
+                    ),
+                    null,
+                    true
+                );?>';
+            default:
+                throw 'Unknown Sys Screen: "' + sysScreen + '"';
+        }
+    }
+
+    function getChangeLines() {
+        var data = {};
+        var showBy = parseInt($('#CHANGE_LINES_CONTAINER #show_by').val());
+        var pageselector = parseInt($('#CHANGE_LINES_CONTAINER #pageselector').val());
+        if (!(isNaN(showBy) || showBy === 0)) {
+            data.show_by = showBy;
+        }
+
+        if (!isNaN(pageselector)) {
+            data.pageselector = pageselector;
+        }
+
+        $('#CHANGE_LINES_CONTAINER .ui-tabs-container').block($('<?php echo $this->SysScreenWaitPrompt('Loading. Please wait...');?>'));
+        $('#CHANGE_LINES_CONTAINER').load(
+            '<?php echo $this->url(array('module' => 'receipts', 'controller' => 'grn', 'action' => 'get-change-prod-id'), null, true);?>',
+            data,
+            function(){}
+        );
+    }
+
+    function showChangeProdId() {
+        getChangeLines();
+        $('#CHANGE_LINES_CONTAINER').show();
+    }
+
+    function hideChangeProdId() {
+        $('#CHANGE_LINES_CONTAINER').hide();
+    }
+
+    function getSelectedCount(namespace) {
+        var result = parseInt($('.selected_count.' + namespace).text());
+
+        return isNaN(result) ? 0 : result;
+    }
+
+    function getSelectedGrnLinesCount() {
+        return getSelectedCount('<?php echo $this->grnLineSelectionNamespace;?>');
+    }
+
+    function getSelectedPoLinesCount() {
+        return getSelectedCount('<?php echo $this->changeProdIdSelectionNamespace;?>');
+    }
+
+    function getChangeErrorsContainer() {
+        var
+            container = $('#CHANGE_LINES_CONTAINER ul.errors');
+
+        if(container.length < 1){
+            container = $('<ul class="errors"></ul>');
+            $('#CHANGE_LINES_CONTAINER').prepend(container);
+        }
+
+        return container;
+    }
+
+    function updateProductCode() {
+        if (getSelectedGrnLinesCount() < 1) {
+            showErrors(['No PROD_ID selected.'], Const.DEFAULT_MESSAGE_TIMEOUT, getChangeErrorsContainer());
+            return;
+        }
+
+        if (getSelectedPoLinesCount() < 1) {
+            showErrors(['No rows selected.'], Const.DEFAULT_MESSAGE_TIMEOUT, getChangeErrorsContainer());
+            return;
+        }
+
+        $('#CHANGE_LINES_CONTAINER  .ui-tabs-container').block($('<?php echo $this->SysScreenWaitPrompt('Updating PROD_ID. Please wait...');?>'));
+
+        $('#CHANGE_LINES_CONTAINER').load(
+            '<?php echo $this->url(array('module' => 'receipts', 'controller' => 'grn', 'action' => 'update-product-code'), null, true);?>',
+            [],
+            function(){
+                $('#CHANGE_LINES_CONTAINER  .ui-tabs-container').unblock();
+                getGrnLines();
+            }
+        );
+    }
+</script>

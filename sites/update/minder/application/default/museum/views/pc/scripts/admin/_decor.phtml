@@ -1,0 +1,22 @@
+<tr class="<?php echo $this->class ?>">
+    <td colspan="2">
+    <?php
+        if (false != ($errList = $this->element->getMessages())) {
+            echo $this->formErrors($this->element->getMessages());
+        }
+    ?>
+    </td>
+</tr>
+<tr class="<?php echo $this->class ?>">
+    <th class="rightalign">
+    <?php echo $this->formLabel($this->element->getName(), $this->element->getLabel()) ?>
+    </th>
+    <td>
+    <?php echo $this->{$this->element->helper}(
+        $this->element->getName(),
+        $this->element->getValue(),
+        $this->element->getAttribs()
+    ) ?>
+    </td>
+<!--     <td class="hint"><?php echo $this->element->getDescription() ?></td> -->
+</tr>

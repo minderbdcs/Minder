@@ -1,0 +1,64 @@
+<div id="confirm_borrower_prefix_dialog" class="flora otc-confirm_borrower_prefix_dialog" title="Confirm" style="display: none;">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <h1>The XB prefix is not required - only enter the Location ID (max 8)</h1>
+        <br />Select <strong>REMOVE PREFIX</strong> to remove XB prefix from Borrower ID. Borrower ID will be changed to <strong class="new-borrower-id"></strong>.
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        var $confirmBorrowerPrefixDialog = $('#confirm_borrower_prefix_dialog'),
+            width = $confirmBorrowerPrefixDialog.css('width'),
+            height = $confirmBorrowerPrefixDialog.css('height');
+
+        $confirmBorrowerPrefixDialog.css('width', 'auto');
+        $confirmBorrowerPrefixDialog.css('height', 'auto');
+        $confirmBorrowerPrefixDialog.dialog({
+            buttons: {
+                'REMOVE PREFIX': confirmBorrowerPrefixDialogRemovePrefix,
+                'HTML': '',
+                'CANCEL': confirmBorrowerPrefixDialogCancel
+            },
+            width: width,
+            height: height,
+            autoOpen: false,
+            position: [0, 65],
+            buttonStyle: 'otc-dialog-button'
+        }).bind('dialogopen', function(event, ui) {
+            $('#confirm_borrower_prefix_dialog').attr('active', 'active');
+            $(this).show();
+            $('#barcode').focus();
+        }).bind('dialogclose', function(){
+            var $confirmBorrowerPrefixDialog = $('#confirm_borrower_prefix_dialog');
+
+            $confirmBorrowerPrefixDialog.removeAttr('active');
+            $('#barcode').focus();
+
+            $confirmBorrowerPrefixDialog.data('deferred').resolve(!!$confirmBorrowerPrefixDialog.data('confirmed'));
+        });
+    });
+
+    function confirmBorrowerPrefixDialogConfirm(data) {
+        var result = $.Deferred(),
+            $confirmBorrowerPrefixDialog = $("#confirm_borrower_prefix_dialog");
+
+        $confirmBorrowerPrefixDialog.find('.current-borrower-id').text(data.borrower_id);
+        $confirmBorrowerPrefixDialog.find('.new-borrower-id').text(data.borrower_id.slice(2));
+
+        $confirmBorrowerPrefixDialog.data('deferred', result);
+        $confirmBorrowerPrefixDialog.data('confirmed', true);
+        $confirmBorrowerPrefixDialog.dialog("open");
+
+        return result.promise();
+    }
+
+    function confirmBorrowerPrefixDialogCancel(evt) {
+        $('#confirm_borrower_prefix_dialog').data('confirmed', true).dialog('close');
+        return false;
+    }
+
+    function confirmBorrowerPrefixDialogRemovePrefix() {
+        $('#confirm_borrower_prefix_dialog').data('confirmed', false).dialog('close');
+        return false;
+    }
+</script>

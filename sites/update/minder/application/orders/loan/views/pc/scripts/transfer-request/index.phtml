@@ -1,0 +1,54 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php echo $this->standardPage('Minder.Orders.TransferRequest');?>
+<?php echo $this->render('transfer-request/change-status-dlg.phtml');?>
+
+<script type="text/javascript">
+    minderNamespace('Minder.Orders.TransferRequest', function(){
+        this.changeRequest = {
+            screenName: '',
+            lineNoField: ''
+        };
+
+        this.onStatusSelected = function(event) {
+            console.log(event);
+            var self = this,
+                namespace = this.getNamespace(this.changeRequest.screenName),
+                dataToSend = this.prepareLoadDataToSend([namespace]);
+
+            dataToSend.changeRequest = this.changeRequest;
+            dataToSend.changeRequest.newStatus = event.selectedValue;
+
+            $(document).queue(function () {
+                self.lockContainer(namespace, self.waitPrompt('Updating....'));
+                $.post(
+                    '<?php echo $this->url(array('action' => 'change-status')); ?>',
+                    dataToSend,
+                    $.proxy(self.onDataReady, self),
+                    'json'
+                );
+            }).queue(function(){
+                self.unlockContainer(namespace);
+                $(this).dequeue();
+            });
+        };
+
+        this.changeTransferRequestStatus = function(screen, lineNoField) {
+            this.changeRequest.screenName = screen;
+            this.changeRequest.lineNoField = lineNoField || 'TRN_LINE_NO';
+
+            Minder.Dialogs.SelectTransferOrderStatus.open();
+        };
+    });
+
+    $(function(){
+        Minder.Dialogs.SelectTransferOrderStatus.init();
+        Minder.Dialogs.SelectTransferOrderStatus.onStatusSelected($.proxy(Minder.Orders.TransferRequest.onStatusSelected, Minder.Orders.TransferRequest));
+    });
+
+    function changeTransferRequestStatus(screen, orderField) {
+        Minder.Orders.TransferRequest.changeTransferRequestStatus(screen, orderField);
+    }
+</script>
+
+<?php echo $this->StandardSRTemplate(array(), true); ?>
+<?php echo $this->render('footer.phtml'); ?>

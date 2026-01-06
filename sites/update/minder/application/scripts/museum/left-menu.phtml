@@ -1,0 +1,37 @@
+<?php
+$menuManager = new Minder2_SysMenu_Manager();
+/**
+ * @var Minder2_Model_Page $minderPage
+ */
+$minderPage  = $this->page;
+$navigation  = $menuManager->getNavigation(Minder2_SysMenu_Manager::MENU_TYPE_LEFT, $this->page->menuId);
+
+/**
+ * @var Zend_Navigation_Page $menu
+ * @var Zend_Navigation_Page $subMenu
+ */
+?>
+
+
+<div class="glossymenu <?php echo ($minderPage->SM_SHORTCUTS) ? '' : 'hidden';?>">
+    <h2>Shortcuts</h2>
+
+    <?php foreach ($navigation as $menu) {?>
+    <?php if ($menu->hasChildren()) {?>
+        <a class="menuitem submenuheader" href="#"><?php echo $menu->getLabel();?></a>
+        <div class="submenu">
+            <ul>
+                <?php foreach ($menu->getChildren() as $subMenu) {?>
+                <li><a href="<?php echo $this->baseUrl() . $subMenu->getHref(); ?>"><?php echo $subMenu->getLabel(); ?></a></li>
+                <?php }?>
+            </ul>
+        </div>
+        <?php
+    } else {
+        $properties = $menu->getCustomProperties();
+        ?>
+        <a class="menuitem" href="<?php echo $this->baseUrl() . $menu->getHref();?>?menuId=<?php echo $properties['SM_SUBMENU_ID'];?>"><?php echo $menu->getLabel();?></a>
+        <?php }?>
+    <?php }?>
+
+</div>

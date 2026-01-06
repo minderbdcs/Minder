@@ -1,0 +1,142 @@
+<form method="post" id="main_form" action="<?php echo $this->url(array('action' => 'history', 'controller' => 'ssn', 'module' => 'warehouse')); ?>">    
+   <div style="position: relative; left:10px;">
+        <b>Selected:</b> <span  id="selected_num_history" style="font-weight: bold;"><?php echo $this->totalSelect; ?></span>
+        <label for="results_per_page">View By:</label>
+        <?php echo $this->formSelect('show_by',
+                                    $this->navigation['show_by'],
+                                    array('onchange' => 'loadLines()'),
+                                    array(5  => 5,
+                                          10 => 10,
+                                          15 => 15,
+                                          20 => 20,
+                                          30 => 30,
+                                          40 => 40,
+                                          50 => 50,
+                                          100 => 100)) ?>
+        <label for="page">Page:</label>
+        <?php echo $this->formSelectStrict('pageselector',
+                                           $this->navigation['pageselector'],
+                                           array('onchange' => 'loadLines()'),
+                                           $this->pages); ?>
+    </div>
+    <table id="lines" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_lines', null , array('checked' => $this->upperChekbox, 'onclick' => 'selectAllLines(this)')); ?>
+            </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+        
+<?php   foreach ($this->data as $history) {  ?>
+            <tr>
+                <th><?php  
+                            if(in_array($history['RECORD_ID'], $this->conditions)) {
+                                echo $this->formCheckbox($history['RECORD_ID'], $history['RECORD_ID'], array('checked' => 'true', 'onclick' => 'selectOneLine(this)')) . '</th>';
+                            } else {
+                                echo $this->formCheckbox($history['RECORD_ID'], $history['RECORD_ID'], array('onclick' => 'selectOneLine(this)')) . '</th>';
+                            } 
+                    
+                           $tooltip = 'No description'; 
+                           foreach ($this->headers as $key => $val) { ?>
+                           
+                                <td><?php echo $this->escape($history[$key]) ?></td>
+                                
+                     <?php } ?>
+        
+            </tr>
+        <?php } ?>
+        <?php if (count($this->data) < 1) {?>
+            <?php foreach ($this->headers as $key => $val) { ?>
+                <td>&nbsp;</td>
+            <?php } ?>
+        <?php }?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+    </ul>
+    <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: TXT" onclick="frmSubmitLines(this); return false;" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: CSV" onclick="frmSubmitLines(this); return false;" />
+        </li
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: XML" onclick="frmSubmitLines(this); return false;" />
+        </li
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: XLS" onclick="frmSubmitLines(this); return false;" />
+        </li
+    </ul>
+</form>
+<script type="text/javascript">
+<!--
+
+$(document).ready(function(){
+    // added sort
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});    
+});
+
+function selectAllLines(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'ssn', 'module' => 'warehouse')); ?>', 
+    {method: target.checked, id: 'select_all', value: ''},
+    function(json) {
+        
+        $("#selected_num_history").get(0).innerHTML = json.selected_num;
+        
+        var chk = $("#lines input:checkbox");
+        var checkOnOff = $("#select_all_lines").get(0).checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+    });
+
+}
+
+function selectOneLine(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'ssn', 'module' => 'warehouse')); ?>', 
+    {method: target.checked, id: target.value, value: target.value},
+    function(json) {
+         $("#selected_num_history").get(0).innerHTML = json.selected_num;    
+    });
+
+}
+
+function loadLines()
+{
+    $('#history_list').load('<?php echo $this->url(array('action' => 'history', 'controller' => 'ssn', 'module' => 'warehouse'));
+        ?>/?' + $('#main_form').serialize(),
+            function() {
+            
+            });
+    return true;
+}
+
+function frmSubmitLines(input) {
+    oldForm = $("#main_form");
+    lowerVal = input.value.toLowerCase();
+    $("#main_form").append('<input type="hidden" id="toDelete" name="report" value="' + lowerVal + '" />')[0].submit();
+    $('#toDelete').remove();
+    $("#main_form").action = oldForm;
+    return false;
+}
+//-->  
+</script>
+
+                                      

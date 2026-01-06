@@ -1,0 +1,179 @@
+<?php
+$totalSelected = ($this->total > 0 && $this->total == $this->totalSelect);
+?>
+
+<div class="mdr-dialog-header">
+    <div>
+        <b>Selected:</b> <span class="rows_selected" style="font-weight: bold;"><?php echo $this->totalSelect; ?></span>
+        <label for="results_per_page">View By:</label>
+        <?php echo $this->formSelect('show_by',
+            $this->navigation['show_by'],
+            array('id' => ''),
+            array(5  => 5,
+                10 => 10,
+                15 => 15,
+                20 => 20,
+                30 => 30,
+                40 => 40,
+                50 => 50,
+                100 => 100,
+                200 => 200,
+                500 => 300,
+                1000 => 1000,
+            )) ?>
+        <label for="page">Page:</label>
+        <?php echo $this->formSelect('pageselector',
+            $this->navigation['pageselector'],
+            array('id' => ''),
+            $this->pages); ?>
+    </div>
+</div>
+<div class="mdr-dialog-content" style="overflow: auto;">
+    <table class="withborder tablesorter search-result">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_rows', null, array('checked' => $totalSelected, 'class' => 'select_all')); ?>
+            </th>
+            <?php
+            foreach ($this->headers as $header) {
+                echo '<th>'. $this->escape($header) . '</th>';
+            }
+            ?>
+        </tr>
+        </thead>
+        <tbody>
+
+        <?php   foreach ($this->data as $row) {  ?>
+            <tr id="<?php echo $row['RECORD_ID']; ?>">
+                <th><?php
+                    if(in_array($row['RECORD_ID'], $this->conditions)) {
+                        echo $this->formCheckbox('selected_row', $row['RECORD_ID'], array('checked' => 'true', 'id' => '', 'class' => 'row_selector')) . '</th>';
+                    } else {
+                        echo $this->formCheckbox('selected_row', $row['RECORD_ID'], array('id' => '', 'class' => 'row_selector')) . '</th>';
+                    }
+
+                    $tooltip = 'No description';
+                    foreach ($this->headers as $key => $val) { ?>
+
+                        <td data-field-name="<?php echo $key;?>"><?php echo $this->escape($row[$key]) ?></td>
+
+                    <?php } ?>
+
+            </tr>
+        <?php } ?>
+        <tr class="even" style="display: none;"><td><input type="checkbox" name =""></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        </tbody>
+    </table>
+</div>
+<div class="mdr-dialog-footer">
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <li style="display: inline;">
+            <div>
+                Total records <?php echo ($this->numRecords) ? $this->numRecords : '0';?>.
+                Show from <?php echo ($this->shownFrom) ? $this->shownFrom : '0';?>
+                to <span id="issues_count" class="float: right;"><?php echo ($this->shownTill) ? $this->shownTill : '0';?></span>
+            </div>
+        </li>
+    </ul>
+    <br>
+    <form action="<?php echo $this->url(array('action' => 'report'))?>" method="post">
+        <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;">
+            <li>
+                <input type="submit" class="order-button report_csv" name="report" value="REPORT: CSV"/>
+            </li>
+            <li>
+                <input type="submit" class="order-button report_xls" name="report" value="REPORT: XLS"/>
+            </li>
+        </ul>
+    </form>
+</div>
+
+<script type="text/javascript">
+    minderNamespace('Otc.Dlg.Query.Result', function() {
+        const CONTENT_CHANGED = 'CONTENT_CHANGED';
+
+        this.container = this.container || $('body');
+
+        this.gotoPage = function(page) {
+            var
+                self = this;
+            this.container.load(
+                '<?php echo $this->url(array('action' => 'result'))?>',
+                {'pageselector': page},
+                function(){
+                    self.updateSelectAllState();
+                    self.container.trigger(CONTENT_CHANGED);
+                }
+            );
+        };
+
+        this.setShowBy = function(showBy) {
+            var
+                self = this;
+            this.container.load(
+                '<?php echo $this->url(array('action' => 'result'))?>',
+                {'show_by': showBy},
+                function(){
+                    self.updateSelectAllState();
+                    self.container.trigger(CONTENT_CHANGED);
+                }
+            );
+        };
+
+        this.selectRow = function(rowId, method) {
+            var
+                self = this;
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'))?>',
+                {'rowId': rowId, 'mode': method},
+                function(response){
+                    self.container.find('.rows_selected').text(response.totalSelected);
+                },
+                'json'
+            );
+        };
+
+        this.selectAll = function(method) {
+            var
+                self = this;
+
+            this.container.find('.row_selector').each(function(){
+                if (method) {
+                    $(this).attr('checked', true);
+                } else {
+                    $(this).removeAttr('checked');
+                }
+            });
+
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'))?>',
+                {'rowId': 'select_all', 'mode': method},
+                function(response){
+                    self.container.find('.rows_selected').text(response.totalSelected);
+                },
+                'json'
+            );
+        };
+
+        this.updateSelectAllState = function() {
+            var
+                selected = true;
+
+            this.container.find('.row_selector').each(function(){
+                selected = selected && $(this).attr('checked');
+            });
+
+            if (selected) {
+                this.container.find('.select_all').attr('checked', true);
+            } else {
+                this.container.find('.select_all').removeAttr('checked');
+            }
+        };
+
+        this.addContentChangedListener = function(namespace, callback) {
+            var fullName = CONTENT_CHANGED + '.' + namespace;
+            this.container.unbind(fullName).bind(fullName, callback);
+        }
+    });
+</script>

@@ -1,0 +1,34 @@
+1. Picking by order
+they enter the orders that they want
+in the allocate screen just allocate these
+no restrictions on counts of products or orders
+
+2. Picking by next product
+in allocate screen
+
+get company_id from SYS_USER
+split by '|' into multi comps
+
+check company can pick by next prod
+
+SELECT FIRST 1 1,ZONE.DEFAULT_DEVICE_ID
+FROM ZONE
+WHERE (ZONE.COMPANY_ID = :WK_H_COMPANY_ID)
+INTO :WK_FOUND,:WK_L_DEVICE_ID ;
+
+gives the device to transfer from
+run a tran TRPK from device to new users device
+want the 1st product
+in 'AL' pick_line_status
+pick lines oversized
+ order by locations ordering? for the product involved
+
+/*
+SELECT FIRST 1 1,LOCATION.WH_ID, LOCATION.LOCN_ID
+FROM ZONE
+JOIN LOCATION ON ZONE.CODE = LOCATION.ZONE_C
+WHERE (ZONE.COMPANY_ID = :WK_H_COMPANY_ID)
+AND ((LOCATION.PROD_ID IS NULL)
+OR (LOCATION.PROD_ID = ''))
+INTO :WK_FOUND,:WK_L_ALT_WH_ID, :WK_L_ALT_LOCN_ID;
+*/

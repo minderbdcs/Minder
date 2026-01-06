@@ -1,0 +1,195 @@
+<?php
+require_once "DB.php";
+require "db_access.php";
+$wk_query1 = "select pi.prod_id, sum(pi.pick_order_qty),sum(pi.picked_qty) from pick_item pi where pi.pick_line_status in ('AL','PG','PL','DS')  group by pi.prod_id ";  
+{
+	$ExportAs = "CSV";
+}
+$wk_format = "html";
+if (isset($ExportAs))
+{
+	if ($ExportAs == "CSV")
+	{
+		header("Content-type: text/csv");
+		$wk_format = "csv";
+	}
+}
+if ($wk_format == "html")
+{
+	echo("<html>\n");
+	echo("<head>\n");
+	echo("<title>Picked Products</title>\n");
+	echo("</head>\n");
+	echo("<body>\n");
+	include "2buttons.php";
+}
+if (!($Link = ibase_connect($DBName2, $User, $Password)))
+{
+	echo("Unable to Connect!<BR>\n");
+	exit();
+}
+$dbTran = ibase_trans(IBASE_DEFAULT, $Link);
+// Set the variables for the database access:
+
+{
+	if (!($Result = ibase_query($Link, $wk_query1)))
+	{
+		echo("Unable to query tables!<BR>\n");
+		exit();
+	}
+
+	if ($wk_format == "html")
+	{
+		echo '<table align="center" cellpadding="2" cellspacing="2" border="1">';
+	
+		echo '<tr>';
+		{
+			echo("<th>Prod</th>\n");
+			echo("<th>Order Qty</th>\n");
+			echo("<th>Picked Qty</th>\n");
+			echo("<th>Location</th>\n");
+			echo("<th>Current Qty</th>\n");
+			echo("<th>Status</th>\n");
+		}
+		echo '</tr>';
+	}
+	if ($wk_format == "csv")
+	{
+		{
+			echo("\"Prod\",");
+			echo("\"Order Qty\",");
+			echo("\"Picked Qty\",");
+			echo("\"Location\",");
+			echo("\"Current Qty\",");
+			echo("\"Status\"");
+		}
+		echo "\n";
+	}
+	while ( ($Row = ibase_fetch_row($Result)))
+	{
+		$wk_prod = $Row[0];
+		if ($wk_format == "html")
+		{
+	 		echo '<tr>';
+			foreach ($Row as $Key => $Value) 
+			{
+				echo "<td>$Value</td>";
+			}
+		}
+		if ($wk_format == "csv")
+		{
+			foreach ($Row as $Key => $Value) 
+			{
+				if ($Key > 0)
+				{
+					echo ",";
+				}
+				echo "\"$Value\"";
+			}
+		}
+		$wk_query2 = "select issn.locn_id, sum(issn.current_qty),issn.issn_status from control c1  left outer join issn on issn.prod_id = '" . $wk_prod . "' and issn.wh_id=c1.default_wh_id and (issn.locn_id not starting 'DS') and issn.current_qty > 0 where c1.record_id = 1  group by issn.locn_id,issn.issn_status ";  
+		if (!($Result2 = ibase_query($Link, $wk_query2)))
+		{
+			echo("Unable to query tables!<BR>\n");
+		}
+		$wk_row_cnt = 0;
+		while ( ($Row2 = ibase_fetch_row($Result2)))
+		{
+			$wk_row_cnt = $wk_row_cnt + 1;
+			if ($wk_format == "html")
+			{
+				if ($wk_row_cnt > 1)
+				{
+	 				echo '</tr>';
+	 				echo '<tr>';
+					foreach ($Row as $Key => $Value) 
+					{
+						echo "<td>$Value</td>";
+					}
+				}
+				foreach ($Row2 as $Key => $Value) 
+				{
+					echo "<td>$Value</td>";
+				}
+			}
+			if ($wk_format == "csv")
+			{
+				if ($wk_row_cnt > 1)
+				{
+	 				echo "\n";
+					foreach ($Row as $Key => $Value) 
+					{
+						if ($Key > 0)
+						{
+							echo ",";
+						}
+						echo "\"$Value\"";
+					}
+				}
+				foreach ($Row2 as $Key => $Value) 
+				{
+					echo ",";
+					echo "\"$Value\"";
+				}
+			}
+		}
+		//release memory
+		//$Result->free();
+		ibase_free_result($Result2);
+
+		if ($wk_format == "html")
+		{
+			echo '</tr>';
+		}
+		if ($wk_format == "csv")
+		{
+			echo "\n";
+		}
+	}
+	if ($wk_format == "html")
+	{
+		echo '</table><BR /><HR />';
+	}
+	
+	//release memory
+	//$Result->free();
+	ibase_free_result($Result);
+	
+	//commit
+	//$Link->commit();
+	ibase_commit($dbTran);
+}
+
+//close
+//$Link->disconnect();
+ibase_close($Link);
+
+//close
+//$Link->disconnect();
+
+
+if ($wk_format == "html")
+{
+	//<input type="submit" name="submit" value="Submit">
+	echo '<form action="pick_Menu.php" method="post" name="Export"> ';
+	
+	echo '<table align="left"  border="0">';
+	whm2buttons('Accept', 'pick_Menu.php',"N","Back_50x100.gif","Back","accept.gif");
+	{
+		// html 4.0 browser
+		$backto = "ExportPicks.csv";
+		echo ("<TD>");
+		echo("<FORM action=\"" . $backto . "\" method=\"post\" name=exportcsv >\n");
+		echo("<INPUT type=\"hidden\" name=\"ExportAs\" value=\"CSV\">");  
+		echo("<INPUT type=\"IMAGE\" ");  
+		echo('SRC="/icons/whm/button.php?text=Export+CSV" alt="ExportAsCSV">');
+		echo("</FORM>");
+		echo ("</TD>");
+		echo ("</TR>");
+		echo ("</TABLE>");
+	}
+	echo '</form>';
+	echo '</body>';
+	echo '</html>';
+}
+?>

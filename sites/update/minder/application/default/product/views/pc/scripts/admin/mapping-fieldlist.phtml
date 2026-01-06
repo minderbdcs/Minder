@@ -1,0 +1,120 @@
+    <ul class="toolbar">
+        <li>
+            <label for="moveinall">Unused fields <b><span id="leftside"><?php echo count($this->data); ?></span></b></label>
+            <input id="moveinall" type="submit" value="&gt;&gt;">
+        </li>
+        <li>
+            <label for="moveoutall">Used fields <b><span id="rightside">0</span></b></label>
+            <input id="moveoutall" type="submit" value="&lt;&lt;">
+        </li>
+    </ul>
+<div id="listcontainer">
+    <div id="sourcelist">
+        <ul class="fields">
+            <?php
+            foreach ($this->data as $key => $val) {
+                echo '<li><input type="text" readonly  name="list[]" value="'  . $this->escape($val) . '"></li>';
+            }
+            ?>
+        </ul>
+    </div>
+    <div id="importlist">
+        <ul class="fields"></ul>
+    </div>
+    <div id="columnList">
+        <ul class="fields">
+            <?php
+                foreach($this->excelColumnList as $value){
+                    echo '<li><input type="text" readonly  name="alfas[]" value="'  . $value . '" style="width:30px;"></li>';    
+                }
+            ?>
+        </ul>
+    </div>
+</div>
+<script type="text/javascript">
+var leftSide = <?php echo count($this->data); ?>;
+var rightSide = 0;
+$().ready(function () {
+    $('#sourcelist .fields li').bind("click", movein);
+    updateCounter();
+    
+    $('#moveinall').bind('click', moveinall);
+    $('#moveoutall').bind('click', moveoutall);
+    
+    
+    
+});
+function movein() {
+    var element = $(this).clone();
+    $(this).remove();
+    $(element).click(moveout);
+    $('#importlist .fields').append(element);
+    $.each($('#importlist .fields li input'), function(){
+        $(this).attr('name', 'import[]');    
+    });
+    leftSide--;
+    rightSide++;
+    updateCounter();
+    return false;
+}
+function moveout() {
+    var element = $(this).clone();
+    $(this).remove();
+    $(element).click(movein);
+    $('#sourcelist .fields').append(element);
+    $.each($('#sourcelist .fields li input'), function(){
+        $(this).attr('name', 'list[]');    
+    });
+    leftSide++;
+    rightSide--;
+    updateCounter();
+    return false;
+}
+
+function moveoutall() {
+    var element = $('#importlist .fields').html();
+    $('#importlist .fields').empty();
+    $('#sourcelist .fields').append(element);
+    $.each($('#sourcelist .fields li'), function(){$(this).click(movein);});
+    $.each($('#sourcelist .fields li input'), function(){
+        $(this).attr('name', 'list[]');    
+    });
+    leftSide += rightSide;
+    rightSide = 0 ;
+    updateCounter();
+    removeIgnoredBlock();
+    return false;
+}
+
+function moveinall() {
+    var element = $('#sourcelist .fields').html();
+    $('#sourcelist .fields').empty();
+    $('#importlist .fields').append(element);
+    $.each($('#importlist .fields li'), function(){$(this).click(moveout);});
+    $.each($('#importlist .fields li input'), function(){
+        $(this).attr('name', 'import[]');    
+    }); 
+    rightSide += leftSide;
+    leftSide = 0 ;
+    updateCounter();
+    return false;
+}
+
+function updateCounter() {
+    $('#leftside').text(leftSide);
+    $('#rightside').text(rightSide);
+}
+
+function addIgnoredBlock(){
+    
+    $('#importlist .fields').append('<li><input name="import[]" id="ignore_column" type="text" value="IGNORE COLUMN" /></li>')
+    
+    $('input[value=IGNORE COLUMN]').bind('click', function(){
+        $(this).remove();
+    })
+}
+
+function removeIgnoredBlock(){
+    $('input[value=IGNORE COLUMN]').remove();
+}
+</script>

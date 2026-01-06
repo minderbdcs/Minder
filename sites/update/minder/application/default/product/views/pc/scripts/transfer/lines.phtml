@@ -1,0 +1,162 @@
+    <div style="position: relative; left:10px;">
+        <b>Selected:</b> <span  id="selected_num" style="font-weight: bold;"><?php echo $this->totalSelect; ?></span>
+        <hr />
+        Select All Rows on all pages
+        <input type="checkbox" id="select_complete" onclick="selectAllLinesOnAllPages(this)" />
+        <label for="results_per_page">View By:</label>
+        <?php echo $this->formSelect('show_by',
+                                    $this->navigation['show_by'],
+                                    array('onchange' => 'loadLines()'),
+                                    array(5  => 5,
+                                          10 => 10,
+                                          15 => 15,
+                                          20 => 20,
+                                          30 => 30,
+                                          40 => 40,
+                                          50 => 50,
+                                          100 => 100)) ?>
+        <label for="page">Page:</label>
+        <?php echo $this->formSelectStrict('pageselector',
+                                           $this->navigation['pageselector'],
+                                           array('onchange' => 'loadLines()'),
+                                           $this->pages); ?>
+    </div>
+    <table id="lines" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_lines', null , array('checked' => $this->upperChekbox, 'onclick' => 'selectAllLines(this)')); ?>
+            </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+
+<?php   foreach ($this->issnList as $issnItem) {  ?>
+            <tr>
+                <th><?php  
+                            if(in_array($issnItem->items['SSN_ID'], $this->conditions)) {
+                                echo $this->formCheckbox($issnItem->items['SSN_ID'], $issnItem->items['SSN_ID'], array('checked' => 'true', 'onclick' => 'selectOneLine(this)')) . '</th>';
+                            } else {
+                                echo $this->formCheckbox($issnItem->items['SSN_ID'], $issnItem->items['SSN_ID'], array('onclick' => 'selectOneLine(this)')) . '</th>';
+                            } 
+                    
+                           $tooltip = 'No description'; 
+                           foreach ($this->headers as $key => $val) { ?>
+                    <?php 
+                           if($key === 'ISSN_STATUS') {
+                                if(isset($this->issnStatus[$issnItem[$key]])) {
+                                    $tooltip = $this->issnStatus[$issnItem[$key]];
+                                }    
+                           }
+                    ?> 
+                               <td title="<?php echo $tooltip; ?>"><?php echo $this->escape($issnItem->items[$key]) ?></td>
+                    <?php } ?>
+        
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+    </ul>
+    <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: TXT" onclick="frmSubmitLines(this); return false;" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: CSV" onclick="frmSubmitLines(this); return false;" />
+        </li
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: XML" onclick="frmSubmitLines(this); return false;" />
+        </li
+        <li>
+            <input type="button" class="order-button" name="report" id="report" value="REPORT: XLS" onclick="frmSubmitLines(this); return false;" />
+        </li
+    </ul>
+<form action="" method="post" id="main_form">
+</form>
+<script type="text/javascript">
+<!--
+
+$(document).ready(function(){
+    // added sort
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});    
+});
+
+function selectAllLines(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'transfer', 'module' => 'default')); ?>', 
+    {method: target.checked, id: 'select_all', value: ''},
+    function(json) {
+        
+        $("#selected_num").get(0).innerHTML = json.selected_num;
+        
+        var chk = $("#lines input:checkbox");
+        var checkOnOff = $("#select_all_lines").get(0).checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+    });
+
+}
+
+function selectOneLine(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'transfer', 'module' => 'default')); ?>', 
+    {method: target.checked, id: target.value, value: target.value},
+    function(json) {
+         $("#selected_num").get(0).innerHTML = json.selected_num;    
+    });
+
+}
+
+function loadLines()
+{
+    $('#issn_lines').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'transfer', 'module' => 'default'));
+        ?>/?' + $('#main_form').serialize(),
+            function() {
+            
+            });
+    return true;
+}
+
+function selectAllLinesOnAllPages(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'marklines', 'controller' => 'transfer', 'module' => 'default')); ?>', 
+    {method: target.checked, id: 'select_complete', value: ''},
+    function(json) {
+        
+        $("#selected_num").get(0).innerHTML = json.selected_num;
+        
+        var chk = $("#lines input:checkbox");
+        var checkOnOff = $("#select_complete").get(0).checked;
+        for (i=0; i < chk.length; i++) {
+            chk[i].checked = checkOnOff;
+        }
+    });
+
+}
+
+function frmSubmitLines(input) {
+    oldForm = $("#main_form");
+    lowerVal = input.value.toLowerCase();
+    $("#main_form").append('<input type="hidden" id="toDelete" name="action" value="' + lowerVal + '" />')[0].submit();
+    $('#toDelete').remove();
+    $("#main_form").action = oldForm;
+    return false;
+}
+//-->  
+</script>
+
+                                      

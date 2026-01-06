@@ -1,0 +1,20 @@
+<HTML>
+ <HEAD>
+  <TITLE>Get Location to find SSNs for</TITLE>
+ </HEAD>
+<!-- Background white, links blue (unvisited), navy (visited), red (active) -->
+ <BODY BGCOLOR="#FFFFFF">
+
+  <H2 ALIGN="LEFT">Enter Location to View</H2>
+
+ <FORM action="ssn.php" method="post" name=getlocn>
+ <P>
+Location: <INPUT type="text" name="location"><BR>
+<INPUT type="submit" value="send">
+<INPUT type="reset"></P>
+</FORM>
+</BODY>
+<SCRIPT>
+document.getlocn.location.focus();
+</SCRIPT>
+</HTML>

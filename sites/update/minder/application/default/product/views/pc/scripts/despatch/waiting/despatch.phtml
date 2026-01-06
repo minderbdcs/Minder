@@ -1,0 +1,440 @@
+ <form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'despatch'), null, true); ?>" method="post" id="despatch_form">
+
+ <table style="width:80%" >
+          <tr>
+            <td>
+            <table style="width: 100%" border=1>
+                <tr>
+                    <td>
+                        <b>DESPATCH TO:</b> 
+                    </td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('firstName', $this->firstName, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                 <tr>
+                    <td><?php echo $this->formText('addresLine1', $this->addresLine1, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('addresLine2', $this->addresLine2, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('dCity', $this->dCity, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('dState', $this->dState, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('dCountry', $this->dCountry, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('contactName', $this->contactName, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('dPhone', $this->dPhone, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->formText('customerPoWo', $this->customerPoWo, array('disabled' => 'disabled', 'style' => 'width:56ex')); ?></td>
+                </tr>
+            </table>
+            </td>
+            <td>
+                <table style="width: 100%" border=1>
+                    <tr>
+                        <td>
+                            <b>INSTRUCTIONS:</b> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><textarea name="specialInstructions1" cols="48" rows="10" disabled="disabled"><?php echo $this->specialInstructions1;  ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><textarea name="specialInstructions2" cols="48" rows="10" disabled="disabled"><?php echo $this->specialInstructions2;  ?></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>Despatch Type:</td>
+                        <td><?php echo $this->formText('despatchType', $this->despatchType, array('disabled' => 'disabled', 'style' => 'width:41ex')); ?></td>
+                    </tr>
+                    <tr>
+                        <td>Inclusions w/Order:</td>
+                        <td><?php echo $this->formText('inclusionsOrder', $this->inclusionsOrder, array('disabled' => 'disabled', 'style' => 'width:41ex')); ?></td>
+                    </tr>
+                    <tr>
+                        <td>Partial Pick:</td>
+                        <td><?php echo $this->formText('partialPick', $this->partialPick, array('disabled' => 'disabled', 'style' => 'width:41ex')); ?></td>
+                    </tr>
+                    <tr>
+                        <td>Invoice w/Order:</td>
+                        <td><?php echo $this->formText('invoiceOrder', $this->invoiceOrder, array('disabled' => 'disabled', 'style' => 'width:41ex')); ?></td>
+                    </tr>
+                    
+                </table> 
+            </td>
+          </tr>
+          <tr>
+              <table style="width: 82%">
+                <tr>
+                    <td>
+                        <b>SHIP VIA:</b> 
+                    </td>
+                </tr>
+                <tr align="left">
+                    <th>Consignment #:</th>
+                    <td><?php echo $this->formText('consignment', $this->consignment, array('style' => 'width:36ex')); ?></td>
+                    <th></th>
+                    <td></td>
+                </tr>
+                <tr align="left">
+                    <th>Carrier:</th>
+                    <td><?php echo $this->formSelect('carrier', $this->carrier, array('style' => 'width:36ex'), $this->carrierList); ?></td>
+                    <th>Carrier Service:</th>
+                    <td><?php echo $this->formSelect('carrierService', $this->carrierService, array('style' => 'width:38ex'), $this->carrierServiceList); ?></td>
+                </tr>
+                <tr>
+                    <th>Payer:</th>
+                    <td><?php echo $this->formSelect('payer', $this->payer, array('style' => 'width:36ex'), $this->payerList); ?></td>
+                    <th>Account No:</th>
+                    <td><?php echo $this->formText('accountNo', $this->accountNo, array('disabled' => 'disabled', 'style' => 'width:38ex')); ?></td>
+                </tr>
+                 <tr>
+                    <th>Pallet Owner:</th>
+                    <td><?php echo $this->formSelect('palletOwner', $this->palletOwner, array('style' => 'width:36ex'), $this->palletOwnerList); ?></td>
+                    <th>Pallet Qty:</th>
+                    <td><?php echo $this->formText('palletQty', $this->palletQty, array('disabled' => 'disabled', 'style' => 'width:38ex')); ?></td>
+                </tr>
+                <tr>
+                    <th>Total Cartons:</th>
+                    <td><?php echo $this->formText('totalCartons', $this->totalCartons, array('style' => 'width:36ex')); ?></td>
+                    <th>Total Satchels:</th>
+                    <td><?php echo $this->formText('totalSatchels', $this->totalSatchels, array('style' => 'width:38ex')); ?></td>
+                </tr>
+                <tr>
+                    <th>Total Weight (kgs):</th>
+                    <td><?php echo $this->formText('totalWeight', $this->totalWeight, array('style' => 'width:36ex')); ?></td>
+                    <th>Total Volume (cu m):</th>
+                    <td><?php echo $this->formText('totalVolume', $this->totalVolume, array('style' => 'width:38ex')); ?></td>
+                </tr>
+                <tr>
+                    <th>Qty Address Labels:</th>
+                    <td><?php echo $this->formText('qtyAddressLabels',  $this->qtyAddressLabels, array('style' => 'width:36ex')); ?></td>
+                    <th>Print Address:</th>
+                    <td><?php echo $this->formSelect('print_address_label', $this->printAddress, array('style' => 'width:38ex', 'onchange' => 'printAddressChange(this)'), $this->printAddressList); ?></td>
+                </tr>
+                <tr>
+                    <th>Label Comment 1:</th>
+                    <td><?php echo $this->formText('label_comment1', $this->remarks1, array('style' => 'width:36ex')); ?></td>
+                    <th>Label Comment 2:</th>
+                    <td><?php echo $this->formText('label_comment2', $this->remarks2, array('style' => 'width:38ex')); ?></td>
+                </tr>
+              </table>
+          <tr>
+       </table>
+       <br /><br />
+       <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+        <li>
+            <input type="button" class="order-button" name="action1" id="accept" value="ACCEPT" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="action1" id="report: csv" value="REPORT: CSV" onclick="return frmSubmitLines(this)" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="action1" id="report: xls" value="REPORT: XLS" onclick="return frmSubmitLines(this)" />
+        </li>
+         <?php if(!is_null($this->minder->defaultControlValues['LEGACY_URL']) && !empty($this->minder->defaultControlValues['LEGACY_URL'])){ ?>
+        <li>
+            <input type="button" class="order-button" name="action1" id="get_address" value="GET ADDRESS" onclick="return openAddressDialog();" />
+        </li>
+        <?php } else { ?>
+        <li>
+            <input type="button" class="order-button" name="action1" id="report: xls" value="GET ADDRESS" onclick="return openAddressDialog();" disabled="disabled" />
+        </li>
+        <?php } ?>
+        <li>
+            <input type="button" class="order-button" name="action1" value="CANCEL" onclick="return cancelDespatch();" />
+        </li>
+        <li>
+             <input type="button" class="order-button" name="action1" value="GO TO TOP" onclick="return scrollToTop();" />
+        </li>
+        <li>
+             <input type="button" class="order-button" name="action1" value="PRINT ADDRESS" onclick="return printSelectedAddress();" />
+        </li>
+    </ul>
+</form>
+
+
+<script type="text/javascript">
+    
+    $(function() {
+    
+        $('#payer').bind('change', accountNoActivate);
+        $('#palletOwner').bind('change', palletQtyActivate);
+        
+        $('#payer').trigger('change');
+        $('#palletOwner').trigger('change');
+        
+        $('input[value=ACCEPT]').bind('click', function(event){
+            checkMandatoryFields(this);
+        })
+        
+        $('#get_address').dialog({buttons: {Accept: getAddress, Cancel: closeAddressDialog},
+             width: '60ex',
+             height: '10em',
+             autoOpen: false,
+        
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();
+            
+            var orderNo = $('#consignment').val()
+                          $('#contact_instance_id').val(orderNo).focus();     
+        });
+        
+        <?php if($this->minder->isAdmin) { ?>
+            $('#print_address').dialog({buttons: {Save: savePrintAddressData, Close: closePrintAddressDialog},
+                 width: '60ex',
+                 height: '34em',
+                 autoOpen: false,
+            
+            }).bind('dialogopen', function(event, ui) {
+                $(this).show();     
+            });
+         <?php } else {?>
+            $('#print_address').dialog({buttons: {Close: closePrintAddressDialog},
+                 width: '60ex',
+                 height: '34em',
+                 autoOpen: false,
+                 
+            }).bind('dialogopen', function(event, ui) {
+                $(this).show();     
+            });
+         <?php } ?>
+    
+    })
+    
+    
+    function cancelDespatch() {
+        $('#despatch').fadeOut('normal');
+        
+        return false;
+    }
+    
+    function accountNoActivate() {
+        var payer = $('#payer option:selected').val();
+        
+        if(payer == 'RECEIVER') {
+            $('#accountNo').removeAttr('disabled').removeAttr('style');    
+        } else {
+            $('#accountNo').attr("disabled","disabled").css("background-color", "#EEEEEE");
+        }
+    }
+    
+    function palletQtyActivate() {
+        var palletOwner = $('#palletOwner option:selected').val();
+        
+        if(palletOwner != 'NONE') {
+            $('#palletQty').removeAttr('disabled').removeAttr('style');
+        } else {
+            $('#palletQty').attr('disabled', 'disabled').css("background-color", "#EEEEEE");    
+        } 
+    }
+    
+    function checkMandatoryFields(target) {
+        
+        var totalCartons = parseInt($('#totalCartons').val());
+        var totalWeight  = parseInt($('#totalWeight').val());
+        
+        var totalSatchels= parseInt($('#totalSatchels').val());
+        var totalVolume  = parseInt($('#totalVolume').val());
+        
+        var consigmentNo = $('#consignment').val(); 
+        
+        if(consigmentNo != '') {
+            if((!isNaN(totalWeight) && !isNaN(totalVolume)) ||
+               (!isNaN(totalWeight) && isNaN(totalVolume)) ||
+               (isNaN(totalWeight) && !isNaN(totalVolume))) {
+                
+                if((!isNaN(totalCartons) && !isNaN(totalSatchels)) ||
+                   (!isNaN(totalCartons) && isNaN(totalSatchels)) ||
+                   (isNaN(totalCartons) && !isNaN(totalSatchels))) {
+                       
+                        frmSubmitLines(target);
+                                          
+                } else {
+                    alert('Enter "Total Cartons" or "Total Satchels", "Total Weight" or "Total Vaolume" and "Qty Address Labels"');
+                }
+                          
+            } else {
+                alert('Enter "Total Cartons" or "Total Satchels", "Total Weight" or "Total Vaolume" and "Qty Address Labels"'); 
+            }
+        } else {
+            alert('Enter "Consignment #');
+        }
+        
+        return false;
+        
+    }
+    
+    function openAddressDialog(){
+        $("#get_address").dialog("open");
+        
+        
+        
+        return false;      
+    }
+    
+    function closeAddressDialog(){
+        $('#get_address').dialog("close");
+        
+        return false;  
+    }
+    
+    function getAddress(){
+        
+        var orderNo =   $('#contact_instance_id').val();
+        
+        if(orderNo != ''){
+            
+            $.getJSON('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'despatch'), '', false); ?>', 
+            {
+               action1: 'GET ADDRESS', 
+               contact_instance_id: orderNo
+            }
+            , function(json){
+                           
+               }
+            );
+            closeAddressDialog();        
+        
+        } else {
+            $('#contact_instance_id').focus();    
+        }   
+    }
+    
+    
+    function savePrintAddressData(){
+        
+        $.getJSON('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'despatch'), '', false); ?>', 
+        {
+           action1:         'SAVE_ADDRESS_DATA',
+           field_name:      $('#print_address_label :selected').val(),
+   
+           person_id:       $('#person_id').val(),
+           person_type:     $('#person_type').val(),
+           first_name:      $('#first_name').val(),
+           last_name:       $('#last_name').val(),
+           city:            $('#city').val(),
+           state:           $('#state').val(), 
+           post_code:       $('#post_code').val(),
+           country:         $('#country').val(),
+           phone:           $('#phone').val(),
+           address_line1:   $('#address_line1').val(),
+           address_line2:   $('#address_line2').val(),
+           address_line3:   $('#address_line3').val(),
+           address_line4:   $('#address_line4').val(),
+           address_line5:   $('#address_line5').val(),
+           title:           $('#title').val()
+           
+        }, function(json){
+                $("#print_address").dialog("close");
+                
+                if(json.result){
+                    alert('Order data updated successfully.');    
+                } else {
+                    alert('Error while update order data.');    
+                }           
+           }
+        );      
+        
+    }
+    
+    function closePrintAddressDialog(){
+        $('#print_address').dialog("close");
+        
+        return false;     
+    }
+    
+    function printAddressChange(target){
+        
+        var address =   $('#print_address_label :selected').val();
+        
+        if(address != ''){
+            $.getJSON('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'despatch'), '', false); ?>', 
+            {
+               action1: 'LOAD_ADDRESS_DATA', 
+               field_name: $('#print_address_label :selected').val()
+               
+            }, function(json){
+            
+                    $('#person_id').val(json.PERSON_ID);
+                    if(json.type == 'DT'){
+                        $('#person_type').attr("disabled","disabled");
+                        $('#person_type').attr("style","background-color:#EEEEEE");
+                    } else {
+                        $('#person_type').removeAttr('disabled'); 
+                        $('#person_type').removeAttr('style');
+                    }
+                    $('#first_name').val(json.FIRST_NAME);
+                    $('#last_name').val(json.LAST_NAME);
+                    $('#city').val(json.CITY);
+                    $('#state').val(json.STATE);
+                    $('#post_code').val(json.POST_CODE);
+                    $('#country').val(json.COUNTRY);
+                    $('#phone').val(json.PHONE);
+                    $('#address_line1').val(json.ADDRESS_LINE1);
+                    $('#address_line2').val(json.ADDRESS_LINE2);
+                    $('#address_line3').val(json.ADDRESS_LINE3);
+                    $('#address_line4').val(json.ADDRESS_LINE4);
+                    $('#address_line5').val(json.ADDRESS_LINE5);
+                    $('#title').val(json.TITLE);
+                    
+                    $('#firstName').val(json.FIRST_NAME);
+                    $('#addresLine1').val(json.ADDRESS_LINE1);
+                    $('#addresLine2').val(json.ADDRESS_LINE2);
+                    $('#dCity').val(json.CITY);
+                    $('#dState').val(json.STATE);
+                    $('#dCountry').val(json.COUNTRY);
+                    $('#contactName').val(json.CONTACT_NAME);
+                    $('#dPhone').val(json.PHONE);
+                    $('#customerPoWo').val(json.CUSTOMER_PO_WO);
+                    
+                
+                    $("#print_address").dialog("open");           
+               }
+            );    
+        } 
+    }
+    
+    function clearFields(){
+        $.each($('#print_address :input[type=text]'), function(){
+            $(this).val('');
+        })
+    }
+    
+    function printSelectedAddress(){
+        
+        
+        var address_data =  $('#print_address_label :selected').val().split('|');
+            address_type =  address_data[0];   
+            label_name   =  address_data[1];
+         
+        
+        $.getJSON('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'despatch'), '', false); ?>', 
+        {
+           action1:         'PRINT_ADDRESS', 
+           address_type:    address_type, 
+           label_name:      label_name
+           
+        }, function(json){
+        
+                if(json.result){
+                    alert('1 label printed successfully');    
+                } else {
+                    alert(json.message);    
+                }
+              
+           }
+        );
+       
+       return false; 
+    }                                                
+</script>
+

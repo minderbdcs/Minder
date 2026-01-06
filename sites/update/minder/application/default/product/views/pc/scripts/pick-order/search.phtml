@@ -1,0 +1,8 @@
+<?php
+
+if ($this->data != null && !empty($this->data)) {
+    foreach ($this->data as $key => $val) {
+        echo $key . '|' . $this->escape($val) . "\n";
+    }
+}
+

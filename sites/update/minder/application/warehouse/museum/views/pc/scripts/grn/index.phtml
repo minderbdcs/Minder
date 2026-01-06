@@ -1,0 +1,363 @@
+<?php echo $this->render('header.phtml');
+    $attributes = array('autocomplete' => 'off', 'onkeyup' => 'checkKeys(event)', 'style' => 'width: 15ex;');
+?>
+<!-- flash messages -->
+<?php 
+    $messenger = $this->messenger();
+    $wasErrors = $messenger->getMessenger()->setNamespace('errors')->hasCurrentMessages();
+    echo $messenger->all(); 
+    if ($wasErrors) {
+        exit();
+    }
+?>
+<!-- flash messages -->
+
+<h2><?php echo $this->escape($this->pageTitle) ?></h2>
+    <form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+        <!-- search form start --> 
+        <div style="width:99%;" id="search_form">
+            <table style="width: 100%" id="table1">
+                <?php 
+                    $currentColNo = 0;
+                    foreach($this->searchInputs as $searchInput) {
+                        if ($currentColNo % 3 == 0) {
+                            //start new row
+                            if ($currentColNo > 0) {
+                                //close previouse row if exists
+                                ?>
+                                    </tr>
+                                <?php
+                            }
+                            ?>
+                                <tr>
+                            <?php
+                        }
+                        
+                        $tmpInputMethod = explode('|', $searchInput['TYPE']);
+                        if (($tmpInputMethod[0] == 'DL') && ($currentColNo % 3 == 2)) {
+                            //start new row
+                            if ($currentColNo > 0) {
+                                //close previouse row if exists
+                                ?>
+                                    </tr>
+                                <?php
+                            }
+                            $currentColNo++;
+                        }
+                        ?>
+                            <th><?php echo $searchInput['SSV_TITLE']?></th>
+                        <?php
+                        
+                        switch ($tmpInputMethod[0]) {
+                            case 'IN':
+                                ?>
+                                    <td><?php echo $this->formText($searchInput['SSV_NAME'], $searchInput['SEARCH_PARAM'], null); ?></td>
+                                <?php
+                                $currentColNo++;
+                                break;
+                            case 'DP':
+                                ?>
+                                    <td><?php echo $this->formText($searchInput['SSV_NAME'], $searchInput['SEARCH_PARAM'], null); ?><script language="JavaScript">$("#<?php echo $searchInput['SSV_NAME']; ?>").datepicker({dateFormat: "yy-mm-dd"});</script></td>
+                                <?php
+                                $currentColNo++;
+                                break;
+                            case 'DD':
+                                ?>
+                                    <td><?php echo $this->formSelect($searchInput['SSV_NAME'], $searchInput['SEARCH_PARAM'], null, $searchInput['VALUES']); ?></td>
+                                <?php
+                                $currentColNo++;
+                                break;
+                            case 'DL':
+                                $tmpName = $tmpInputMethod[0].'_'.$tmpInputMethod[1];
+                                ?>
+                                    <td><?php echo $this->formSelect(strtoupper($tmpName), $searchInput['SEARCH_PARAM'], array('onChange' => 'onDLChange(this)'), $searchInput['VALUES']); ?></td>
+                                    <th>------------></th>
+                                    <td><?php echo $this->formText($searchInput['SEARCH_PARAM'], $searchInput['SEARCH_PARAM1'], array('id' => strtolower($tmpName))); ?></td>
+                                <?php
+                                $currentColNo += 2;
+                                break;
+                            
+                        }
+                    }
+                    
+                    for (;$currentColNo % 3;$currentColNo++){
+                        ?>
+                        <td>&nbsp;</td><td>&nbsp;</td>
+                        <?php
+                    }
+                    
+                    if ($currentColNo > 0) {
+                        //close previouse row if exists
+                        ?>
+                            </tr>
+                        <?php
+                    }
+                ?>
+                <tr>
+                    <td colspan="=4">
+                        <ul class="toolbar">
+                            <li><?php echo $this->formSubmit('form_action', 'SEARCH', array('onclick' => 'frmSubmit()')); ?></li>
+                            <li><?php echo $this->formSubmit('form_action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <!-- search form end  -->
+
+
+        <!-- tabs container start -->
+        <div id="grn_tabs" class="ui-tabs-container" style="">
+            <ul>
+                <?php $count = 1;
+                      foreach($this->tabList as $key => $value) {?>
+                        <li tab_name="<?php echo $key; ?>" tab_id="<?php echo $count; ?>"><a href="#grn_tab<?php echo $count++; ?>"><span><b><?php echo $value; ?>:</b></span></a></li>
+                <?php }?>
+            </ul>
+            
+            <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+                <div style="float: left; font-weight: bold; text-transform: uppercase;">Orders List</div>
+                <div style="position: relative; left:10px;">
+                    <label for="results_per_page">View By:</label>
+                    <?php echo $this->formSelect('show_by',
+                                                 $this->navigation['show_by'],
+                                                 array('onchange' => 'frmSubmit()'),
+                                                 array(5  => 5,
+                                                       10 => 10,
+                                                       15 => 15,
+                                                       20 => 20,
+                                                       30 => 30,
+                                                       40 => 40,
+                                                       50 => 50,
+                                                       100 => 100)) ?>
+                    <label for="page">Page:</label>
+                    <?php echo $this->formSelectStrict('pageselector',
+                                                       $this->navigation['pageselector'],
+                                                       array('onchange' => 'frmSubmit()'),
+                                                       $this->pages); ?>
+                </div>
+                
+                <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+                    <li style="display: inline;">Selected: <span id="selected_num"><?php echo $this->selectedNum;?></span></li>
+                </ul>
+            </div>
+
+            <?php $count = 1;
+                  foreach($this->tabList as $tabKey => $tabValue) { ?>
+                    
+                    <div id="grn_tab<?php echo $count; ?>" style="border-top: none; padding-top: 0px;">
+                    
+                        <!-- grn list start -->
+                        <table class="withborder tablesorter grns_list" style="margin-bottom: 0;" tab="tab_<?php echo $count; ?>">
+                            <thead>
+                                <!-- grn list headers start --> 
+                                <tr>
+                                    <th><input type="checkbox" class="select_all" onclick="selectAll(this)" /></th>
+                                    <?php foreach ($this->headers[$tabKey] as $header) {
+                                            echo '<th>'. $this->escape($header) . '</th>';
+                                        } 
+                                    ?>
+                                </tr>
+                                <!-- grn list headers end -->
+                                
+                                <!-- grn data list start --> 
+                                <tbody class="grn_inner">
+                                    <?php foreach($this->grns as $grnDetails) { ?>
+                                            <tr>
+                                                <th>
+                                                    <?php echo $this->formCheckbox($grnDetails->grn, $grnDetails->grn, array('checked' => array_key_exists($grnDetails->grn, $this->conditions) ? 'checked' : '', 'class' => 'grn-selector', 'onclick' => 'showSelected(this)')); ?>
+                                                </th>
+                                                <?php if($this->minder->isAdmin){ ?>
+                                                        <?php
+                                                            foreach ($this->headers[$tabKey] as $key => $value) {
+                                                                if(array_key_exists($key, $this->editInputs)){
+                                                                    switch($this->editInputs[$key]['SSV_INPUT_METHOD']){
+                                                                        case 'RO':
+                                                        ?>                  <td style="width: <?php echo $this->editInputs[$key]['SSV_SIZE']; ?>px;"><a href="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'grn', 'action' => 'show', 'grn_no' => $grnDetails->grn), '', true)?>"><?php echo $this->escape($grnDetails[$key]); ?></a></td>
+                                                        <?php               break;
+                                                                        case 'DD':
+                                                                            //add empty value, if it isn't
+                                                                            if (!isset($this->editInputs[$key]['DD_VALUES']['']))
+                                                                                $this->editInputs[$key]['DD_VALUES'] = array('' => '') + $this->editInputs[$key]['DD_VALUES'];
+                                                                                
+                                                        ?>                  <td><?php echo $this->formSelect($grnDetails['GRN'] . '-' . $key  , $grnDetails[$key], array('style' => 'width: ' . $this->editInputs[$key]['SSV_SIZE'] . 'px;', 'type2' => 'editable'), $this->editInputs[$key]['DD_VALUES']); ?></td>
+                                                        <?php               break;
+                                                                        case 'DP':
+                                                        ?>                  <td><?php echo $this->formText($grnDetails['GRN'] . '-' . $key, $grnDetails[$key], array('style' => 'width: ' . $this->editInputs[$key]['SSV_SIZE'] . 'px;', 'type2' => 'editable')); ?></td>
+                                                                            <script type="text/javascript">
+                                                                                $("#<?php echo $grnDetails['GRN']; ?>-<?php echo $key; ?>").datepicker({dateFormat: "yy-mm-dd"});
+                                                                            </script>
+                                                        <?php               break;
+                                                                        case 'IN':
+                                                        ?>                  <td><?php echo $this->formText($grnDetails['GRN'] . '-' . $key, $grnDetails[$key], array('style' => 'width: ' . $this->editInputs[$key]['SSV_SIZE'] . 'px;', 'type2' => 'editable')); ?></td>
+                                                        <?php               break;
+                                                                        default:
+                                                                            //some fields have no input method, think this should treat as error, but now just show as RO field
+                                                        ?>                  <td style="width: <?php echo $this->editInputs[$key]['SSV_SIZE']; ?>px;"><a href="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'grn', 'action' => 'show', 'grn_no' => $grnDetails->grn), '', true)?>"><?php echo $this->escape($grnDetails[$key]); ?></a></td>
+                                                        <?php               
+                                                                    }
+                                                                } else {
+                                                        ?>            <td><a href="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'grn', 'action' => 'show', 'grn_no' => $grnDetails->grn), '', true); ?>"><?php echo $this->escape($grnDetails[$key]); ?></a></td>
+                                                        <?php   }
+                                                            }
+                                                        ?>
+                                                <?php } else { 
+                                                        foreach ($this->headers[$tabKey] as $key => $value) {
+                                                ?>
+                                                                <td style="width: <?php echo $this->editInputs[$key]['SSV_SIZE']; ?>px;"><a href="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'grn', 'action' => 'show', 'grn_no' => $grnDetails->grn), '', true); ?>"><?php echo $this->escape($grnDetails[$key]); ?></a></td>
+                                                <?php       
+                                                        }
+                                                      } ?>
+                                            </tr>
+                                    <?php } ?>
+                                </tbody>
+                                <!-- orders data list end   --> 
+                                
+                                
+                                <?php if (!count($this->pickOrders)) { ?>
+                                <tr>
+                                    <th/>
+                                    <?php foreach ($this->headers[$tabKey] as $value) { ?>
+                                        <td></td>
+                                    <?php } ?>
+                                </tr>
+                                <?php } ?>
+                            
+                            </thead>
+                        </table>
+                        <!-- orders list end  -->
+                        
+                        <!-- orders info start -->
+                        <table class="withborder" width="100%">
+                            <tr>
+                                <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                            </tr>
+                        </table>
+                        <!-- orders info end -->
+                    
+                    </div>
+            <?php $count++ ?>        
+            <?php }?>
+            
+            <div style="clear: both; padding-left: 10px;">
+                <ul class="toolbar">
+                    <li>
+                        <?php echo $this->formSubmit('action', 'REPORT: TXT', array('onclick' => 'return frmSubmit();'))?>
+                    </li>
+                    <li>
+                        <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();'))?>
+                    </li>
+                    <li>
+                        <?php echo $this->formSubmit('action', 'REPORT: XML', array('onclick' => 'return frmSubmit();'))?>
+                    </li>
+                    <li>
+                        <?php echo $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return frmSubmit();'))?>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- tabs container end -->
+
+        
+<script type="text/javascript"> 
+    /* <![CDATA[ */
+    
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        
+        $("#grn_tabs > ul").tabs();
+        
+        $(".grns_list").tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        //restore selected and select_all state
+        $.getJSON('<?php echo $this->url(array('module' => 'warehouse', 'action' => 'calc', 'controller' => 'grn')); ?>', 
+            {pageselector: $('select[name=pageselector]')[0].value, show_by: $('select[name=show_by]')[0].value}, 
+            function(json) {
+                $('#selected_num').text(json.selected_num);
+
+                $('.select_all').each(function(){
+                    $(this)[0].checked =   checkSelectedLines('.grn_inner', '.grn-selector');   
+                })            
+            }
+        );
+    });
+
+    //--------------------- DOM ready -------------------------//
+    
+    function showSelected(chkbox) {
+        var lineId      =   $(chkbox).attr('id');
+        var lineCond    =   $(chkbox).attr('checked');
+
+        $('input[value=' + lineId + ']').attr('checked', lineCond);
+        
+        $.getJSON('<?php echo $this->url(array('module' => 'warehouse', 'action' => 'calc', 'controller' => 'grn')); ?>', 
+            {method: chkbox.checked, id: chkbox.value, value: chkbox.value, pageselector: $('select[name=pageselector]')[0].value, show_by: $('select[name=show_by]')[0].value}, 
+            function(json) {
+                $('#selected_num').text(json.selected_num);
+
+                $('.select_all').each(function(){
+                    $(this)[0].checked =   checkSelectedLines('.grn_inner', '.grn-selector');
+                });
+                
+                if (json.errors && json.errors.length) {
+                    showErrors(json.errors);
+                }
+            }
+        );
+    }
+    
+    function selectAll(target) {
+        
+        var lineId      =   $(target).attr('id');
+        var lineCond    =   $(target).attr('checked');
+        
+        $('.select_all').attr('checked', lineCond);
+        
+        $.getJSON('<?php echo $this->url(array('module' => 'warehouse', 'action' => 'calc', 'controller' => 'grn')); ?>', 
+            {method: target.checked, id: 'select_all', pageselector: $('select[name=pageselector]')[0].value, show_by: $('select[name=show_by]')[0].value}, 
+            function(json) {
+                $('.grn-selector').attr('checked', target.checked);
+                $('#selected_num').text(json.selected_num);
+
+                if (json.errors && json.errors.length) {
+                    showErrors(json.errors);
+                }
+            }
+        );
+        
+    }
+    
+    function checkSelectedLines(tableId, checkBoxesClass) {
+        var checkBoxes = $(tableId).find(checkBoxesClass);
+        return checkBoxes.length == checkBoxes.filter(':checked').length;
+    }
+
+    function frmClear()
+    {
+        $('#search_form input:text').each(function() {
+            this.value = '';
+        });
+        $('#search_form select').each(function() {
+            var regExp = /^DL_(\d+)$/;
+            
+            if (this.id != 'show_by' && this.id != 'pageselector') {
+                this.selectedIndex = 0;
+            }
+            
+            if (regExp.test(this.id)) {
+                onDLChange(this);
+            }
+        });
+        return false;
+    }
+    
+    function onDLChange(element) {
+        var id = $(element).attr('id');
+        
+        $('#' + id.toLowerCase()).attr('name', $(element).attr('value'));
+    }
+
+    /* ]]> */
+</script>
+        
+<?php echo $this->render('footer.phtml');

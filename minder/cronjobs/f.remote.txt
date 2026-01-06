@@ -1,0 +1,5 @@
+select mon$attachment_id,mon$user,mon$remote_address,mon$remote_process from mon$attachments where mon$remote_address <> '127.0.0.1' and mon$state=1;
+/*
+delete  from mon$attachments where mon$remote_address <> '127.0.0.1' and mon$state=1;
+*/
+

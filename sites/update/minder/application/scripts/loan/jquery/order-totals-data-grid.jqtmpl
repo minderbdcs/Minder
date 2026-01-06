@@ -1,0 +1,10 @@
+<table class="withborder summary-screen" width="100%">
+    {{each($index, $row) $item.data.getRows()}}
+    <tr>
+        {{each($fieldName, $fieldStruct) $item.data._fields}}
+        <th><span class="minder-grid-view-header FIELD_ID_{{= $fieldName}}">Header:{{= $fieldName}}</span></th>
+        <td><span class="minder-grid-view-field ROW_ID_{{= $row.__rowId}} FIELD_ID_{{= $fieldName}}">Row:{{= $row.__rowId}}:Field:{{= $fieldName}}</span></td>
+        {{/each}}
+    </tr>
+    {{/each}}
+</table>

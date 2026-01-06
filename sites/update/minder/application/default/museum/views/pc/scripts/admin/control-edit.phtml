@@ -1,0 +1,129 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<form id="main" name="main" action="" method="post">
+    <div id="table-wrapper">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <div style="float:left; font-weight: bold;">
+                            Selected: <span  id="selected_num">0</span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            <!-- Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', '', array()); ?> -->
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation[$this->tableId]['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelect('pageselector',
+                                               $this->navigation[$this->tableId]['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+        <table id="<?php echo $this->escape($this->tableId) ?>" class="withborder tablesorter">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           '',
+                                           array('onclick' => 'selectAll(this)')) ;?>
+            </th>
+<?php
+    foreach ($this->headers as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . (array_key_exists($key, $this->dataset->getUniqueConstraint()) ? ('<b>*' . $this->escape($header)) . '</b>': ($this->escape($header))) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if ($this->dataset->count() > 0) {
+        foreach ($this->dataset as $id => $record) {
+            if ($this->rowNumber == $this->dataset->getRowNumberByRecordId($id)) {
+                echo '<tr class="odd">';
+            } else {
+                echo '<tr>';
+            }
+            //$this->rowNumber--;
+            echo '<th>';
+            echo $this->formCheckbox($this->escape($record->id),
+                                     $this->escape($record->id),
+                                     array('class' => 'line_selector',
+/*                                           'checked' => selectFilterValue($this->escape($record->id), $this->conditions),*/
+                                           'onclick' => 'showSelected(this, \'auto\')'));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                $val = $record[$propertyName];
+                $urlEdit = $this->url(array('module'      => 'warehouse',
+                                            'controller'  => 'ssn',
+                                            'action'      => 'edit'),
+                                            '',
+                                            true);
+                echo '<td><a href="#" onclick="goEdit(' . "'" . $this->escape($record->id) . "','" . $this->dataset->getRowNumberByRecordId($id) . "'" . ');">' .
+                        $this->escape($val) . '</a></td>'."";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">Total
+            <?php echo $this->numRecords . " records. ";?>
+            <?php echo "Show from " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + $this->dataset->count());?>
+        </div>
+    </div>
+</form>
+<div id="editcontainer" class="flora" title="" style="overflow:auto">
+</div>
+<script type="text/javascript">
+$().ready(function() {
+    $('#select_complete').bind('click', selectComplete);
+<?php if ($this->loadEdit) { ?>
+    goEdit('<?php echo $this->row->id; ?>','<?php echo $this->rowNumber; ?>');
+<?php } ?>
+});
+
+function goEdit(recordId, rowNumber)
+{
+    var id = recordId;
+    $('#editcontainer').load('<?php echo $this->url(array('action' => 'control-edit', 'controller' => 'admin', 'module' => 'default')); ?>/?mode=edit&record_id=' + recordId + '&row_number=' + rowNumber,
+                              function() {
+                                  $('#<?php echo $this->escape($this->tableId); ?> tr').removeClass('odd')
+                                  $('#' + id).parent().parent().addClass('odd');
+                              });
+}
+
+function selectComplete()
+{
+    var checkOnOff = this.checked;
+    var ele = $('table input[type="checkbox"]', $('#table-wrapper', $(this).parent().parent().parent()));
+    for (i=0; i<ele.length; i++) {
+        ele[i].checked = checkOnOff;
+    }
+
+}
+</script>
+<?php echo $this->render('footer.phtml');

@@ -1,0 +1,254 @@
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'index'), null, true); ?>" method="post" id="lines_form">
+<?php echo $this->formHidden('from', 'lines-action') ?>
+<div id="json" style="display: none;"><?php echo json_encode($this->counters) ?></div>
+    <div>
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">PICKED LINES LIST</div>
+         <div style="position: relative; left:10px;">
+            <label for="select_complete" >Select All Rows on all pages</label>
+            <?php echo $this->formCheckbox('select_complete', 'select_complete', array('checked' => array_key_exists('select_complete', (array) $this->conditions) ? 'checked' : '', 'onclick' => 'selectAllLineOnAllPages(this);')) ?>
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                        $this->navigation['show_by'],
+                                        array('onchange' => 'this.form.submit()'),
+                                        array(5  => 5,
+                                              10 => 10,
+                                              15 => 15,
+                                              20 => 20,
+                                              30 => 30,
+                                              40 => 40,
+                                              50 => 50,
+                                              100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'this.form.submit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span class="lines_selected"><?php echo $this->counters['lines_selected'] ?></span></li>
+    </ul>
+    <table id="lines" class="withborder tablesorter">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_lines" onclick="selectAllLines(this)" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+
+<?php
+        foreach ($this->pickItems as $pickItem) : ?>
+        <tr>
+            <th><?php echo $this->formCheckbox($pickItem->pickLabelNo, $pickItem->pickLabelNo, array('checked' => array_key_exists($pickItem->pickLabelNo, (array) $this->conditions) ? 'checked' : '', 'class' => 'line-selector', 'onclick' => 'checkLine(this)')) ?></th>
+<?php     foreach ($this->headers as $key => $val) {
+              if ($key == 'SALE_PRICE' || $key == 'PICK_ORDER_QTY' || $key == 'DISCOUNT' || $key == 'LINE_TOTAL' || $key == 'PICK_LINE_STATUS') { ?>
+            <td class="<?php echo 'td_' . strtolower($val) ?>" title="<?php echo $this->headers[$key] ?>"><div class="line-<?php echo $pickItem->pickLabelNo ?>"><?php echo $this->escape($pickItem->items[$key]) ?></div></td>
+<?php         } else { ?>
+            <td><?php echo $this->escape($pickItem->items[$key]) ?></td>
+<?php
+              }
+          } ?>
+        </tr>
+<?php endforeach  ?>
+<?php if (!count($this->pickItems)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $v) : ?>
+            <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+     <table class="withborder" id="lines-info" width="100%">
+        <tr>
+            <td colspan="2">Total Order Lines Selected: <span class="lines_selected"><?php echo $this->counters['lines_selected'] ?></span></td>
+            <td>Total Product Codes Selected: <span id="products_selected"><?php echo $this->counters['products_selected'] ?></span></td>
+            <td>Total ISSN&acute;s Selected: <span id="issns_selected"><?php echo $this->counters['issns_selected'] ?></span></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td width="20%">Total <?php echo $this->numRecords . ($this->numRecords > 1 ? ' records' : ' record') ?></td>
+            <td width="20%">Show from <?php echo ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1) . ' to ' . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td width="20%">Total Product Codes Displayed: <?php echo $this->counters['products_displayed'] ?></td>
+            <td width="20%">Total ISSN&acute;s Displayed: <?php echo $this->counters['issns_displayed'] ?></td>
+            <td width="20%"></td>
+        </tr>
+    </table>
+    <ul class="toolbar" style="margin-top: 3px;" id="edit_field_buttons">
+        <li>
+            <input type="button" class="order-button" name="action1" id="report: csv" value="REPORT: CSV" onclick="return frmSubmitLines(this)" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="action1" id="report: xls" value="REPORT: XLS" onclick="return frmSubmitLines(this)" />
+        </li>
+        <li>
+            <input type="button" class="order-button" name="action1" value="CANCEL" onclick="removeEditableFields()" />
+        </li>
+    </ul>
+<?php /*
+    <div class="flora" id="line_cancel" title="Reason for deleting">
+        This reason will be applied to all selected lines:<br /><textarea name="reason" id="line_cancel_reason"></textarea>
+    </div>
+*/ ?>
+</form>
+<script type="text/javascript">
+$(document).ready(function(){
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+    $('#select_all_lines')[0].checked = checkSelectedLines('#lines', '.line-selector');
+
+    
+
+});
+function frmSubmitLines(inp) {
+    inp.form.action += '/lines';
+    lowerVal = inp.value.toLowerCase();
+    $(inp.form).append('<input type="hidden" name="action1" value="' + lowerVal + '" />')[0].submit();
+    return false;
+}
+function cloneTableTotals() {
+    if (!$('#total_selected_clone').length) {
+        var totalSelected = totalDisplayed = 0;
+        $('#lines').find('tr').each(function() {
+            var tr = $(this);
+            var total = getFloat(tr.find('.line_total').text());
+            totalDisplayed += total;
+            if (tr.find('input[type=checkbox]:checked').length) {
+                totalSelected += total;
+            }
+        });
+
+        var selected = getFloat($('#total_selected').text());
+        var displayed = getFloat($('#total_displayed').text());
+
+        var clone = $('#total_selected').clone().text(selected - totalSelected).attr({id: 'total_selected_clone', style: 'display: none'}).removeClass();
+        $('#total_selected').after(clone);
+        clone = $('#total_displayed').clone().text(displayed - totalDisplayed).attr({id: 'total_displayed_clone', style: 'display: none'}).removeClass();
+        $('#total_displayed').after(clone);
+    }
+}
+
+function updateTotalValues(inp) {
+    updateRowTotal(inp);
+    updateTableTotals();
+}
+function updateRowTotal(item) {
+    var tr = $(item).parents('tr');
+
+    if (tr.find('.sale_price').parent('div').find('input').length) {
+        var salePrice = tr.find('.sale_price').parent('div').find('input').val();
+    } else {
+        var salePrice = tr.find('.sale_price').text();
+    }
+    salePrice = parseFloat(salePrice);
+    if (isNaN(salePrice)) {
+        salePrice = 0;
+    }
+
+    if ($('.td_pick_order_qty', tr).find('input').length) {
+        var pickOrderQty = parseInt($('.td_pick_order_qty', tr).find('input').val());
+        if (isNaN(pickOrderQty)) {
+            pickOrderQty = 0;
+        }
+        var tmp = parseInt($('.td_pick_order_qty', tr).find('.pick_order_qty').text());
+        if (isNaN(tmp)) {
+            tmp = 0;
+        }
+        if (pickOrderQty > tmp) {
+            $('.td_pick_order_qty', tr).find('input').val(tmp);
+        }
+    } else {
+        var pickOrderQty = parseInt($('.td_pick_order_qty', tr).find('.pick_order_qty').text());
+        if (isNaN(pickOrderQty)) {
+            pickOrderQty = 0;
+        }
+    }
+
+    if (tr.find('.discount').parent('div').find('input').length) {
+        var discount = tr.find('.discount').parent('div').find('input').val();
+    } else {
+        var discount = tr.find('.discount').text();
+    }
+    discount = parseFloat(discount);
+    if (isNaN(discount)) {
+        discount = 0;
+    }
+
+    var total = salePrice * pickOrderQty * (1 - discount / 100);
+    tr.find('.line_total').text(total.toFixed(2));
+}
+function updateTableTotals() {
+    var selected = getFloat($('#total_selected_clone').text());
+    var displayed = getFloat($('#total_displayed_clone').text());
+    $('#lines').find('tr').each(function() {
+        var tr = $(this);
+        var total = getFloat(tr.find('.line_total').text());
+        if (tr.find('input[type=checkbox]:checked').length) {
+            selected += total;
+        }
+        displayed += total;
+    });
+    $('.total_selected').text(selected.toFixed(2));
+    $('.total_displayed').text(displayed.toFixed(2));
+}
+function checkLine(chkbox) {
+    $.getJSON('<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: chkbox.checked, id: chkbox.value}, function(json) {
+        $('.lines_selected').text(json.lines_selected);
+        $('#issns_selected').text(json.issns_selected);
+        $('#products_selected').text(json.products_selected);
+        $('.total_selected').text(json.total_selected);
+        //updateTableTotals();
+
+       $('#select_all_lines')[0].checked = checkSelectedLines('#lines', '.line-selector');
+    });
+}
+function selectAllLines(target) {
+    $.getJSON('<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: target.checked, id: 'select_all'}, function(json) {
+        $('.line-selector').attr('checked', target.checked);
+        $('.lines_selected').text(json.lines_selected);
+        $('#issns_selected').text(json.issns_selected);
+        $('#products_selected').text(json.products_selected);
+        $('#total_selected').text(json.total_selected);
+
+        //updateTableTotals();
+    });
+}
+function unselectAllLines() {
+
+    $('#select_all_lines')[0].checked = false;
+
+    $.getJSON('<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: false, id: 'select_all'}, function(json) {
+        $('.line-selector').attr('checked', false);
+        $('.lines_selected').text(json.lines_selected);
+        $('#issns_selected').text(json.issns_selected);
+        $('#products_selected').text(json.products_selected);
+        $('#total_selected').text(json.total_selected);
+
+        updateTableTotals();
+    });
+}
+function checkSelectedLines(tableId, checkBoxesClass) {
+    var checkBoxes = $(tableId).find(checkBoxesClass);
+    return checkBoxes.length == checkBoxes.filter(':checked').length;
+}
+
+function selectAllLineOnAllPages(target){
+    
+    $.getJSON('<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {
+        method: target.checked, 
+        id:     'select_complete'
+    }, function(json) {
+        $('.line-selector').attr('checked', target.checked);
+        $('.lines_selected').text(json.lines_selected);
+        $('#select_all_lines').attr('checked', target.checked);   
+   
+        //updateTableTotals();
+    });    
+}
+
+</script>

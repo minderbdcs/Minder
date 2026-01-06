@@ -1,0 +1,146 @@
+<!-- grn product details search results -->
+<?php
+    /**
+    * @var Minder_View_Helper_SysScreenSearchResult $resultsForm
+    */
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs)->setFields($this->fields)->setActions($this->actions);
+?>
+
+<form id="grn_pd_results_form" name="grn_pd_results_form" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="grn_pd_tabs" class="ui-tabs-container">
+        <div style="display: none;" class="JSON"><?php echo json_encode(array('errors' => $this->errors));?></div>
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div class="ui-tabs-panel-header">
+            <div class="sys-screen-title" title="<?php echo $this->grnPDSysScreenName;?>">Product Details<span class="modification_flag <?php echo $this->grnPDSelectionNamespace;?>"></span></div>
+            <div class="paginator-container">
+                <?php echo $this->formLabel('select_complete_label', 'Select All Rows on all pages', array('disableFor' => true));?>
+                <?php echo $this->formCheckbox('select_complete', 0, array('checked' => ($this->totalDetails == $this->selectedDetailsCount), 'row_id' => 'select_complete', 'class' => 'select_complete ' . $this->grnPDSelectionNamespace));?>
+                <label for="results_per_page">View By:</label>
+                <?php echo $this->formSelect('show_by', 
+                                            $this->navigation['show_by'],
+                                            array(),
+                                            array(5  => 5,
+                                                  10 => 10,
+                                                  15 => 15,
+                                                  20 => 20,
+                                                  30 => 30,
+                                                  40 => 40,
+                                                  50 => 50,
+                                                  100 => 100)) ?>
+                <label for="page">Page:</label>
+                <?php echo $this->formSelectStrict('pageselector',
+                                                $this->navigation['pageselector'],
+                                                array(),
+                                                $this->pages); ?>
+            </div>
+         
+            <ul class="black-top-border" style="clear: both;">
+                <li style="display: inline;">Selected: <span class="selected_count <?php echo $this->grnPDSelectionNamespace;?>"><?php echo $this->selectedDetailsCount;?></span></li>
+            </ul>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+            <?php echo $resultsForm->renderTabContent(
+                                    $tabId, 
+                                    array(
+                                        'select_all_checked'    => (count($this->details) == count($this->selectedDetails)), 
+                                        'selection_namespace'   => $this->grnPDSelectionNamespace, 
+                                        'switch_selection_mode' => $this->selectMode,
+                                        'tab_content_class'     => 'withborder tablesorter grn_pd_list ' . $this->grnPDSelectionNamespace
+                                    ), 
+                                    $this->details, 
+                                    $this->selectedDetails
+            );?>
+                <!-- totals info start -->
+                <table class="withborder" width="100%">
+                    <tr>
+                        <td>Total <span class="total_count <?php echo $this->grnPDSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records.<?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                    </tr>
+                </table>
+                <!-- totals info end -->
+
+            </div>    
+        <?php }?>
+
+        <div style="clear: both; padding-left: 10px;">
+            <?php echo $resultsForm->renderButtons($this->grnPDButtons); ?>
+
+            <script type="text/javascript">
+                <?php echo $resultsForm->renderButtonActions($this->grnPDButtons); ?>
+            </script>
+        </div>
+    </div>
+    <!-- tabs container end -->
+</form>
+<!-- grn product details search results -->
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var jsonResponse = $.parseJSON($('#grn_pd_tabs .JSON').html());
+        if (jsonResponse.errors && jsonResponse.errors.length > 0)
+            showErrors(jsonResponse.errors);
+        
+        $('#grn_pd_tabs > ul').tabs();
+        $('#grn_pd_tabs #pageselector, #grn_pd_tabs #show_by').change(function(){
+            getGrnProductDetails();
+        });
+        $('.grn_pd_list').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('.row_selector.<?php echo $this->grnPDSelectionNamespace;?>, .select_all_rows.<?php echo $this->grnPDSelectionNamespace;?>, .select_complete.<?php echo $this->grnPDSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->grnPDSelectionModule, 'controller' => $this->grnPDSelectionController, 'action' => $this->grnPDSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#grn_pd_tabs',
+                'selectionNamespace'  : '<?php echo $this->grnPDSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->grnPDSelectionAction;?>',
+                'selectionController' : '<?php echo $this->grnPDSelectionController;?>'
+            }
+        );
+        
+
+        $('.grn_pd_list').minderEditResults(
+            '',
+            {
+                'saveButtonSelector'       : '#grn_pd_tabs #save_btn',
+                'cancelButtonSelector'     : '#grn_pd_tabs #cancel_btn',
+                'modificationFlagSelector' : '#grn_pd_tabs .modification_flag',
+                'namespace'                : '<?php echo $this->grnPDSelectionNamespace?>',
+                'tabDatasetSelector'       : '.data_set',
+                'saveUrl'                  : '<?php echo $this->url(array('action' => 'save-changes', 'controller' => 'grn', 'module' => 'receipts'), null, true);?>'
+            },
+            {
+                'onSuccess'  : function(response) {
+                    if (response.warnings && response.warnings.length > 0)
+                        showWarnings(response.warnings);
+
+                    if (response.messages && response.messages.length > 0)
+                        showMessage(response.messages);
+
+                    getGrnProductDetails();
+                }
+            }
+            );
+    });
+
+    function editResults(method, sysScreen)
+    {
+        switch(sysScreen) {
+            case'<?php echo $this->grnSysScreenName;?>':
+                $('.grn_pd_list.' + sysScreen).minderEditResults(method);
+                break;
+
+            case'<?php echo $this->linesSysScreenName;?>':
+                $('.grn_pd_list.' + sysScreen).minderEditResults(method);
+                break;
+
+            case'<?php echo $this->grnPDSysScreenName;?>':
+                $('.grn_pd_list.'+ sysScreen).minderEditResults(method);
+                break;
+        }
+
+    }
+
+</script>

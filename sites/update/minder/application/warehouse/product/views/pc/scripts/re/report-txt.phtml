@@ -1,0 +1,18 @@
+<?php
+foreach ($this->data as $key => $row) {
+    foreach ($this->headers as $key => $value) {
+            echo $row[$key] . "\t";
+    }
+    echo "\n";
+}
+
+// Append data.
+foreach ($this->data as $row) {
+    $line = '';
+    foreach ($this->headers as $key => $val) {
+        $line .= $this->escape($row[$key]) . chr(9);
+    }
+    if (!empty($line)) {
+        echo "$line\n";
+    }
+}

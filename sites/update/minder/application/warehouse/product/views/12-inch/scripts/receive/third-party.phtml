@@ -1,0 +1,37 @@
+<?php echo $this->render('header.phtml') ?>
+<h2><?php echo $this->pageTitle; ?></h2>
+
+<?php echo $this->messenger()->all() ?>
+<form method="post" action="<?php echo $this->url() ?>/?fmt=12-inch">
+
+<?php echo $this->render('receive/_information-bar.phtml') ?>
+<table class="with_border">
+    <tr>
+        <th><?php echo $this->formLabel('third_no', 'Record 3rd Party #:') ?></th>
+        <td><?php echo $this->formText('third_no', $this->sentBy) ?></td>
+        <th><?php echo $this->formLabel('printer_id', 'Printer ID:') ?></th>
+        <td><?php echo $this->formSelect('printer_id', $this->printerId, null, $this->printerIdOpts) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('total_labels', 'Total Labels:') ?></th>
+        <td><?php echo $this->formText('total_labels', $this->totalLabels, array('readonly' => 'readonly', 'disabled' => 'disabled')) ?></td>
+        <th><?php echo $this->formLabel('recorded', 'Recorded:') ?></th>
+        <td><?php echo $this->formText('recorded', $this->recorded, array('readonly' => 'readonly', 'disabled' => 'disabled')) ?></td>
+    </tr>
+</table>
+
+<div id="action_buttons">
+<?php echo $this->formSubmit('do_action', 'Save & Print', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Previous', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Go to Top', array('class' => 'button', 'onclick' => 'return false')) ?>
+</div>
+
+<?php echo $this->formHidden('r_qty1', $this->rQty1); ?>
+<?php echo $this->formHidden('r_qty2', $this->rQty2); ?>
+<?php echo $this->formHidden('issn1', $this->issn1); ?>
+<?php echo $this->formHidden('issn2', $this->issn2); ?>
+
+</form>
+
+<?php echo $this->render('footer.phtml') ?>

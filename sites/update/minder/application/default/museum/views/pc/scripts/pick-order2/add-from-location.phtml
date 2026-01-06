@@ -1,0 +1,187 @@
+<div style="clear:both;">&nbsp;</div>
+<b>PICKED ISSNS LIST</b> <?php echo $this->desc2; ?>
+
+
+<?php
+	if ($this->ds_null==1) {
+?>
+
+	<br><b>Dispatch location is NULL</b><br>
+
+	&nbsp;
+	
+	<script type="text/javascript">
+	<!--
+	
+		$(document).ready(function(){
+			alert("Dispatch location is NULL");
+		});
+		
+	//-->
+	</script>
+
+<?php
+	} else {
+?>
+
+				<div id="add-from-location-order-list">
+				    <div style="position: relative;">
+					<li style="display: inline;">Selected: <span id="add-from-location-orders-selected">0</span></li>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				    <label for="results_per_page">View By:</label>
+					<select onchange="addFromLocationPaginator();" id="add-from-location-show_by" name="show_by">
+					    <option <?php if ($this->show_by == 5) {echo 'selected="selected" ' ;} ?>label="5" value="5">5</option>
+					    <option <?php if ($this->show_by == 10) {echo 'selected="selected" ' ;} ?>label="10" value="10">10</option>
+					    <option <?php if ($this->show_by == 15) {echo 'selected="selected" ' ;} ?>label="15" value="15">15</option>
+					    <option <?php if ($this->show_by == 20) {echo 'selected="selected" ' ;} ?>label="20" value="20">20</option>
+					    <option <?php if ($this->show_by == 30) {echo 'selected="selected" ' ;} ?>label="30" value="30">30</option>
+					    <option <?php if ($this->show_by == 40) {echo 'selected="selected" ' ;} ?>label="40" value="40">40</option>
+					    <option <?php if ($this->show_by == 50) {echo 'selected="selected" ' ;} ?>label="50" value="50">50</option>
+					    <option <?php if ($this->show_by == 100) {echo 'selected="selected" ' ;} ?>label="100" value="100">100</option>
+					</select>
+					<label for="page">Page:</label>
+					<select onchange="addFromLocationPaginator();" id="add-from-location-pageselector" name="pageselector">
+				<?php for($i=0; $i<$this->pages; $i++) { ?>	
+						<option
+							<?php if ($this->pageselector == $i) {echo 'selected="selected" ' ;} ?>
+						 value="<?php echo $i; ?>"><?php echo $i+1; ?></option>
+				<?php } ?>
+					</select>
+					</div>
+				</div>
+				    
+				    <table id="add_from_location_table" class="withborder tablesorter">
+				        <thead>
+				        <tr>
+				            <th><input type="checkbox" id="select_all_lines" onclick="selectAllLinesAddFromLocation(this)" /></th>
+				
+				<?php
+				    foreach ($this->headers as $header) {
+				        echo '<th>'. $this->escape($header) . '</th>';
+				    }
+				?>
+				        </tr>
+				        </thead>
+				        <tbody>
+				
+				<?php
+				        foreach ($this->products as $product) : ?>
+				        <tr>
+				            <th>
+				            	<input class="issnAddFromLocationAction" id="<?php echo $product->items['SSN_ID']; ?>" type="checkbox">
+				            </th>
+				<?php     foreach ($this->headers as $key => $val) {  ?>
+				            <td><?php echo $product->items[$key]; ?></td>
+				<?php         
+				          } ?>
+				        </tr>
+				<?php endforeach  ?>
+				<?php if (!count($this->products)) : ?>
+				        <tr>
+				            <th/>
+				<?php foreach ($this->products as $v) : ?>
+				            <td/>
+				<?php endforeach; ?>
+				        </tr>
+				<?php endif ?>
+				        </tbody>
+				    </table>
+				    <br>
+				    <form action="/minder/pick-order/report-add-from-location">
+				    <ul id="edit_field_buttons" style="border-top: 1px solid rgb(153, 153, 153); margin-top: 0pt;" class="toolbar">
+				        <li>
+				    	<input type="button" onclick="doAddFromResponse(); return false;" value="ADD" id="report: xls" name="action1" class="mdr-tool-button" />
+				    	</li>
+				    	<li>
+						<input type="button" onclick="return false;" value="CLEAR LINES" name="action1" class="mdr-tool-button"/>
+				    	</li>
+				    	<li>
+						<input type="submit" onclick="" value="REPORT: CSV" id="report: csv" name="report" class="mdr-tool-button"/>
+				    	</li>
+				    	<li>
+						<input type="submit" onclick="" value="REPORT: XLS" id="report: xls" name="report" class="mdr-tool-button"/>
+				    	</li>
+				    	<li>
+						<input type="submit" onclick="" value="REPORT: XML" id="report: xml" name="report" class="mdr-tool-button"/>
+				    	</li>
+				    	<li>
+				    	<input type="button" onclick="$('#add_from_location_container').hide(); return false;" value="CANCEL" id="report: xls" name="action1" class="mdr-tool-button"/>
+				    	</li>
+					</ul>
+					</form>    	
+				    <script language="javascript">
+				    	
+				        $(document).ready(function(){
+				            $("#add_from_location_table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+				        });
+				        
+				        $('.issnAddFromLocationAction').click( function() {
+				    		id = $(this).attr('id');
+				    		
+				    		$.getJSON("/minder/pick-order/add-from-location-mark", { id:  id }, function(data) {
+				    			$('#add-from-location-orders-selected').text(data.count);
+				    		});
+				    		
+				    	});
+				    	
+						function addFromLocationPaginator () {
+							pageselector = $('#add-from-location-pageselector option:selected').val();
+							show_by = $('#add-from-location-show_by option:selected').val();
+							
+				    		$('#add_from_location_container').load('/minder/pick-order/add-from-location', { pageselector:  pageselector,  show_by: show_by});
+				    	}
+				    	
+				    	function doAddFromResponse()
+				    	{
+				            
+				            
+				            var totalSelected = $('#add_from_location_table :checkbox:checked').size();
+				                
+				            if(totalSelected == 0){
+				                alert("No ISSN's selected. Please select at least 1 ISSN to ADD");
+				                return false;
+				            }
+				            
+				    		$.getJSON("/minder/pick-order/add-from-location-button", function (result){
+				    			jQuery.each(result.result, function () {
+				    			
+				    				response_id = this.id;
+				    				response = this.response;
+				    				
+				    				if (response==false) {
+				    					response='Already reserved';
+				    				}
+				    				
+				    				$('#add_from_location_table tbody tr').each(function () {
+				    					id = $(this).find('td:first').html();
+				    					
+				    					if (id==response_id) {
+				    						$(this).find('td:last').html(response);
+				    						if (response=='Processed successfully') {
+				    							$(this).remove();
+				    						}			
+				    					}
+				    					
+				    				});
+				    				
+				    				
+				    			});
+				    			
+				    			$('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'pick-order', 'module' => 'default')); ?>', {method: 'init', id: 'select_all'}, showLinesAndShowSelected);
+				    			
+				    			return;
+				    		});
+				    	}
+				    	
+				    	function selectAllLinesAddFromLocation(target)
+				    	{
+				    		$.getJSON("/minder/pick-order/add-from-location-mark", { id:  'all' }, function(data) {
+						        $('.issnAddFromLocationAction').attr('checked', target.checked);
+				    			$('#add-from-location-orders-selected').text(data.count);
+				    		});
+				    		
+				    	}
+				    
+				    </script>
+<?php
+	}
+?>

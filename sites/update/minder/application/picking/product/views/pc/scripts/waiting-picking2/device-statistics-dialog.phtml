@@ -1,0 +1,91 @@
+<div id="DEVICE-STATISTICS" title="Device Statistics" class="flora" style="height: 500px; overflow: auto">
+<?php
+/**
+ * @var Minder_View_Helper_StandardPage $page
+ */
+$page = $this->StandardPage('Minder.WaitPicking.Dlg.DeviceStatistics', true);
+echo $page->screenContainers(array($this->deviceStatisticsResults['name'] => $this->deviceStatisticsResults));
+?>
+</div>
+
+<script type="text/javascript">
+    minderNamespace('Minder.WaitPicking.Dlg.DeviceStatistics', function() {
+        var _$dialogContainer,
+            _active = false;
+
+
+        $.extend(this, Minder.AbstractPageController);
+
+        this.init = function(searchResults, sysScreenData, $dialogContainer) {
+            this.initScreenVarianceSearchResults(searchResults, true);
+            this.initDialog($dialogContainer);
+            this.onDataReady(sysScreenData);
+            this.showAll();
+        };
+
+        this.initDialog = function ($dialogContainer) {
+            _$dialogContainer = $dialogContainer;
+
+            $dialogContainer.dialog(
+                {
+                    buttons: {
+                        REFRESH: function (evt) {
+                            Minder.WaitPicking.Dlg.DeviceStatistics.reFresh();
+                        },
+                        CLOSE: function (evt) {
+                            evt.preventDefault();
+                            $dialogContainer.dialog('close');
+                        }
+                    },
+                    width: 1024,
+                    height: 600,
+                    insertHtml: '&nbsp;',
+                    autoOpen: false,
+                    resizable: false,
+                    modal: false
+                }
+            ).unbind('dialogopen').bind('dialogopen', function (event, ui) {
+                $(this).show();
+                _active = true;
+            }).unbind('dialogclose').bind('dialogclose', function (event, ui) {
+                _active = false;
+            });
+        };
+
+        this.getRowSelectUrl = function() {
+            return '<?php echo $this->url(array('action' => 'select-device-statistics-row'));?>';
+        };
+
+        this.getLoadUrl = function() {
+            return '<?php echo $this->url(array('action' => 'get-device-statistics'));?>';
+        };
+
+        this.getSearchUrl = function() {
+            return '<?php echo $this->url(array('action' => 'search-device-statistics'));?>';
+        };
+
+        this.showDialog = function () {
+            this.getDialogContainer().dialog('open');
+        };
+
+        this.closeDialog = function () {
+            this.getDialogContainer().dialog('close');
+        };
+
+        this.getDialogContainer = function () {
+            return _$dialogContainer;
+        };
+
+        this.reFresh = function() {
+            this.loadData(this.getRegisteredNamespaces());
+        }
+    });
+
+    $(function(){
+        Minder.WaitPicking.Dlg.DeviceStatistics.init(
+            <?php echo json_encode(array($this->deviceStatisticsResults['namespace'] => $this->deviceStatisticsResults));?>,
+            {sysScreens: <?php echo json_encode($this->sysScreens);?>},
+            $('#DEVICE-STATISTICS')
+        );
+    });
+</script>

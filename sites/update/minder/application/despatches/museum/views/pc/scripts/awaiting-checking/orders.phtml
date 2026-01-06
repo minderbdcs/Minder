@@ -1,0 +1,140 @@
+<div id="json" style="display: none;"><?php echo json_encode(array('messages' => $this->messages, 'warnings' => $this->warnings, 'errors' => $this->errors)); ?></div>
+<input type="hidden" name="canBeChecked" value="<?php echo $this->canBeChecked ? 'true': 'false';?>">
+<input type="hidden" name="shouldCheckEachLine" value="<?php echo $this->shouldCheckEachLine ? 'true': 'false';?>">
+<input type="hidden" name="shouldCreateSSCC" value="<?php echo $this->shouldCreateSSCC ? 'true': 'false';?>">
+<input type="hidden" name="shouldRecordSerialNumber" value="<?php echo $this->shouldRecordSerialNumber ? 'true': 'false';?>">
+<input type="hidden" name="volumeIsRequired" value="<?php echo $this->volumeRequired ? 'true': 'false';?>">
+<input type="hidden" name="weightIsRequired" value="<?php echo $this->weightRequired ? 'true': 'false';?>">
+<input type="hidden" name="isEdi" value="<?php echo $this->isEdi ? 'true': 'false';?>">
+<span style="display: none" class="ediOrderStatistics"><?php echo json_encode($this->orderStatistics);?></span>
+
+<?php
+    $resultsForm = $this->getHelper('sysScreenSearchResult');
+    $resultsForm->setTabs($this->tabList);
+    $resultsForm->setFields($this->fieldList);
+?>
+ <form name="orders_results" id="orders_results" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="order_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+        <div class="ui-tabs-panel-header">
+             <div class="sys-screen-title" title="<?php echo $this->orderSysScreenName;?>">Orders List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->searchResultShowBy('show_by', $this->navigation['show_by'], $this->viewByMax, array('onchange' => 'return false;')); ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array('onchange' => 'return false;'),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->orderSelectionNamespace;?>"><?php echo $this->selectedOrdersCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter pick_orders" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->orderSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->orderSelectionNamespace), $this->dataSet, $this->selectedOrders);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->orderSelectionNamespace;?>"><?php echo $this->numRecords?></span><?php echo " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <table class="withborder edi-one-statistics hidden" width="100%">
+                        <tr>
+                            <td>Total pick items: <span class="total_count"></span></td>
+                            <td>Picked qty: <span class="picked-qty"></span></td>
+                            <td>Checked weight: <span class="total-weight"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Waiting despatch items: <span class="waiting-despatch"></span></td>
+                            <td>Not checked qty: <span class="unchecked-qty"></span></td>
+                            <td>Checked volume: <span class="total-volume"></span></td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <li><input type="button" name="report_format" id="order_report_csv_btn" class="mdr-tool-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="button" name="report_format" id="order_report_xls_btn" class="mdr-tool-button" value="REPORT: XLS" onclick="return false;" /></li>
+
+                            <li><label class="order-switch-panel"><input type="radio" name="orderCheckMethod" value="edi-all" /> Check whole Order</label></li>
+                            <li><label class="order-switch-panel"><input type="radio" name="orderCheckMethod" value="edi-one" /> Check Order part</label></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#barcode').focus();
+
+//        showPrompt('1');
+    });
+    
+    function loadLines() {
+        var data = {};
+        
+        if ($('#LINES_LIST_CONTAINER #show_by').length > 0) {
+            data.show_by = $('#LINES_LIST_CONTAINER #show_by').val();
+        }
+        
+        if ($('#LINES_LIST_CONTAINER #pageselector').length > 0) {
+            data.pageselector = $('#LINES_LIST_CONTAINER #pageselector').val();
+        }
+        
+        $('#LINES_LIST_CONTAINER').html('');
+        $('#CONNOTE_SCREEN_CONTAINER').html('');
+        if (parseInt($('.selected_count.<?php echo $this->orderSelectionNamespace?>').html()) > 0) {
+            $('#LINES_LIST_CONTAINER').load(
+                '<?php echo $this->url(array('action' => 'get-lines', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>', 
+                data,
+                function() {
+                    var jsonData = eval('(' + $('#json').html() + ')');
+                    $('#json').remove();
+                
+                    if (jsonData.errors && jsonData.errors.length > 0) {
+                        showErrors(jsonData.errors);
+                        return;
+                    }
+                
+                    if (jsonData.messages && jsonData.messages.length > 0) {
+                        showMessage(jsonData.messages);
+                    }
+                    
+                    $('#LINES_LIST_CONTAINER #pageselector, #LINES_LIST_CONTAINER #show_by').change(function() {
+                        loadLines();
+                    });
+                }
+            );
+        } else {
+            Minder.Despatches.AwaitingChecking.SsccPackDetails.reset();
+        }
+    }
+    
+    function getFoundOrdersAmount() {
+        var
+            result = parseInt($('.total_count.<?php echo $this->orderSelectionNamespace?>').html());
+
+        return isNaN(result) ? 0 : result;
+    }
+    /* ]]> */
+</script>

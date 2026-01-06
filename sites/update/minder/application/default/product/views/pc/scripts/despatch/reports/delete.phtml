@@ -1,0 +1,58 @@
+<?php echo $this->render('header.phtml'); ?>
+<h1><?php echo $this->pageTitle; ?></h1>
+<form name="main" id="main" action="" method="post">
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("confirm", "YES", array("onclick" => "frmSubmit()",
+                                                                "value"   => "Y")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("confirm", "NO", array("onclick" => "frmSubmit()",
+                                                                "value"  => "N")); ?>
+        </li>
+    </ul>
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Report Name:
+                </th>
+                <td>
+                    <?php echo $this->formNote('name', $this->report->items['NAME'], array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Description:
+                </th>
+                <td>
+                    <?php echo $this->formNote('description',
+                                               $this->report->items['DESCRIPTION'],
+                                               array('rows'  => '5',
+                                                     'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    Query:
+                </th>
+                <td>
+                    <?php echo $this->formNote('query',
+                                               $this->report->items['QUERY'],
+                                               array('rows'  => '10',
+                                                     'style' => 'height:auto')); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+<script type="text/javascript">
+<!--
+function frmSubmit()
+{
+    document.forms.main.submit();
+    return true;
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

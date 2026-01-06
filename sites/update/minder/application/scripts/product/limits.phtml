@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @var Minder2_Model_Page $minderPage
+ */
+
+$minderPage = $this->page;
+
+if (empty($minderPage))
+    return;
+
+$printerList = array();
+/**
+ * @var Minder2_Model_SysEquip $printer
+ */
+foreach ($minderPage->getPrinterList() as $printer) 
+    $printerList[$printer->DEVICE_ID] = $printer->DEVICE_ID . ' - ' . $printer->EQUIPMENT_DESCRIPTION_CODE;
+
+$currentPrinter = $minderPage->getCurrentPrinter();
+?>
+
+<div class="limit-container <?php echo ($minderPage->SM_LIMIT) ? '' : 'hidden';?>">
+    <h2>Limit</h2>
+
+    <form action="" method="POST">
+        <ul>
+            <li>
+                Company
+                <br>
+                <?php echo $this->companyLimitSelect('limit_company');?>
+            </li>
+            <li>
+                Warehouse
+                <br>
+                <?php echo $this->warehouseLimitSelect('limit_warehouse');?>
+            </li>
+            <li>
+                Printer
+                <br>
+                <?php echo $this->formSelect('limit_printer', $currentPrinter->DEVICE_ID, array(), $printerList);?>
+            </li>
+        </ul>
+    </form>
+</div>

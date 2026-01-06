@@ -1,0 +1,113 @@
+<!-- confirm carriers dialog -->
+<div style="display: none;" id="prod_id_not_found_dialog" title="Product Not Found" class="flora">
+    <form action="#">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr class="carrier-not-in-list"><td colspan="2">
+                    Product #<span class="prod_id"></span> not found.
+                </td></tr>
+            <tr><td colspan="2">
+                    Scan 'CONTINUE' to continue...
+                </td></tr>
+        </table>
+    </form>
+</div>
+<!-- confirm carriers dialog -->
+<script type="text/javascript">
+    $(document).ready(function () {
+//        initProductNotFoundDialog();
+    });
+
+//    function initProductNotFoundDialog() {
+//        var $prodIdNotFoundDialog = $('#prod_id_not_found_dialog'),
+//            buttonPane;
+//
+//        $prodIdNotFoundDialog.dialog(
+//            {
+//                buttons: {
+//                    CONTINUE: function(evt){
+//                        evt.preventDefault();
+//                        $prodIdNotFoundDialog.dialog('close');
+//                    },
+//                    'RESET CHECK': function(evt){
+//                        evt.preventDefault();
+//                        resetCheckLineStatuses();
+//                    },
+//                    "FIND ORDER": function(evt) {
+//                        evt.preventDefault();
+//                        if (isProductNotFoundDialogFindOrderActive()) {
+//                            prodIdNotFoundDialogFindOrder();
+//                        }
+//                    }
+//                },
+//                buttonStyle: 'green-button',
+//                insertHtml:  '&nbsp;',
+//                autoOpen  : false,
+//                width     : 400,
+//                height    : 160,
+//                resizable : true,
+//                modal     : false
+//            }
+//        ).unbind('dialogopen').bind('dialogopen', function(event, ui) {
+//                getProductNotFoundDialogSettings().active = true;
+//                $(this).show();
+//                $('#barcode').focus();
+//            }).unbind('dialogclose').bind('dialogclose', function(event, ui) {
+//                getProductNotFoundDialogSettings().active = false;
+//            });
+//
+//        buttonPane = $prodIdNotFoundDialog.parents('.ui-dialog').find('.ui-dialog-buttonpane');
+//        buttonPane.find('::nth-child(2)').css('height', 'auto'); //workaround to remove unnecessary height property
+//    }
+
+    function prodIdNotFoundDialogOnFindOrder(callback, namespace) {
+        $('#prod_id_not_found_dialog').unbind('find-order.' + namespace).bind('find-order.' + namespace, callback);
+    }
+
+    function prodIdNotFoundDialogFindOrder() {
+        var
+            event = $.Event('find-order');
+
+        event.prodId = getProductNotFoundDialogSettings().prodId;
+        $('#prod_id_not_found_dialog').trigger(event);
+    }
+
+    function closeProdIdNotFoundDialog() {
+        $('#prod_id_not_found_dialog').dialog('close');
+    }
+
+    function showProdIdNotFoundDialog(prodId, showFindOrder) {
+        var
+            $dialog = $('#prod_id_not_found_dialog'),
+            buttonPane = $dialog.parents('.ui-dialog').find('.ui-dialog-buttonpane');
+
+        getProductNotFoundDialogSettings().prodId = prodId;
+        $dialog.find('.prod_id').text(prodId);
+        $dialog.dialog('open');
+
+        if (showFindOrder) {
+            buttonPane.find('::nth-child(3)').css('display', 'inherit');
+        } else {
+            buttonPane.find('::nth-child(3)').css('display', 'none');
+        }
+        getProductNotFoundDialogSettings().findOrderIsActive = !!showFindOrder;
+    }
+
+    function isProductNotFoundDialogActive() {
+        return getProductNotFoundDialogSettings().active;
+    }
+
+    function isProductNotFoundDialogFindOrderActive() {
+        return getProductNotFoundDialogSettings().active && getProductNotFoundDialogSettings().findOrderIsActive;    }
+
+    function getProductNotFoundDialogSettings() {
+        if (!window.productNotFoundDialog) {
+            window.productNotFoundDialog = {
+                active: false,
+                prodId: null,
+                findOrderIsActive: false
+            }
+        }
+
+        return window.productNotFoundDialog;
+    }
+</script>

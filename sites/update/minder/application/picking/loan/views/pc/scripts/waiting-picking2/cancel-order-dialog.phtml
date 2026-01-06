@@ -1,0 +1,56 @@
+<div class="flora" id="dialog_cancel" title="Reason for cancelling" style="display: none;">
+    This reason will be applied to all selected orders:<br /><textarea name="reason" id="cancel_reason"></textarea>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#dialog_cancel').dialog({
+            buttons: {OK: onCancelDialogOkButtonClick},
+            autoOpen: false
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();
+            $('#cancel_reason').val('').focus();
+        });
+
+    });
+
+    function onCancelDialogOkButtonClick(evt) {
+        var orderNamespace = '<?php echo $this->orderNamespace;?>';
+        var linesNamespace = '<?php echo $this->linesNamespace;?>';
+        var dataToSend = {
+            'sysScreens' : getSubNamespacesToReload(orderNamespace),
+            'cancel_reason'     : $('#cancel_reason').val()
+        };
+
+        dataToSend.sysScreens[orderNamespace] = {
+            'paginator' : $('#order-container').minderSearchGetPaginatorState()
+        };
+
+        var containerIdMap = getContainerIdMap();
+
+        if (dataToSend.cancel_reason != '') {
+            $('#dialog_cancel').dialog('close');
+            $(document).queue(function() {
+                for (var tmpNamespace in dataToSend.sysScreens) {
+                    $('#' + containerIdMap[tmpNamespace] + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Cancelling orders...');?>'));
+                }
+                $('#order-container > div').block($('<?php echo $this->SysScreenWaitPrompt('Cancelling orders...');?>'));
+                $.post(
+                    '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking2', 'action' => 'cancel'), null, true); ?>',
+                    dataToSend,
+                    onDataReady,
+                    'json'
+                );
+            }).queue(function() {
+                for (var tmpNamespace in dataToSend.sysScreens) {
+                    $('#' + containerIdMap[tmpNamespace] + ' > div').unblock();
+                }
+                $(this).dequeue();
+            });
+
+            loadSlaveDataset('<?php echo $this->orderNamespace;?>');
+        } else {
+            showErrors(['Please enter a reason for cancelling.']);
+        }
+    }
+</script>

@@ -1,0 +1,5 @@
+<span style="{{= $item.data.getElementStyle()}}">
+{{each($index, $subView) $item.data.getSubViews()}}
+    <span class="minder-element {{= $subView.getName()}}">{{= $subView.getName()}}:Placement</span>
+{{/each}}
+</span>

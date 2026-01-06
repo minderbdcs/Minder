@@ -1,0 +1,65 @@
+<div style="display:inline">
+    <label for='show_by'>View By : </label>
+    <?php echo $this->formSelect('show_by',
+        $this->navigation['show_by'],
+        array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+        array(  5 => 5,
+            10 => 10,
+            15 => 15,
+            20 => 20,
+            30 => 30,
+            40 => 40,
+            50 => 50,
+            100 => 100));?>
+    <label for='page'>Page : </label>
+    <?php echo $this->formSelect('pageselector',
+        $this->navigation['pageselector'],
+        array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+        $this->pages); ?>
+</div>
+<table id="lines" class="withborder tablesorter">
+    <thead>
+    <tr>
+        <th>
+            #
+        </th>
+        <?php
+        foreach ($this->headers as $header) {
+            echo '<th>'. $this->escape($header) . '</th>';
+        }
+        ?>
+    </tr>
+    </thead>
+    <tbody>
+    <?php
+    $count = 1;
+    foreach ($this->data as $command) {
+        echo '<tr>';
+        echo '<th>';
+        echo $count++;
+        echo '</th>';
+        foreach ($this->headers as $key => $value) {
+            echo '<td>' . $this->escape($command->items[$key]) . '</td>';
+        }
+        echo "</tr>\n";
+    }
+    ?>
+    </tbody>
+</table>
+<ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <li id='rec_counter' style="display: inline;">
+        <div id='num_rec'>Total
+            <?php echo $this->numRecords . " records. "; ?>
+            <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+        </div>
+    </li>
+</ul>
+<ul class="toolbar">
+    <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" /></li>
+    <li><input type="submit" name="action" class="order-button" value="ADD/UPDATE" /></li>
+    <li><input type="submit" name="action" class="order-button" value="REFRESH" /></li>
+    <li><input type="submit" name="action" class="order-button" value="CLEAR RESULTS" /></li>
+    <li><input type="submit" name="action" class="order-button" value="PRINT" /></li>
+    <li><input type="submit" name="action" class="order-button" value="EXIT" /></li>
+</ul>

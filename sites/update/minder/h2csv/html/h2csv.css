@@ -1,0 +1,119 @@
+/*
+This is the css of the h2csv area
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 1em;
+border: 0; padding: 0; margin: 0;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h2 {
+font-size: 1.2em;
+margin-left: 20%;
+}
+h3 {
+font-size: 1em;
+line-height: 1.2em;
+margin-left: 5%;
+}
+h4 {
+font-size: 0.6em;
+line-height: 0.8em;
+left: 10px;
+top: 1px;
+}
+form, div {
+    border: 0; padding:0 ; margin: 0;
+}
+table {
+    border: 0; padding: 0; margin: 0;
+}
+a:link {
+color: red;
+background-color: yellow;
+text-decoration: none;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 1em;
+line-height: 1.2em;
+margin: 2px;
+border: 1px;
+padding: 2px;
+}
+a:visited {
+color: red;
+background-color: chartreuse;
+text-decoration: none;
+font-size: 1em;
+line-height: 1.2em;
+}
+a:hover {
+color: blue;
+background-color: cyan;
+text-decoration: none;
+font-size: 1em;
+line-height: 1.2em;
+}
+a:active {
+color: gray;
+background-color: yellow;
+text-decoration: none;
+font-size: 1em;
+line-height: 1.2em;
+}
+p.description {
+margin-top: 1px;
+margin-bottom: 1px;
+color: yellow;
+}
+p.method {
+margin-top: 2px;
+margin-bottom: 2px;
+color: orange;
+}
+input[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.submit:focus {
+outline: solid red 2px;
+color: blue ;
+}
+select:focus {
+outline: 2px #ff7d00 ;
+color: red ;
+}
+#col1 {
+left: 10px;
+top: 15px;
+width: 100px;
+}
+#col2 {
+left: 110px;
+top: 15px;
+width: 100px;
+}
+#col3 {
+left: 110px;
+top: 15px;
+width: 100px;
+height: 11%;
+}
+input.error { color : blue;
+background-color:red; }
+input.standard { color : black ;
+background-color:cyan; }
+
+.button {
+    border: 1px solid #006;
+   background: #9cf;
+}
+.pgeven{
+color: blue;
+background-color: greenyellow;
+}
+.pgodd{
+color: black;
+background-color: white;
+}

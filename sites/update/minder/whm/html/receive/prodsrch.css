@@ -1,0 +1,253 @@
+/*
+This is the core stype of the whm site
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 6pt;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h1 {
+font-size: 1.1em;
+margin-left: -2%;
+text-align: left;
+}
+h2 {
+font-size: 1.2em;
+margin-left: -20%;
+}
+h3 {
+font-size: 12pt;
+line-height: 14pt;
+text-decoration: none;
+margin-left: 1%;
+}
+h4 {
+font-size: 12pt;
+line-height: 14pt;
+position: absolute;
+left: 10px;
+top: 5px;
+}
+a:link {
+color: red;
+background-color: yellow;
+text-decoration: none;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 12pt;
+line-height: 14pt;
+margin: 2px;
+border: 1px;
+padding: 2px;
+}
+a:visited {
+color: red;
+background-color: chartreuse;
+text-decoration: none;
+font-size: 12pt;
+line-height: 14pt;
+}
+a:hover {
+color: blue;
+background-color: cyan;
+text-decoration: none;
+font-size: 12pt;
+line-height: 14pt;
+}
+a:active {
+color: gray;
+background-color: yellow;
+text-decoration: none;
+font-size: 12pt;
+line-height: 14pt;
+}
+input[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.message,input.message[type="text"] {
+color: red ;
+background-color: yellow;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: .8em;
+}
+input.submit:focus {
+outline: solid red 2px;
+color: blue ;
+}
+select.sel1 {
+width: 25%;
+}
+select.sel2 {
+width: 30%;
+}
+select.sel3 {
+width: 45%;
+}
+select:focus {
+outline: 2px #ff7d00 ;
+color: red ;
+background-color: cyan;
+}
+table {
+  border-collapse: collapse;
+}
+th td {
+  text-decoration: none;
+  display: block;
+  text-align: left;
+  font-family: Arial, Helvetia, Verdana, Sans-serif;
+  font-size: 6pt;
+}
+button {
+display: block;
+color: black ;
+background-color: cyan;
+font-size: 11pt;
+width: 50pt;
+height: 2.75em;
+margin-top: 1%;
+margin-bottom: 1%;
+margin-right: 1%;
+margin-left: 1%;
+}
+#col1 {
+position: absolute;
+left: 4px;
+top: 170pt;
+}
+#col2 {
+position: absolute;
+left: 130px;
+top: 160pt;
+}
+#col4 {
+position: absolute;
+left: 68px;
+top: 168pt;
+}
+#col3 {
+position: absolute;
+left: 2px;
+top: 16pt;
+width: 200pt;
+}
+#col5 {
+position: absolute;
+left: 4px;
+top: 52pt;
+}
+#col6 {
+position: absolute;
+left: 4px;
+top: 4em;
+}
+#message {
+position: absolute;
+left: 2px;
+top: 5px;
+width: 200pt;
+}
+#message3 {
+position: absolute;
+left: 118pt;
+top: 71pt;
+width: 200pt;
+}
+#order {
+margin-top: 0em;
+padding-top: 0em;
+padding-top: 0em;
+padding-bottom: 0em;
+}
+#locns {
+position: absolute;
+height: 100pt;
+top: 14em;
+left: 0em;
+margin-top: 0em;
+padding-top: 0em;
+padding-top: 0em;
+padding-bottom: 0em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+}
+#locns2 {
+position: absolute;
+top: 6em;
+left: 0em;
+margin-top: 0em;
+padding-top: 0em;
+padding-top: 0em;
+padding-bottom: 0em;
+}
+#locationform {
+top: 0em;
+width: 20%;
+float: left;
+}
+#btns {
+clear: both;
+padding-bottom: 0em;
+}
+label {
+display: block;
+float: left;
+width:75px;
+padding-right: 20px;
+}
+#locns3 {
+position: absolute;
+height: 170pt;
+top: 0em;
+margin-top: 0em;
+padding-top: 0em;
+padding-top: 0em;
+padding-bottom: 0em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+}
+#picked {
+position: absolute;
+height: 170pt;
+top: 21em;
+}
+#locnsempty {
+position: absolute;
+height: 100pt;
+top: 70pt ;
+left: 225pt;
+margin-top: 0em;
+padding-top: 0em;
+padding-top: 0em;
+padding-bottom: 0em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+}
+.pgeven{
+height: 1em;
+width: 20em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+color: blue;
+background-color: greenyellow;
+}
+.pgodd{
+height: 1em;
+width: 20em;
+/* overflow: scroll; */
+overflow-x: hidden;
+overflow-y: auto;
+-webkit-overflow-scrolling: touch;
+color: black;
+background-color: white;
+}

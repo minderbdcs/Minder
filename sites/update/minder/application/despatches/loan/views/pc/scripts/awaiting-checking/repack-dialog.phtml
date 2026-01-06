@@ -1,0 +1,48 @@
+<?php
+/**
+ * @var Minder_View_Helper_ScreenPrompt $screenPrompt
+ * @var Minder_View_Helper_PackDimensions $oldRepackDims
+ * @var Minder_View_Helper_PackDimensions $newRepackDims
+ */
+$screenPrompt = $this->screenPrompt();
+
+?>
+<!-- search order by prod_id dialog -->
+<div style="display: none;" id="repack_sscc_dialog" title="RePack" class="flora">
+    <form action="#">
+            <div>
+                <div style="float: left">
+                    <div>SSCC: total packs [<span class="total-sscc">0</span>], total weight [<span class="total-sscc-weight"></span>]</div>
+                    <div>Product: <span class="prod-id"></span>. Total products: <span class="product-overall">0</span></div>
+                </div>
+                <div class="screen-prompt repack-prompt" style="text-align: right"></div>
+            </div>
+            <div style="overflow: auto; clear: both; max-height: 260px">
+                <?php
+                $oldRepackDims = $this->packDimensions('RE_PACK_DIMS', 'Current values', $this->repack_old_screen->fields, $this->repack_old_screen->actions, $this->palletOwnerList);
+                $oldRepackDims->setNoSummary();
+                ?>
+                <div class="repack-old-dims"><?php echo $oldRepackDims; ?></div>
+                <?php
+                $newRepackDims = $this->packDimensions('RE_PACK_DIMS', 'New values', $this->repack_new_screen->fields, $this->repack_new_screen->actions, $this->palletOwnerList);
+                $newRepackDims->setNoSummary();
+                ?>
+                <div class="repack-new-dims" style="margin-top: 1em;"><?php echo $newRepackDims; ?></div>
+            </div>
+            <div>
+                Total entered product qty: <span class="product-total">0</span>
+            </div>
+    </form>
+</div>
+<!-- search order by prod_id dialog -->
+
+<script type="text/javascript">
+    $(function(){
+        Minder.Dlg.RePackSscc.init(
+            $('#repack_sscc_dialog'),
+            '<?php echo $this->url(array('action' => 're-pack')); ?>',
+            <?php echo json_encode($screenPrompt->getRepackSsccPrompts());?>,
+            <?php echo json_encode($this->packDimensions()->getUoms())?>
+        );
+    });
+</script>

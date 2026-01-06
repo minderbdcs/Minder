@@ -1,0 +1,35 @@
+receive a list of products and qtys for pm
+create these ssns in a receive or temporary location
+
+=================================================
+normal product ssn stocktake  program gets
+location
+product
+ssn
+qty
+=================================================
+
+but for this task
+they
+scan location
+(scan 1 bw ssn or mm ssn (if there is no bw ssn to scan) 
+ then enter location total across both companys)
+if scanned bw ssn
+	display product
+	do AUOB to place ssn
+	then do STPA for -qty on ssn 
+		or -total for all mgm prod if ssn qty > total for mgm
+	remove the qty from mgm's prod in that location
+	(of course can only remove: upto the total of mgm in the locn)
+
+	enter prod total for location
+	current mgm qty = entered qty - qty on scanned ssn
+	do STPA for mgm prod of (current mgm qty - total mgm) 
+if scanned mm ssn
+	display product
+	do AUOB to place ssn
+
+	enter current qty for mgm = location net qty
+	do STPA for (current mgm qty - total mgm ) 
+
+go to get next location

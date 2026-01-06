@@ -1,0 +1,94 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'editprint'))?>" method="post" enctype="multipart/form-data">
+    <h1>EDIT RECORD: <?php echo $this->escape($this->printData->id); ?></h1>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return saveCommand();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', null)?></li>
+    </ul>
+        <table class="summary"style="width:99%">
+        <tr>
+            <th>Label Name:</th>
+            <td><?php echo $this->formText('sl_name', $this->printData['SL_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Sequence:</th>
+            <td><?php echo $this->formText('sl_sequence', $this->printData['SL_SEQUENCE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Line:</th>
+            <td><?php echo $this->FormTextarea('sl_line', $this->printData['SL_LINE'] , array('cols' => '50', 'rows' => '7', 'style' => 'height:15ex')); ?></td>
+        </tr>
+         <tr>
+            <th>Notes:</th>
+            <td><?php echo $this->FormTextarea('sl_notes', $this->printData['SL_NOTES'] , array('cols' => '50', 'rows' => '7', 'style' => 'height:15ex')); ?></td>
+        </tr>
+        <tr>
+            <th>Brand:</th>
+            <td><?php echo $this->formText('sl_brand', $this->printData['SL_BRAND'], array('')); ?></td>
+        </tr>
+        <tr>
+            <th>Model:</th>
+            <td><?php echo $this->formText('sl_model', $this->printData['SL_MODEL'], array('')); ?></td>
+        </tr>
+        <tr>
+            <th>Image:</th>
+            <td>
+                <img src="<?php echo $this->url((array('controller' => 'custom', 'action' => $this->bid))); ?>" alt="No image" /><br />
+                <?php echo $this->formHidden('MAX_FILE_SIZE', '600000'); echo $this->formFile('sl_image', '', array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>Firmware:</th>
+            <td><?php echo $this->formText('sl_firmware', $this->printData['SL_FIRMWARE'], array('')); ?></td>
+        </tr>
+      </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return saveCommand();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', null)?></li>
+    </ul>
+</form>
+<script type="text/javascript">
+<!--
+
+ var cacheValue = 50; 
+
+$(document).ready(function(){
+    
+    $("#sl_name").autocomplete('<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'lookup'), null, true); ?>',
+                  {  matchSubset: 1,
+                     matchContains: 1,
+                     cacheLength: cacheValue,
+                     selectFirst: 1,
+                     extraParams: {field: 'label_name'}});
+});
+
+
+function saveCommand() {
+    if($('#sl_name')[0].value == '') {
+        $('#sl_name').addClass('mandatory');
+        $('#sl_name').focus();
+        return false;    
+    } else {
+         $('#sl_name').removeClass('mandatory'); 
+    }
+    if($('#sl_sequence')[0].value == '') {
+        $('#sl_sequence').addClass('mandatory');
+        $('#sl_sequence').focus();
+        return false;    
+    } else {
+         $('#sl_sequence').removeClass('mandatory'); 
+    }
+    
+    if($('#sl_line')[0].value.length > 254) {
+        alert('Filed length > 255 characters');
+        $('#sl_line').focus();
+        return false;
+    }
+    
+    $('#main').submit();
+    
+}
+
+-->
+</script>
+<?php echo $this->render('footer.phtml');

@@ -1,0 +1,119 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<table>
+    </tr>
+    <tr>
+        <td>User ID:</td>
+        <td><?php echo $this->escape($this->sysUser->userId); ?></td>
+    </tr>
+    <tr>
+        <td>Person ID:</td>
+        <td><?php echo $this->escape($this->sysUser->personId); ?></td>
+    </tr>
+    <tr>
+        <td>Company ID:</td>
+        <td><?php echo $this->escape($this->sysUser->companyId); ?></td>
+    </tr>
+    <tr>
+        <td>Division ID:</td>
+        <td><?php echo $this->escape($this->sysUser->divisionId); ?></td>
+    </tr>
+    <tr>
+        <td>Device ID:</td>
+        <td><?php echo $this->escape($this->sysUser->deviceId); ?></td>
+    </tr>
+    <tr>
+        <td>Loc Perm Level:</td>
+        <td><?php echo $this->escape($this->sysUser->locPermLevel); ?></td>
+    </tr>
+    <tr>
+        <td>Prod Perm Level:</td>
+        <td><?php echo $this->escape($this->sysUser->prodPermLevel); ?></td>
+    </tr>
+    <tr>
+        <td>Task Perm Level:</td>
+        <td><?php echo $this->escape($this->sysUser->taskPermLevel); ?></td>
+    </tr>
+    <tr>
+        <td>Login Date:</td>
+        <td><?php echo $this->escape($this->sysUser->loginDate); ?></td>
+    </tr>
+    <tr>
+        <td>Pass Word:</td>
+        <td><?php echo $this->escape($this->sysUser->passWord); ?></td>
+    </tr>
+    <tr>
+        <td>Pass Word Date:</td>
+        <td><?php echo $this->escape($this->sysUser->passWordDate); ?></td>
+    </tr>
+    <tr>
+        <td>PW Expiry Date:</td>
+        <td><?php echo $this->escape($this->sysUser->pwExpiryDate); ?></td>
+    </tr>
+    <tr>
+        <td>Last Update Date:</td>
+        <td><?php echo $this->escape($this->sysUser->lastUpdateDate); ?></td>
+    </tr>
+    <tr>
+        <td>Update User ID:</td>
+        <td><?php echo $this->escape($this->sysUser->updateUserId); ?></td>
+    </tr>
+    <tr>
+        <td>Sys Admin:</td>
+        <td><?php echo $this->escape($this->sysUser->sysAdmin); ?></td>
+    </tr>
+    <tr>
+        <td>Zone C:</td>
+        <td><?php echo $this->escape($this->sysUser->zoneC); ?></td>
+    </tr>
+    <tr>
+        <td>Editable:</td>
+        <td><?php echo $this->escape($this->sysUser->editable); ?></td>
+    </tr>
+    <tr>
+        <td>User Type:</td>
+        <td><?php echo $this->escape($this->sysUser->userType); ?></td>
+    </tr>
+    <tr>
+        <td>Sale Manager:</td>
+        <td><?php echo $this->escape($this->sysUser->saleManager); ?></td>
+    </tr>
+    <tr>
+        <td>Credit Manager</td>
+        <td><?php echo $this->escape($this->sysUser->creditManager); ?></td>
+    </tr>
+    <tr>
+        <td>Default WH ID:</td>
+        <td><?php echo $this->escape($this->sysUser->defaultWhId); ?></td>
+    </tr>
+    <tr>
+        <td>Inventory Operator:</td>
+        <td><?php echo $this->escape($this->sysUser->inventoryOperator); ?></td>
+    </tr>
+    <tr>
+        <td>Pick Sequence:</td>
+        <td><?php echo $this->escape($this->sysUser->pickSequence); ?></td>
+    </tr>
+    <tr>
+        <td>Pick Direction:</td>
+        <td><?php echo $this->escape($this->sysUser->pickDirection); ?></td>
+    </tr>
+    <tr>
+        <td>Default Order Sold From:</td>
+        <td><?php echo $this->escape($this->sysUser->defaultOrderSoldFrom); ?></td>
+    </tr>
+    <tr>
+        <td>Default Order Sold To:</td>
+        <td><?php echo $this->escape($this->sysUser->defaultOrderSoldTo); ?></td>
+    </tr>
+    <tr>
+        <td>Stock Adjust:</td>
+        <td><?php echo $this->escape($this->sysUser->stockAdjust); ?></td>
+    </tr>
+</table>
+<div id="buttons">
+<input type="button" value="Edit" onclick="location='<?php echo $this->url(array('action' => 'edit', 'id' => $this->sysUser->userId)); ?>'" />
+<input type="button" value="Delete" onclick="location='<?php echo $this->url(array('action' => 'delete', 'id' => $this->sysUser->userId)); ?>'" />
+</div>
+
+<?php echo $this->render('footer.phtml'); ?>

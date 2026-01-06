@@ -1,0 +1,85 @@
+<form name="input" id="input" action="<?php echo $this->url(array('action' => 'show', 'controller' => 'despatch', 'module' => 'default', 'report_id' => $this->report_id)); ?>" method="post">
+    <table class="summary">
+<?php
+$javascript = array();
+if (count($this->prompts) == 0) {
+    echo "<h2>No input required. Press 'Go' to run Report</h2>";
+} else {
+    foreach($this->prompts as $obj) {
+        echo "<tr>";
+        switch ($obj->items['QUERY_PROMPT_TYPE']) {
+            case 'D':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formText('id' . $obj->id);
+                echo "</td>";
+                $javascript[] = " $('#id" . $obj->id . "').datepicker({dateFormat: 'yy/mm/dd'});";
+                break;
+            case 'A':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formText('id' . $obj->id);
+                echo "</td>";
+                $javascript[] = " $('#id" . $obj->id . "').datepicker({dateFormat: 'mm/dd/yy'});";
+                break;
+            case 'L':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formCheckbox('id' . $obj->id);
+                echo "</td>";
+                break;
+            case 'I':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formText('id' . $obj->id);
+                echo "</td>";
+                break;
+            case 'C':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formText('id' . $obj->id);
+                echo "</td>";
+                break;
+            case 'F':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formSelect('id' . $obj->id, '', array(), minder_array_merge(array('%' => 'All'),
+                                                                                        $this->minder->getListByField($obj->items['QUERY_DB_FIELD'])));
+                echo "</td>";
+                break;
+            case 'S':
+                echo "<th>";
+                echo $this->escape($obj->items['QUERY_PROMPT']);
+                echo "</th>";
+                echo "<td>";
+                echo $this->formSelect('id' . $obj->id, '', array(), $this->minder->getDropDownList($obj->items['QUERY_DB_FIELD']));
+                echo "</td>";
+                break;
+            default:
+                break;
+        }
+        echo "</tr>";
+    }
+}
+?>
+    </table>
+</form>
+<script type="text/javascript">
+<?php
+    foreach ($javascript as $line) {
+        echo $line;
+    }
+?>
+</script>

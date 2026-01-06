@@ -1,0 +1,14 @@
+<?php
+    $result =         array(
+            'errors'     => $this->errors,
+            'warnings'   => $this->warnings,
+            'messages'   => $this->messages,
+            'sysScreens' => $this->sysScreens
+    );
+
+    if (isset($this->transferComplete)) {
+        $result['transferComplete'] = $this->transferComplete;
+    }
+
+    echo json_encode($result);
+?>

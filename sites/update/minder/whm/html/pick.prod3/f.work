@@ -1,0 +1,25 @@
+done	want in menu
+ 	a sequence choose to use
+   	- backwards or forwards
+	then in allocate only want orders
+	>= that sequence nos start
+	(or for reverse <= sequence no)
+
+done	so in get next product use forward or backward and seq no to lookup locn_seq limit
+
+	also in getfromlocn
+
+
+Then after scanning the location
+? scan the product 
+Enter the qty to take
+
+done now also in the 2 procedures for the pick_item
+	pkbs (from the calcSeq)
+	pkua (after each screen) 
+	save the pick_sequence + and pick+_sequence -
+	or/and the locn_seq
+
+now have the problem of zero location seq
+this means that the ssn is in a non sequenced location
+possible in another wh_id !!!

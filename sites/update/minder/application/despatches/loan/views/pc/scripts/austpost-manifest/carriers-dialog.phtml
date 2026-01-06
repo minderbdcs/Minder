@@ -1,0 +1,49 @@
+<!-- carriers dialog -->
+<div style="display: none;" id="carriers_dialog" title="Select Carrier" class="flora">
+    <form name="carriers_form" id='carriers_form' action="" method="POST">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td>
+                    Carrier
+                </td>
+                <td style="width:50%;">
+                    <?php echo $this->formSelect('carrier_id', '', array(), $this->carriersList);?>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td align="center">
+                    <button name="RUN" class="green-button">RUN</button>
+                </td>
+                <td align="center">
+                    <button name="CANCEL" class="yellow-button">CANCEL</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- product label dialog -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        initCarriersDialog();
+    });
+
+    function initCarriersDialog() {
+        $('#carriers_dialog').dialog(
+            {
+                autoOpen  : false,
+                width     : 360,
+                height    : 130,
+                resizable : true
+            }
+        ).unbind('dialogopen.select-carrier-form').bind('dialogopen.select-carrier-form', function(event, ui) {
+            $(this).show();
+            $(this).find('select').focus();
+        });
+
+        $('#carriers_dialog button[name=CANCEL]').unbind('click.select-carrier-form').bind('click.select-carrier-form', function(evt){
+            evt.preventDefault();
+            $('#carriers_dialog').dialog('close');
+        });
+    }
+</script>

@@ -1,0 +1,24 @@
+<?php
+$dom = new DOMDocument('1.0', 'iso-8859-1');
+$root = $dom->createElement('root');
+$dom->appendChild($root);
+
+$header = $dom->createElement('header');
+foreach ($this->headers as $column) {
+    $header->appendChild($dom->createElement('cell', $this->escape($column)));
+}
+$root->appendChild($header);
+
+if (!empty($this->data)) {
+    foreach ($this->data as $row) {
+        $domRow = $dom->createElement('row');
+        foreach ($this->headers as $key => $val) {
+            $domRow->appendChild($dom->createElement('cell', $this->escape($row[$key])));
+        }
+        $root->appendChild($domRow);
+    }
+
+}
+
+$dom->formatOutput = true;
+echo $dom->saveXML();

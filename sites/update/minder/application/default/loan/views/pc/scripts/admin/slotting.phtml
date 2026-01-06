@@ -1,0 +1,282 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<form name="main" id="main_form" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'admin', 'action' => 'slotting'), null, true); ?>" method="post">
+<div id="update_form" style="width:99%;">
+        <table>
+            <tr>
+                <th>
+                    <b>PROD_PROFILE SEARCH:</b>
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <th><label for="PROD_ID">PROD_ID</label></th>
+                <td><?php echo $this->formText('prod_id', $this->prodId, array()); ?></td>
+                <td width="10"/>
+                <th><label for="SHORT_DESC">SHORT_DESC</label></th>
+                <td><?php echo $this->formText('short_desc', $this->shortDesc, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="PROD_TYPE">PROD_TYPE</label></th>
+                <td><?php echo $this->formText('prod_type', $this->prodType, array()); ?></td>
+                <td width="10"/>
+                <th><label for="ALT_PROD_TYPE">ALT_PROD_TYPE</label></th>
+                <td><?php echo $this->formText('alt_prod_type', $this->altProdType, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="STORE_TYPE">STORE_TYPE</label></th>
+                <td><?php echo $this->formText('store_type', $this->storeType, array()); ?></td>
+                <td width="10"/>
+                <th><label for="TOG_C">TOG_C</label></th>
+                <td><?php echo $this->formText('tog_c', $this->togC, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="LOCN_VISIT_PER_MTH-FROM">LOCN_VISIT_PER_MTH -FROM</label></th>
+                <td><?php echo $this->formText('locn_visit_per_mth_from', $this->locnVisitPerMthFrom, array()); ?></td>
+                <td width="10"/>
+                <th><label for="LOCN_VISIT_PER_MTH-TO">LOCN_VISIT_PER_MTH -TO</label></th>
+                <td><?php echo $this->formText('locn_visit_per_mth_to', $this->locnVisitPerMthTo, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="SALE_PER_MTH-FROM">SALE_PER_MTH -FROM</label></th>
+                <td><?php echo $this->formText('sale_per_mth_from', $this->salePerMthFrom, array()); ?></td>
+                <td width="10"/>
+                <th><label for="SALE_PER_MTH-TO">SALE_PER_MTH -TO</label></th>
+                <td><?php echo $this->formText('sale_per_mth_to', $this->salePerMthTo, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="NET_WEIGHT-FROM">NET_WEIGHT -FROM</label></th>
+                <td><?php echo $this->formText('net_weight_from', $this->newWeightFrom, array()); ?></td>
+                <td width="10"/>
+                <th><label for="NET_WEIGHT-TO">NET_WEIGHT -TO</label></th>
+                <td><?php echo $this->formText('net_weight_to', $this->newWeightTo, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="COMPANY_ID">COMPANY_ID</label></th>
+                <td><?php echo $this->formText('company_id', $this->companyId, array()); ?></td>
+                <td width="10"/>
+                <th><label for="ORIENTATION">ORIENTATION</label></th>
+                <td><?php echo $this->formText('orientation', $this->orientation, array()); ?></td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <b>LOCATION SEARCH:</b>
+                </th>
+             </tr>
+             <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <th><label for="WH_ID">WH_ID</label></th>
+                <td><?php echo $this->formText('wh_id', $this->whId, array()); ?></td>
+                <td width="10"/>
+                <th><label for="LOCN_ID">LOCN_ID</label></th>
+                <td><?php echo $this->formText('locn_id', $this->locnId, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="ZONE_C">ZONE_C</label></th>
+                <td><?php echo $this->formText('zone_c', $this->zoneC, array()); ?></td>
+                <td width="10"/>
+                <th><label for="STORE_TYPE">STORE_TYPE</label></th>
+                <td><?php echo $this->formText('store_type', $this->storeType, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="TOG_C">TOG_C</label></th>
+                <td><?php echo $this->formText('tog_c', $this->togC, array()); ?></td>
+                <td width="10"/>
+                <th><label for="STORE_METH">STORE_METH</label></th>
+                <td><?php echo $this->formText('store_meth', $this->storeMeth, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="STORE_AREA">STORE_AREA</label></th>
+                <td><?php echo $this->formText('store_area', $this->storeArea, array()); ?></td>
+                <td width="10"/>
+                <th><label for="LOCN_TYPE">LOCN_TYPE</label></th>
+                <td><?php echo $this->formText('locn_type', $this->locnType, array()); ?></td>
+            </tr>
+            <tr>
+                <th><label for="LOCN_METRIC">LOCN_METRIC</label></th>
+                <td><?php echo $this->formText('locn_metric', $this->locnMetric, array()); ?></td>
+                <td width="10"/>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <b>DIMENSIONS:</b>
+                </th>
+             </tr>
+             <tr>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <th>LOCN_INT_DIMENSION_X</th>
+                <td><input type="checkbox" id="dimensions_x" value="checked" checked="true" name="dimensions_x" /></td>
+            </tr>
+            <tr>
+                <th>LOCN_INT_DIMENSION_Y</th>
+                <td><input type="checkbox" id="dimensions_y" value="checked" checked="true" name="dimensions_y" /></td>
+            </tr>
+            <tr>
+                <th>LOCN_INT_DIMENSION_Z</th>
+                <td><input type="checkbox" id="dimensions_z" value="checked" checked="true" name="dimensions_z" /></td>
+            </tr>
+        </table>
+        
+        <ul class="toolbar">
+            <li><?php echo $this->formSubmit('action', 'SEARCH', array('onClick' => '')); ?></li>
+            <li><?php echo $this->formButton('action', 'CLEAR', array('onClick' => 'frmClear()')); ?></li>
+        </ul>
+</div>
+
+<div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <br />
+</div>
+<div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+    <table style="width:99%">
+        <tr>
+            <td>
+                <div style="float:left;">
+                    <b>
+                        Selected: <span  id="selected_num"><?php echo $this->selectedNum; ?></span>
+                    </b>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+<div style="display:inline">
+    <label for='show_by'>View By : </label>
+    <?php echo $this->formSelect('show_by',
+                                 $this->navigation['show_by'],
+                                 array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                 array(  5 => 5,
+                                        10 => 10,
+                                        15 => 15,
+                                        20 => 20,
+                                        30 => 30,
+                                        40 => 40,
+                                        50 => 50));?>
+    <label for='page'>Page : </label>
+    <?php echo $this->formSelect('pageselector',
+                                       $this->navigation['pageselector'],
+                                       array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                       $this->pages); ?>
+</div>
+</form>
+
+<table id="lines" class="withborder tablesorter">
+    <thead>
+    <tr>
+        <th>
+            <?php echo $this->formCheckbox(null, null, array('checked' => '', 'onclick' => '')); ?>
+        </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        foreach ($this->data as $product) {
+            
+            if(array_key_exists($product['PROD_ID'], $this->selectedSlottingProducts)) {
+                echo '<th>' . $this->formCheckbox($product['PROD_ID'], $product['PROD_ID'] . '|' . $product['LOCN_ID'], array('checked' => 'true', 'onclick' => 'selectOneLine(this)')) . '</th>' . '</th>';
+            } else {
+                echo '<th>' . $this->formCheckbox($product['PROD_ID'], $product['PROD_ID'] . '|' . $product['LOCN_ID'], array('onclick' => 'selectOneLine(this)')) . '</th>' . '</th>';
+            }
+            foreach ($this->headers as $key => $value) {
+                echo '<td>' . $this->escape($product[$key]) . '</td>';
+            }
+            echo "</tr>\n";
+        }
+        ?>
+        </tbody>
+    </table>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+    </ul>
+<ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" onclick="buttonFrmSubmit(this); return false;" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: XLS" onclick="buttonFrmSubmit(this); return false;" /></li>
+        <li><input type="submit" name="action" class="order-button" value="UPDATE+CSV"  onclick="buttonFrmSubmit(this); return false;" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REFRESH" onclick="buttonFrmSubmit(this);" /></li>
+    </ul>
+</form>
+
+<SCRIPT>
+<!--
+
+$(document).ready(function(){
+    
+    $("#lines").tablesorter({headers: {0: {sorter:false}},sortList:[[3,1]], widgets: ['zebra']});
+})
+
+
+function selectOneLine(target) {
+
+    $.getJSON('<?php echo $this->url(array('action' => 'slotting', 'controller' => 'admin', 'module' => 'default')); ?>', 
+    {
+        action: 'SELECT',
+        condition: target.checked, 
+        value: target.value},
+    
+        function(json) {
+             $("#selected_num").get(0).innerHTML = json.selected_num;    
+        });
+
+}
+
+function buttonFrmSubmit(input) {
+    oldForm = $("#main_form");
+    lowerVal = input.value.toLowerCase();
+    $("#main_form").append('<input type="hidden" id="action" name="action" value="' + lowerVal + '" />')[0].submit();
+    $('#toDelete').remove();
+    $("#main_form").action = oldForm;
+    return false;
+}
+
+function frmClear()
+{
+    $('input:text').each(function() {
+        this.value = '';
+        });
+   
+    return false;
+}
+
+-->
+
+</SCRIPT>
+
+
+
+
+
+<?php echo $this->render('footer.phtml'); ?>  

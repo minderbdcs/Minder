@@ -1,0 +1,30 @@
+<?php
+if(is_array($this->data) && count($this->data) > 0) {
+    $fp = fopen("php://temp/", 'r+');
+    foreach($this->data as $key => $value) {
+        if(is_array($value) && count($value) > 0) {
+            $line   =   array();
+            $line[] =   $key;
+            fputcsv($fp, $line, ';'); 
+        }
+        if(is_array($value) && count($value) > 0) {
+            foreach($value as $pickItem) {
+                $line   =   array();   
+            
+                $line[]   =   $pickItem['PICK_ORDER'];
+                $line[]   =   $pickItem['PICK_LABEL_NO'];
+                $line[]   =   $pickItem['PICK_LINE_DUE_DATE'];
+                $line[]   =   $pickItem['RETURN_DATE'];
+                
+                fputcsv($fp, $line, ';'); 
+            }
+        }
+    }
+    
+    rewind($fp);
+    echo stream_get_contents($fp);
+    fclose($fp);
+
+}
+
+?>

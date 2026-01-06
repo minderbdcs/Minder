@@ -1,0 +1,33 @@
+@import "input.less";
+
+.mdr-button {
+    padding: 2px 5px;
+    background-image: url(@button-background);
+    background-repeat: repeat-x;
+    font-weight:bolder;
+}
+
+.mdr-button-cancel {
+    .mdr-button;
+    background-image: none;
+    background-color: @button-cancel-background-color;
+}
+
+.mdr-tool-button {
+    padding: 0px;
+    background-image: url(@button-background);
+    background-repeat: repeat-x;
+    font-weight:bolder;
+}
+
+.mdr-tool-button-cancel {
+    .mdr-tool-button;
+    background-image: none;
+    background-color: @button-cancel-background-color;
+}
+
+.toolbar {
+    button, input[type="submit"], input[type="reset"], input[type="button"] {
+        .mdr-tool-button
+    }
+}

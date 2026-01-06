@@ -1,0 +1,191 @@
+<?php
+$prodIdSR = $this->searchResults['PROD_ID'];
+$grnNamespaces = array_map(function($searchResult){
+    return $searchResult['namespace'];
+}, $prodIdSR['grn']);
+$dsdxNamespaces = array_map(function($searchResult){
+    return $searchResult['namespace'];
+}, $prodIdSR['dsdx']);
+?>
+
+<div style="clear: both" class="enq-prod-id-date-range hidden">
+    Date Range:
+    From: <input type="text" class="enq-prod-id-from" />
+    Till: <input type="text" class="enq-prod-id-till" />
+    <input type="button" class="enq-prod-id-search-date mdr-tool-button" value="Search" />
+    <input type="button" class="enq-prod-id-clear-date mdr-tool-button" value="Clear" />
+</div>
+
+<?php
+foreach($prodIdSR as $varianceName => $varianceResults) {
+    ?>
+    <div class="VARIANCE-<?php echo $varianceName;?> ui-tabs-container hidden">
+        <?php echo $this->sysScreenVarianceTabs($varianceResults); ?>
+        <?php
+        foreach($varianceResults as $screenResult) {
+            ?>
+            <div class="<?php echo $screenResult['namespace'];?> hidden"></div>
+        <?php
+        }
+        ?>
+    </div>
+<?php
+}
+?>
+
+<script type="text/javascript">
+    minderNamespace('Minder.Warehouse.Enquire.Product', function() {
+        $.extend(this, Minder.AbstractPageController);
+
+        this.disabledRelations = {};
+
+        this.enquire = {
+            fromDate:   undefined,
+            tillDate:   undefined,
+            prodId:     null,
+            type :      'PROD_ID'
+        };
+
+        this.onLoad = function() {
+            var
+                self = this;
+
+            this.initVariances(<?php echo json_encode($prodIdSR);?>, true);
+            $('.enq-prod-id-from').change(function(evt){
+                self.enquire.fromDate = $(evt.target).val();
+                self.enquire.fromDate = self.enquire.fromDate ? self.enquire.fromDate : undefined;
+            }).datepicker({dateFormat: 'yy-mm-dd', 'beforeShow': function(input, instance) {
+                instance._settings.prompt = 'From date';
+                $.datepicker._updateDatepicker(instance);
+            }});
+            $('.enq-prod-id-till').change(function(evt){
+                self.enquire.tillDate = $(evt.target).val();
+                self.enquire.tillDate = self.enquire.tillDate ? self.enquire.tillDate : undefined;
+            }).datepicker({dateFormat: 'yy-mm-dd', 'beforeShow': function(input, instance) {
+                instance._settings.prompt = 'Till date';
+                $.datepicker._updateDatepicker(instance);
+            }});
+            $('.enq-prod-id-search-date').click(function(){
+                self.searchForPeriod();
+            });
+            $('.enq-prod-id-clear-date').click($.proxy(this.clearPeriodSearch, this));
+        };
+
+        this.beforeRowSelect = function(evt) {
+            var $container = this.getContainer(evt.namespace);
+            $container.children('div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+        };
+
+        this.afterRowSelect = function(evt) {
+            var $container = this.getContainer(evt.namespace);
+            $container.children('div').unblock();
+        };
+
+        this.getRowSelectUrl = function() {
+            return '<?php echo $this->url(array('action' => 'select-row'));?>';
+        };
+
+        this.onPreLoad = function(namespaces) {
+            var
+                self = this;
+
+            namespaces.forEach(function(namespace) {
+                self.getContainer(namespace).children('div').filter(':visible').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            });
+        };
+
+        this.onAfterLoad = function(namespaces) {
+            var
+                self = this;
+
+            namespaces.forEach(function(namespace) {
+                self.getContainer(namespace).children('div').filter(':visible').unblock();
+            });
+        };
+
+        this.getLoadUrl = function() {
+            return '<?php echo $this->url(array('action' => 'get-dataset'));?>';
+        };
+
+        this.hide = function() {
+            this.hideAll();
+            $('.enq-prod-id-date-range').hide();
+        };
+
+        this.show = function() {
+            this.showAll();
+            $('.enq-prod-id-date-range').show();
+        };
+
+        this.enquireFor = function (dataIdentifier) {
+            if (dataIdentifier.param_filtered_value == '') {
+                this.hide();
+                return;
+            } else {
+                this.show();
+            }
+
+            this.enquire.prodId = dataIdentifier.param_filtered_value;
+            this.enquire.type   = dataIdentifier.param_type;
+
+            this.enquireProduct(this.enquire);
+        };
+
+        this.searchForPeriod = function () {
+            this.enquireProduct(this.enquire);
+        };
+
+        this.enquireProduct = function(enquire) {
+            var
+                self = this;
+
+            $(document).queue(function () {
+                $.post(
+                    '<?php echo $this->url(array('action' => 'enquire-product'));?>',
+                    enquire,
+                    $.proxy(self.onDataReady, self),
+                    'json'
+                );
+            });
+        };
+
+        this.clearPeriodSearch = function () {
+            this.enquire.fromDate = undefined;
+            this.enquire.tillDate = undefined;
+            $('.enq-prod-id-from, .enq-prod-id-till').val('');
+        };
+
+        this.getMasterSlaveChain = function( ){
+            //noinspection UnnecessaryReturnStatementJS
+            return <?php echo json_encode($this->masterSlaveChain);?>;
+        };
+    });
+
+    $(function() {
+        Minder.Warehouse.Enquire.Product.onLoad();
+    });
+
+    function showAllReceipts() {
+        Minder.Warehouse.Enquire.Product.disableMasterSlaveRelation(<?php echo json_encode(array_values($grnNamespaces));?>);
+    }
+
+    function showSelectedReceipts() {
+        Minder.Warehouse.Enquire.Product.enableMasterSlaveRelation(<?php echo json_encode(array_values($grnNamespaces));?>);
+    }
+
+    function isAllReceiptsShown() {
+        return Minder.Warehouse.Enquire.Product.isMasterSlaveRelationDisabled(<?php echo json_encode(array_values($grnNamespaces));?>);
+    }
+
+    function showAllDespatches() {
+        Minder.Warehouse.Enquire.Product.disableMasterSlaveRelation(<?php echo json_encode(array_values($dsdxNamespaces));?>);
+    }
+
+    function showSelectedDespatches() {
+        Minder.Warehouse.Enquire.Product.enableMasterSlaveRelation(<?php echo json_encode(array_values($dsdxNamespaces));?>);
+    }
+
+    function isAllDespatchesShown() {
+        return Minder.Warehouse.Enquire.Product.isMasterSlaveRelationDisabled(<?php echo json_encode(array_values($dsdxNamespaces));?>);
+    }
+</script>

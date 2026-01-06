@@ -1,0 +1,260 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array();
+    $attributesForSelect = array();
+?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post" id="main_form">
+    <h2><?php echo $this->pageTitle; ?></h2>
+<?php if ($this->minder->isAdmin) { ?>
+    <ul class="toolbar">
+        <li>
+            <?php echo $this->formSubmit("action", "NEW", array("onclick" => "goNew()")); ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit("action", "DELETE", array("onclick" => " return goDelete()")); ?>
+        </li>
+    </ul>
+<?php } ?>
+    <hr />
+            <div style="text-transform: uppercase; font-weight: bold;">
+                <div style="float:left">RESULTS List</div>
+                <div id="pages" style="position: relative; left: 10ex; font-weight: none;text-transform: none;">
+                    <label for="show_by">View By : </label>
+                    <?php echo $this->formSelect("show_by",
+                                                 $this->showBy,
+                                                 array("onchange" => "frmSubmit()"),
+                                                 array(5 => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                     100 => 100));
+                    ?>
+                    <label for="pageselector">Page : </label>
+                    <?php echo $this->formSelectStrict("pageselector",
+                                                       $this->pageSelector,
+                                                       array("onchange" => "frmSubmit()"),
+                                                       $this->pages);
+                    ?>
+                </div>
+            </div>
+    <hr/>
+    <div id="selected_num">
+        Selected: 0
+    </div>
+        <table id="table" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+             <th>
+                <?php echo $this->formCheckbox("select_all",
+                                               '',
+                                               array("onclick" => "selectAll(this)"));?>
+            </th>
+<?php
+if ($this->minder->isAdmin) {
+?>
+            <th><b>Click to edit</b></th>
+<?php
+}
+foreach ($this->headers as $header) {
+        echo "<th>". $this->escape($header) . "</th>";
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->reports) > 0) {
+        for ($i = 0; $i < count($this->reports); $i++) {
+            $reportLine = $this->reports[$i];
+            echo "<tr>";
+            //if (false) {
+                echo "<th>";
+                echo $this->formCheckbox("report_id[]",
+                                         $this->escape($reportLine->id),
+                                         array("class" => "report_checkbox",
+                                               "id"    => "report_id_" . $this->escape($reportLine->id),
+                                               "onclick" => "showSelected(this)" ));
+                echo "</th>";
+                if ($this->minder->isAdmin) {
+                    echo "<th>";
+                    echo "<a href=\"" . $this->url(array("module"      => "default",
+                                                         "controller"  => "despatch",
+                                                         "action"      => "edit",
+                                                         "start_item"  => $this->startItem,
+                                                         "show_by"     => $this->showBy,
+                                                         "report_id"   => $reportLine->id),
+                                                         "",
+                                                         true)
+                        . "\"><b>Edit</b></a>";
+                    //" . $this->escape($reportLine->id) . "
+                    echo "</th>";
+                }
+            //}
+            foreach($this->headers as $propertyName => $v) {
+                $val = $reportLine->items[$propertyName];
+                $urlEdit = $this->url(array("module"      => "default",
+                                            "controller"  => "despatch",
+                                            "action"      => "show",
+                                            "start_item"  => $this->startItem,
+                                            "show_by"     => $this->showBy,
+                                            "report_id" => $reportLine->id),
+                                            "",
+                                            true);
+                echo '<td><a href="'. $urlEdit . '" ' .
+                          "onclick='". 'return goRun("' . $this->escape($reportLine->id) . '")' . "' >" .
+                          $this->escape($val) . "</a></td>" . "";
+                              
+
+            }
+            echo "</tr>\n";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        //if (false) {
+            echo "<tr><th/>";
+        //}
+        foreach($this->headers as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>";
+    }
+?>
+            </tbody>
+        </table>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id="rec_counter" style="display: inline;">
+                <div id="num_rec">Total
+                <?php echo $this->numRecords . " records. ";?>
+                <?php echo "Show from " . ($this->startItem + 1); ?>
+                <?php echo " to " . ($this->startItem + $this->maxno);?>
+                </div>
+            </li>
+        </ul>
+        <ul class="toolbar">
+            <li>
+                <?php echo $this->formSubmit('action', 'REPORT: CSV', array('disabled' => 'disabled', 'onclick' => 'return frmSubmit();'))?>
+            </li>
+        </ul>
+    <div id="filter" style="display:none">
+        <input type="text" value="<?php echo $this->startItem; ?>" class="flt" id="old_start_item" name="old_start_item" />
+        <input type="text" value="<?php echo $this->showBy; ?>" class="flt" id="old_show_by" name="old_show_by" />
+        <input type="text" value="" name="edit_person_id" id="edit_person_id" />
+    </div>
+</form>
+<div id="report_run" class="flora" title="Input">
+</div>
+<script type="text/javascript">
+<!--
+var checkOnOff;
+var selectedNum = 0;
+var fromUrl="";
+var cacheValue = 50;
+$(document).ready(function(){
+    $('#table').tablesorter({headers: {0: {sorter: false}}, sortList:[[1,1]], widgets: ['zebra']});
+    $('#report_run').dialog({buttons: {Go: runReportDialog, Close: closeRunDialog},
+         width: '70ex',
+         height: '23em',
+         autoOpen: false
+    
+    }).bind('dialogopen', function(event, ui) {
+         $(this).show();     
+    }); 
+});
+
+function selectAll(self) {
+    var chk = $("#table input:checkbox");
+    var checkOnOff = $("#select_all").get(0).checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    if (checkOnOff) {
+        selectedNum = i-1;
+    } else {
+        selectedNum = 0;
+    }
+    $("#selected_num").get(0).innerHTML = "Selected: " + selectedNum;
+}
+
+function frmSubmit()
+{
+    document.forms.main.submit();
+    return true;
+}
+
+function goDelete()
+{
+    var res = confirm("You're about to delete " + selectedNum + ' reports. Are you really?');
+    if (res == true) {
+        document.forms.main.submit();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function goRun(reportId)
+{
+    $('#report_run').load('<?php echo $this->url(array('action' => 'get-prompts', 'controller' => 'despatch', 'module' => 'default')); ?>/?report_id=' + reportId, function() {$('#report_run').dialog("open");});
+    return false;
+}
+
+function runReportDialog()
+{
+    var data = $('#input').serialize();
+    $.ajax({url: '<?php echo $this->url(array('action' => 'set-prompts', 'controller' => 'despatch', 'module' => 'default')); ?>/',
+           data:  data,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        if (true == answer.response) {
+                            $('#report_run').dialog("close");
+                            document.forms['input'].submit();
+                        } else {
+                            alert(answer.message);
+                        }
+                    },
+           method: 'post'
+           });
+    return false;
+}
+
+function closeRunDialog()
+{
+    $('#report_run').dialog("close");
+    return false;
+}
+
+function goNew()
+{
+    frmSubmit();
+    return true;
+}
+
+function goCopy()
+{
+    frmSubmit();
+    return true;
+}
+
+function showSelected(element)
+{
+    if (element.checked) {
+        selectedNum++;
+    } else {
+        selectedNum--;
+    }
+    if (selectedNum == 0) {
+        $("#select_all").get(0).checked = false;
+    } else if ( selectedNum == ($("#table input:checkbox").length - 1)) {
+        $("#select_all").get(0).checked = true;
+    }
+
+    $("#selected_num").get(0).innerHTML = "Selected: " + selectedNum;
+    return true;
+}
+
+//-->
+</script>
+<?php echo $this->render("footer.phtml");

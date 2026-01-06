@@ -1,0 +1,25 @@
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->i_tabList)->setFields($this->i_fieldList)->setActions($this->i_actions);
+?>
+
+    <!-- tabs container start -->
+    <div id="i_tabs" class="ui-tabs-container">
+        <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+            <div class="sys-screen-title" title="<?php echo $this->i_sysScreenName;?>">Instructions:</div>
+        </div>
+
+        <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <?php echo $resultsForm->renderTabContent(
+                                        $tabId, 
+                                        array(
+                                            'tab_content_class'     => 'withborder tablesorter i_details',
+                                            'tab_content_style'     => array('margin-top: 0px;', 'margin-bottom: 0px;', 'clear: both;')
+                                        ), 
+                                        $this->instructionsRows
+                );?>
+           </div>    
+        <?php }?>
+    </div>
+    <!-- tabs container end -->

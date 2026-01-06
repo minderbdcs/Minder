@@ -1,0 +1,110 @@
+<?php echo $this->render('header.phtml') ?>
+<h2><?php echo $this->pageTitle; ?></h2>
+
+<?php echo $this->messenger()->all() ?>
+<form method="post" action="<?php echo $this->url() ?>/?fmt=12-inch">
+
+<?php echo $this->render('receive/_information-bar.phtml') ?>
+<table class="with_border" id="grn_details">
+    <tr>
+        <th><?php echo $this->formLabel('carrier', 'Carrier *:') ?></th>
+        <td><?php echo $this->formSelect('carrier', $this->carrier, null, $this->carrierOpts) ?></td>
+        <th><?php echo $this->formLabel('shipped_date', 'Shipped Date:') ?></th>
+        <td><?php echo $this->formText('shipped_date', $this->shippedDate) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('vehicle_id', 'Vehicle Reg.:') ?></th>
+        <td><?php echo $this->formText('vehicle_id', $this->vehicleId) ?></td>
+        <th><?php echo $this->formLabel('container_no', 'Shipping Cont. #:') ?></th>
+        <td><?php echo $this->formText('container_no', $this->containerNo) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('awb_consignment_no', 'Connote/AWB #:') ?></th>
+        <td><?php echo $this->formText('awb_consignment_no', $this->awbConsignmentNo) ?></td>
+        <th><?php echo $this->formLabel('receipt_flag', 'Visible Damages:') ?></th>
+        <td><?php echo $this->formCheckbox('receipt_flag', 'Y', $this->receiptFlag ? array('checked' => 'checked') : null) ?></td>
+    </tr>
+</table>
+<table class="with_border" id="hire" style="display: none;">
+    <tr>
+        <th><?php echo $this->formLabel('pallets_yn', 'Hire Pallets:') ?></th>
+        <td><?php echo $this->formSelect('pallets_yn', $this->palletsYn, null, $this->palletsYnOpts) ?></td>
+        <th><?php echo $this->formLabel('grn_pallet_qty', 'Total Pallets:') ?></th>
+        <td><?php echo $this->formText('grn_pallet_qty', $this->grnPalletQty) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('pack_crate_owner', 'Hire Packaging:') ?></th>
+        <td><?php echo $this->formSelect('pack_crate_owner', $this->packCrateOwner, null, $this->packCrateOwnerOpts) ?></td>
+        <th><?php echo $this->formLabel('pack_crate_qty', 'Total Packaging:') ?></th>
+        <td><?php echo $this->formText('pack_crate_qty', $this->packCrateQty) ?></td>
+    </tr>
+    <tr>
+        <th><?php echo $this->formLabel('pack_crate_type', 'Packaging Type:') ?></th>
+        <td><?php echo $this->formSelect('pack_crate_type', $this->packCrateType, null, $this->packCrateTypeOpts) ?></td>
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+    </tr>
+</table>
+
+<div id="action_buttons">
+<?php echo $this->formSubmit('do_action', 'Next', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Previous', array('class' => 'button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Hire', array('class' => 'button', 'id' => 'hire_button')) ?><br />
+<?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?><br />
+<?php //echo $this->formSubmit('do_action', 'Go to Top', array('class' => 'button', 'onclick' => 'return false')) ?>
+</div>
+
+<?php echo $this->formHidden('cur_page', 1) ?>
+
+</form>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#shipped_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#action_buttons').find('input').click(function() {
+        var curPage = $('#cur_page').val();
+        switch (this.value.toLowerCase()) {
+            case 'hire':
+                if ($.trim($('#vehicle_id').val()) == '') {
+                    alert('"Vehicle Reg." is a required field in this form.');
+                    return false;
+                }
+                if ($.trim($('#awb_consignment_no').val()) == '') {
+                    alert('"Connote/AWB #" is a required field in this form.');
+                    return false;
+                }
+                if (curPage == 1) {
+                    $('#grn_details').attr('style', 'display: none;');    // hide grn_details.
+                    $('#hire').removeAttr('style');                       // show hire.
+                    $('#cur_page').val(2);
+                    $('#hire_button').val('Variety');
+                    return false;
+                }
+                break;
+
+            case 'next':
+                
+                var vehicle_id = $('#vehicle_id').val();
+                    if(vehicle_id.length > 10) {
+                        alert('Value is more than 10 characters');
+                        $('#vehicle_id').focus();
+                        return false;
+                    }
+                
+                break;
+
+            case 'previous':
+                if (curPage == 2) {
+                    $('#hire').attr('style', 'display: none;');           // hide hire.
+                    $('#grn_details').removeAttr('style');                // show grn_details.
+                    $('#cur_page').val(1);
+                    $('#hire_button').val('Hire');
+                    return false;
+                }
+                return true;
+        }
+        return true;
+    });
+});
+</script>
+
+<?php echo $this->render('footer.phtml') ?>

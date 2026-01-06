@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Testing OpenRico</title>
+<script src="/includes/prototype.js"></script>
+<script src="/includes/rico.js"></script>
+<script type="text/javascript">
+function callRICO()
+{
+ajaxEngine.registerRequest('myRequest', 'ricotest.php');
+ajaxEngine.registerAjaxElement('display');
+ajaxEngine.registerAjaxElement('heading');
+}
+</script>
+</head>
+<body onload=" callRICO();">
+<div id="heading"><h3>Demonstrating Rico</h3></div>
+<input type="button" value="Get Server Data" onclick="ajaxEngine.sendRequest('myRequest');"/>
+<div id="display"><p>This text should be replaced with 
+[ccc]server data ...</p></div>
+</body>
+</html>

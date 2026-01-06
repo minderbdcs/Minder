@@ -1,0 +1,200 @@
+<div style="display: none;" id="postcode_file_dialog" title="Select Postcode File" class="flora">
+    <form id="prompt_postcode_file" name="prompt_postcode_file" method="post" action="" enctype="multipart/form-data">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    File:
+                </th>
+                <td>
+                     <?php echo $this->formFile('postcode_depot_file', '', array()); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<div style="display: none;" id="carriers_codes_file_dialog" title="Select Postcode File" class="flora">
+    <form id="prompt_carriers_codes_file" name="prompt_carriers_codes_file" method="post" action="" enctype="multipart/form-data">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    Carrier:
+                </th>
+                <td>
+                     <?php echo $this->formSelect('carrier_id', '', array(), array_merge(array('' => ''), $this->minder->getCarriersList())); ?>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    File:
+                </th>
+                <td>
+                     <?php echo $this->formFile('carriers_codes_file', '', array()); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<div style="display: none;" id="confirm_delete_dialog" title="Confirm Delete" class="flora">
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                   Warning! This will remove all records from POSTCODE_DEPOT tabple.
+                </th>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    function runImport(evt) {
+        if ($('#postcode_depot_file').val() == '')
+            showErrors(['Select file to import']);
+        else {
+            $.ajaxFileUpload(
+                {
+                    url           : '<?php echo $this->url(array('action' => 'import-austpost', 'controller' => 'postcode-depot', 'module' => 'services')); ?>',
+                    secureuri     : false,
+                    fileElementId : 'postcode_depot_file',
+                    dataType      : 'json',
+                    success       : runImportCallback,
+                    error         : function (data, status, e) {
+                        showErrors([e]);
+                    }
+                }
+            )
+        }
+    }
+
+    function runImportCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#postcode_file_dialog').dialog('close');
+        location.href = '<?php echo $this->url(array('action' => 'crud')); ?>';
+    }
+
+    function closeImportDialog(evt) {
+        $('#postcode_file_dialog').dialog('close');
+    }
+
+    function importAustpostBtnOnClick(evt) {
+        $('#postcode_file_dialog').dialog('open');
+    }
+
+    function deleteAllBtnOnClick(evt) {
+        $('#confirm_delete_dialog').dialog('open');
+    }
+
+    function runDelete(evt) {
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'delete-all-postcodes', 'controller' => 'postcode-depot', 'module' => 'services')); ?>',
+            {},
+            runDeleteCallback
+        );
+    }
+
+    function runDeleteCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#confirm_delete_dialog').dialog('close');
+        location.href = '<?php echo $this->url(array('action' => 'crud')); ?>';
+    }
+
+    function closeConfirmDeleteDialog(evt) {
+        $('#confirm_delete_dialog').dialog('close');
+    }
+
+    function importCarriersCodesBtnOnClick(evt) {
+        $('#carriers_codes_file_dialog').dialog('open');
+    }
+
+    function runCarrierImport(evt) {
+        if ($('#carrier_id').val() == '') {
+            showErrors(['Select Carrier']);
+            return;
+        }
+
+        if ($('#carriers_codes_file').val() == '') {
+            showErrors(['Select file to import']);
+            return;
+        }
+
+        $('#prompt_carriers_codes_file').ajaxSubmit({
+            'url': '<?php echo $this->url(array('action' => 'import-carriers-codes', 'controller' => 'postcode-depot', 'module' => 'services')); ?>',
+            'dataType' : 'json',
+            'success': runCarrierImportCallback
+        });
+    }
+
+    function runCarrierImportCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#carriers_codes_file_dialog').dialog('close');
+    }
+
+    function closeCarrierImportDialog(evt) {
+        $('#carriers_codes_file_dialog').dialog('close');
+    }
+
+$(document).ready(function () {
+    $('#postcode_file_dialog').dialog({buttons: {'Import': runImport, 'Close': closeImportDialog},
+         width: '330px',
+         height: '125px',
+         autoOpen: false
+    }).bind('dialogopen', function(event, ui) {
+        $('#postcode_depot_file').val('');
+        $(this).show();
+    });
+
+    $('#confirm_delete_dialog').dialog({buttons: {'Delete': runDelete, 'Cancel': closeConfirmDeleteDialog},
+         width: '330px',
+         height: '125px',
+         autoOpen: false
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();
+    });
+
+    $('#carriers_codes_file_dialog').dialog({buttons: {'Import': runCarrierImport, 'Close': closeCarrierImportDialog},
+         width: '330px',
+         height: '150px',
+         autoOpen: false
+    }).bind('dialogopen', function(event, ui) {
+        $('#carriers_id').val('');
+        $('#carriers_codes_file').val('');
+        $(this).show();
+    });
+    $('#prompt_carriers_codes_file').ajaxForm();
+
+    $('#import_austpost_btn').click(importAustpostBtnOnClick);
+    $('#delete_all_btn').click(deleteAllBtnOnClick);
+    $('#import_carriers_codes_btn').click(importCarriersCodesBtnOnClick);
+});
+</script>
+    

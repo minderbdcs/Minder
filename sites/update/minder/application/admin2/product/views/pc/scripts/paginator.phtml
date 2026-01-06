@@ -1,0 +1,33 @@
+<?php
+    $showByRange = array(
+        5     => 5,
+        10    => 10,
+        15    => 15,
+        20    => 20,
+        30    => 30,
+        40    => 40,
+        50    => 50,
+        100   => 100,
+        200   => 200,
+        300   => 300,
+        400   => 400,
+        500   => 500,
+        600   => 600,
+        700   => 700,
+        800   => 800,
+        900   => 900,
+        1000  => 1000,
+        5000  => 5000,
+        10000 => 10000,
+        15000 => 15000,
+        20000 => 20000
+    );
+?>
+
+<div style="display: inline;">
+    <label for="show_by">View By : </label>
+    <?php echo $this->formSelect('show_by', $this->itemCountPerPage, array('id' => ''), $showByRange);?>
+
+    <label for="page">Page : </label>
+    <?php echo $this->formSelect('pageselector', $this->current, array('id' => ''), $this->pagesInRange);?>
+</div>

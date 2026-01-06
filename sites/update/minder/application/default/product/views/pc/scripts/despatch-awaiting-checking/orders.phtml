@@ -1,0 +1,203 @@
+<div id="json" style="display: none;"><?php echo json_encode(array('messages' => $this->messages, 'warnings' => $this->warnings, 'errors' => $this->errors)); ?></div>
+  
+<?php
+    $resultsForm = $this->getHelper('sysScreenSearchResult');
+    $resultsForm->setTabs($this->tabList);
+    $resultsForm->setFields($this->fieldList);
+?>
+ <form name="orders_results" id="orders_results" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="order_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div class="sys-screen-title" title="<?php echo $this->orderSysScreenName;?>">Orders List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by',
+                                              $this->navigation['show_by'],
+                                              array('onchange' => 'return submitOrderForm();'),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array('onchange' => 'return submitOrderForm();'),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->orderSelectionNamespace;?>"><?php echo $this->selectedOrdersCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter pick_orders" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->orderSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->orderSelectionNamespace), $this->dataSet, $this->selectedOrders);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->orderSelectionNamespace;?>"></span><?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <li><input type="submit" name="report_format" id="order_report_csv_btn" class="order-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="order_report_xls_btn" class="order-button" value="REPORT: XLS" onclick="return false;" /></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#barcode').focus();
+
+        $('#order_report_csv_btn, #order_report_xls_btn').click(printOrdersAction);
+
+        var jsonData = eval('(' + $('#json').html() + ')');
+        $('#json').remove();
+                        
+        if (jsonData.errors && jsonData.errors.length > 0) {
+            showErrors(jsonData.errors);
+        }
+        if (jsonData.warnings && jsonData.warnings.length > 0) {
+            showWarnings(jsonData.warnings);
+        }
+        if (jsonData.messages && jsonData.messages.length > 0) {
+            showMessage(jsonData.messages);
+        }
+        
+        
+        $("#order_tabs > ul").tabs();
+        
+        $('.pick_orders').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('.row_selector.<?php echo $this->orderSelectionNamespace;?>, .select_all_rows.<?php echo $this->orderSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->orderSelectionModule, 'controller' => $this->orderSelectionController, 'action' => $this->orderSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#order_tabs',
+                'selectionNamespace'  : '<?php echo $this->orderSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->orderSelectionAction;?>',
+                'selectionController' : '<?php echo $this->orderSelectionController;?>'
+            },
+            {
+                'onSuccess' : loadLines
+            }
+        );
+        
+        updateSelectionState('<?php echo $this->orderSelectionNamespace?>');
+        if (parseInt($('.selected_count.<?php echo $this->orderSelectionNamespace?>').html()) > 0)
+            loadLines();
+    });
+    
+    function updateSelectionState(namespace) {
+        var totalRowsOnPage    = 0;
+        var rowsSelectedOnPage = 0;
+        var totalRows          = parseInt($('.total_count.' + namespace).html());
+        var totalRowsSelected  = parseInt($('.selected_count.' + namespace).html());
+        
+        $('.row_selector.' + namespace).each(function() {
+            totalRowsOnPage++;
+            if ($(this).attr('checked') === true) {
+                rowsSelectedOnPage++;
+            }
+        });
+        
+        $('.select_all_rows.' + namespace).each(function (){
+            if (totalRowsOnPage == rowsSelectedOnPage) {
+                $(this).attr('checked', true);
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+        
+        $('.select_complete.' + namespace).each(function (){
+            if (totalRows == totalRowsSelected) {
+                $(this).attr('checked', true);
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+    }
+    
+    function loadLines() {
+        var data = {};
+        
+        if ($('#LINES_LIST_CONTAINER #show_by').length > 0) {
+            data.show_by = $('#LINES_LIST_CONTAINER #show_by').val();
+        }
+        
+        if ($('#LINES_LIST_CONTAINER #pageselector').length > 0) {
+            data.pageselector = $('#LINES_LIST_CONTAINER #pageselector').val();
+        }
+        
+        $('#LINES_LIST_CONTAINER').html('');
+        $('#CONNOTE_SCREEN_CONTAINER').html('');
+        if (parseInt($('.selected_count.<?php echo $this->orderSelectionNamespace?>').html()) > 0) {
+            $('#LINES_LIST_CONTAINER').load(
+                '<?php echo $this->url(array('action' => 'get-lines', 'controller' => 'despatch-awaiting-checking'), null, true);?>', 
+                data,
+                function() {
+                    var jsonData = eval('(' + $('#json').html() + ')');
+                    $('#json').remove();
+                
+                    if (jsonData.errors && jsonData.errors.length > 0) {
+                        showErrors(jsonData.errors);
+                        return;
+                    }
+                
+                    if (jsonData.messages && jsonData.messages.length > 0) {
+                        showMessage(jsonData.messages);
+                    }
+                    
+                    $('#LINES_LIST_CONTAINER #pageselector, #LINES_LIST_CONTAINER #show_by').change(function() {
+                        loadLines();
+                    });
+                }
+            );
+        }
+    }
+    
+    function submitOrderForm() {
+        $('#orders_results').submit();
+    }
+
+    function printOrdersAction() {
+        var linesForm = $('#orders_results');
+        $('#REPORT_FORMAT').remove();
+        linesForm.prepend('<input type="hidden" id="REPORT_FORMAT" name="report_format" value="' + $(this).val() + '" />');
+        var oldAction = linesForm.attr('action');
+        linesForm.attr('action', '<?php echo $this->url(
+                                    array(
+                                        'action' => 'print', 
+                                        'controller' => 'despatch-awaiting-checking', 
+                                        'selection_namespace' => $this->orderSelectionNamespace), 
+                                    null, true);?>').submit();
+        linesForm.attr('action', oldAction);
+    }
+    /* ]]> */
+</script>

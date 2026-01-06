@@ -1,0 +1,36 @@
+still to do
+
+requests from david
+
+on the replenish menu
+	choose the company to work on 
+	- do via company_id of the sys_user
+
+in nextproduct
+	order by priority and location seq
+	currently only orders by priority
+
+in getfromlocn
+	no conveyor locations
+	no handheld locations
+
+done
+in nextproduct
+	either show only THE 1 top priority 5 item
+	or the next 5 priority 10 or greater items
+
+	click accept to get them
+	check dont already have requests already on the device
+
+in gettoso
+	order by priority
+
+in getfromlocn 
+	order by priority and location seq
+
+scan the too location
+	(and check it)
+
+in gettoqty
+	check H2 header and layout
+

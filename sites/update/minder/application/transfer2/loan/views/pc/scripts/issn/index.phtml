@@ -1,0 +1,396 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2 title="<?php echo $this->issnSsName;?>"><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<?php
+
+    echo $this->searchForm;
+?>
+
+<div id="issn_container">
+</div>
+
+<?php
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.sysScreens['<?php echo $this->issnNamespace;?>']) {
+            $('#issn_container').minderSearchResult(response.sysScreens['<?php echo $this->issnNamespace;?>']);
+        }
+
+        $(document).dequeue();
+    }
+    
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->issnNamespace;?>':
+                paginator = $('#issn_container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#issn_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function setSelection(namespace, sysScreen) {
+        $('.selected-container.' + namespace).html(sysScreen.selectedRowsTotal);
+
+        var rowsOnPage = 0;
+
+        switch (namespace) {
+            case '<?php echo $this->issnNamespace;?>':
+                rowsOnPage = $('#issn_container .data-set:first tr').length;
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+
+        var totalRows  = parseInt($('.total-container.' + namespace).html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == sysScreen.selectedRowsOnPage) {
+            $('.select_all_rows.' + namespace).attr('checked', true);
+        } else {
+            $('.select_all_rows.' + namespace).removeAttr('checked');
+        }
+
+        if (totalRows == sysScreen.selectedRowsTotal) {
+            $('.select_complete.' + namespace).attr('checked', true);
+        } else {
+            $('.select_complete.' + namespace).removeAttr('checked');
+        }
+
+        $('.row_selector.' + namespace).each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (sysScreen.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $.each(response.sysScreens, setSelection);
+
+        $(document).dequeue();
+    }
+
+    function loadData(namespace) {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        var containerId = '';
+
+        switch (namespace) {
+            case '<?php echo $this->issnNamespace;?>':
+                containerId = 'issn_container';
+                break;
+            default:
+                throw 'Unknown namespace "' + namespace + '"';
+        }
+        
+        dataToSend.sysScreens[namespace] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function issnTabContainerOnPageChanged(evt) {
+        loadData('<?php echo $this->issnNamespace;?>');
+    }
+
+    function issnTabContainerOnShowByChanged(evt) {
+        loadData('<?php echo $this->issnNamespace;?>');
+    }
+    
+    function issnTabContainerOnPreSort(evt) {
+    }
+
+    function issnTabContainerOnSort(evt) {
+        loadData('<?php echo $this->issnNamespace;?>');
+    }
+
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+
+        dataToSend.push({
+            'name': 'sysScreens[<?php echo $this->issnNamespace;?>]',
+            'value': []
+        });
+
+        $('#barcode').val('').parent().block();
+        $('#search_form_container').block();
+        $(document).queue(function() {
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#issn_container > div, #search_form_container').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+    
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        switch (sysScreen) {
+            case '<?php echo $this->issnSsName;?>' :
+                nameSpace = '<?php echo $this->issnNamespace?>';
+                break;
+            default:
+                throw 'Unknown Sys Screen: "' + sysScreen + '"';
+        }
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(nameSpace);
+    }
+
+    function getSelectedRows(namespace) {
+        var selectedRows = parseInt($('.selected-container.' + namespace).html());
+        return isNaN(selectedRows) ? 0 : selectedRows;
+    }
+
+    function onUpdateButtonClick(evt) {
+        var ssnIdInput = $('#TRANSFER_ISSN_SEARCH_FORM [name="ISSN"]');
+        var locnIdInput = $('#TRANSFER_ISSN_SEARCH_FORM [name="LOCATION_INTO"]');
+        if (ssnIdInput.val() !== '') {
+            ssnIdInput.minderCheckBarcodeAsync();
+        }
+
+        if (locnIdInput.val() !== '') {
+            locnIdInput.minderCheckBarcodeAsync();
+        }
+    }
+
+    function initButtons() {
+        $('#TRANSFER_ISSN_SEARCH_FORM button[name=SEARCH_BUTTON]').unbind('click.transfer-issn').bind('click.transfer-issn', onUpdateButtonClick);
+    }
+
+    function onBarcodeParseError(evt) {
+        var $_target = $(evt.target);
+
+        showErrors([evt.parseResult.errorMsg]);
+        $_target.val('');
+    }
+
+    function searchIssn(ssnId) {
+        var dataToSend = {
+            'ssnId' : ssnId,
+            'sysScreens' : {}
+        };
+
+        var containerId = 'issn_container';
+
+        dataToSend.sysScreens['<?php echo $this->issnNamespace;?>'] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Searching for ISSN.');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search-issn'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function transferSelectedIssns(location) {
+        var dataToSend = {
+            'sysScreens' : {},
+            'location'   : location
+        };
+
+        var containerId = 'issn_container';
+
+        dataToSend.sysScreens['<?php echo $this->issnNamespace;?>'] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Transferring ISSNs.');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'transfer-to-location'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onSysScreenButtonClick(buttonName) {
+        $('button[name=' + buttonName + ']').click();
+    }
+
+    function onBarcodeParseSuccess(evt) {
+        var $_target = $(evt.target);
+
+        switch (evt.parseResult.paramDesc.param_name) {
+            case 'BARCODE':
+                $_target.val('');
+                searchIssn(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+            case 'LOCATION':
+                $_target.val('');
+                transferSelectedIssns(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+            case 'SCREEN_BUTTON':
+                $_target.val('');
+                onSysScreenButtonClick(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+        }
+    }
+
+    function initBarcodeFields() {
+        $('#TRANSFER_ISSN_SEARCH_FORM [name="LOCATION_INTO"]').minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->ssnBarcodeDescriptor;?>, <?php echo $this->locationBarcodeDescriptor;?>, <?php echo $this->screenButtonBarcodeDescriptor;?>]})
+                .bind('parse-error', onBarcodeParseError)
+                .bind('parse-success', onBarcodeParseSuccess);
+
+        $('#TRANSFER_ISSN_SEARCH_FORM [name="ISSN"]').minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->ssnBarcodeDescriptor;?>, <?php echo $this->locationBarcodeDescriptor;?>, <?php echo $this->screenButtonBarcodeDescriptor;?>]})
+                .bind('parse-error', onBarcodeParseError)
+                .bind('parse-success', onBarcodeParseSuccess);
+    }
+
+    function deleteSelectedIssns() {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        var containerId = 'issn_container';
+
+        dataToSend.sysScreens['<?php echo $this->issnNamespace;?>'] = {
+            'paginator' : $('#' + containerId).minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#' + containerId + ' > div').block($('<?php echo $this->SysScreenWaitPrompt('Removing selected ISSN.');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'delete-selected-issns'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#' + containerId + ' > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#issn_container').minderSearchResult(<?php echo json_encode($this->issnJsSearchResults);?>);
+        $('#issn_container').minderSearchResult({autosorter:true, customSort:true});
+        $('#issn_container').minderSearchResult(<?php echo json_encode($this->issnJsSearchResultsDataset);?>);
+
+        $('#issn_container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', issnTabContainerOnPageChanged)
+            .bind('show-by-changed', issnTabContainerOnShowByChanged)
+            .bind('pre-sort', issnTabContainerOnPreSort)
+            .bind('sort', issnTabContainerOnSort);
+
+        initBarcodeFields();
+        initButtons();
+        $('#TRANSFER_ISSN_SEARCH_FORM [name="ISSN"]').focus();
+    });
+    
+  
+/* ]]> */
+</script>
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+            <ul class="toolbar">
+                {{each $item.data.buttons}}
+                    <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+</script>
+<?php echo $this->render('footer.phtml'); ?>

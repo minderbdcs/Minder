@@ -1,0 +1,848 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array('autocomplete' => 'off');
+    //$attributesForSelect = array('onchange'=>'seek_changed(this.name)');
+    $attributesForSelect = array();
+?>
+
+<!-- flash messages -->
+<?php 
+    echo $this->messenger()->all(); 
+?>
+<!-- flash messages -->
+
+<form name="main" id="main" action="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'products', 'action' => 'index', 'from' => $this->from), null, true); ?>" method="post">
+<input type="hidden" value="<?php echo $this->from ?>" name="from" id="from" />
+<h2><?php echo $this->pageTitle; ?></h2>
+                <table>
+                    <tr>
+                        <td>
+                            Product ID:
+                        </td>
+                        <td>
+                            <?php echo $this->formText('prod_id', selectFilterValue('prod_id', $this->conditions), $attributes, $this->productIdList); ?>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Short Description:
+                        </td>
+                        <td colspan="3">
+                            <?php echo $this->formText('short_desc', selectFilterValue('short_desc', $this->conditions), $attributes + array('style' => 'width: 100%;')); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Long Description:
+                        </td>
+                        <td colspan="3">
+                            <?php echo $this->formText('long_desc', selectFilterValue('long_desc', $this->conditions), $attributes + array('style' => 'width: 100%;')); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Product type:
+                        </td>
+                        <td>
+                            <?php echo $this->formSelectStrict('prod_type', selectFilterValue('prod_type', $this->conditions), $attributes, $this->productTypeList); ?>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Stock Flag:
+                        </td>
+                        <td>
+                            <?php echo $this->formSelectStrict('stock', selectFilterValue('stock', $this->conditions), $attributes, $this->stockList); ?>
+                        </td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Inventory Status:
+                        </td>
+                        <td>
+                            <?php echo $this->formSelectStrict('issn_status', selectFilterValue('issn_status', $this->conditions), $attributes, $this->statusList); ?>
+                        </td>
+                        <?php if(!empty($this->ssnTypeName) && $this->ssnTypeName != 'FALSE' && $this->ssnTypeName != 'F' ) { ?>
+                        <td>
+                            <?php echo $this->ssnTypeName; ?>
+                        </td>
+                        <td>
+                            <?php echo $this->formSelectStrict('ssn_type',
+                                                   selectFilterValue('ssn_type', $this->conditions),
+                                                   array('onchange' => 'updateSsnTypeII()'),
+                                                   $this->ssnTypeList); ?>
+                        </td>
+                        <?php } else { ?>
+                        <td></td>    
+                        <td></td>    
+                        <?php } ?>
+                    </tr>
+                 </table>
+            <ul class="toolbar">
+                <li><?php echo $this->formSubmit('action', 'SEARCH', array('onclick' => 'frmSubmit()')); ?></li>
+                <li><?php echo $this->formSubmit('action', 'CLEAR', array('onclick' => 'return frmClear()')) ?></li>
+            </ul>
+    <div style="border-top: 1px solid #999999; font-weight: bold;">
+
+<?php if($this->tabShow) { ?> 
+    </div>
+        <div id="tabs" class="ui-tabs-container">
+            <ul>
+                <li><a href="#tab1"><span><b>1</b></span></a></li>
+                <li><a href="#tab2"><span><b>2</b></span></a></li>
+                <li><a href="#tab3"><span><b>3</b></span></a></li>
+            </ul>
+        <div id="tab1">
+    <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <table style="width:99%">
+            <tr>
+                <td>
+                    <div style="float:left;">
+                        <b>
+                            Selected: <span  id="selected_num">0</span>
+                        </b>
+                    </div>
+                </td>
+<?php if ($this->from == 'transfer-order' || $this->from == 'pick-order' || $this->from == 'fso') : ?>
+                <td>
+                    <div>
+                        <b>
+                            Total Selected Qty =
+                            <?php echo $this->formText('total_qty', $this->qtyProducts1, array('readonly' => true, 'style' => 'width:8ex;text-align:right;')); ?>
+                            <!-- <span id="total_qty"><?php echo $this->qtyProducts1; ?></span> -->
+                        </b>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <b>
+                            Required Qty for Order:
+                            <?php echo $this->formText('required_qty1', $this->requiredQty1, array('style' => 'width:8ex;text-align:right;')); ?>
+                        </b>
+                    </div>
+                </td>
+<?php endif ?>
+            </tr>
+        </table>
+    </div>
+            <div>
+                Select All Rows on all pages
+                <?php echo $this->formCheckbox('select_complete', '', array()); ?>
+                <label for='show_by1'>View By : </label>
+                <?php echo $this->formSelect('show_by1',
+                                             $this->navigation['show_by1'],
+                                             array('onchange' => 'onPaginatorChange()'),
+                                             array(  5 => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                   100 => 100));?>
+                <label for='pageselector1'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector1',
+                                                   $this->navigation['pageselector1'],
+                                                   array('onchange' => 'onPaginatorChange()'),
+                                                   $this->pages1); ?>
+            </div>
+        <table id="table1" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+                <th>
+                <?php echo $this->formCheckbox('select_all',
+                                               '',
+                                               array('onclick' => 'selectAll(this)'));?>
+                </th>
+<?php
+    foreach ($this->headers1 as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->lines1) > 0) {
+        for ($i = 0; $i < count($this->lines1); $i++) {
+            $productLine = $this->lines1[$i];
+            echo '<tr>';
+            echo '<th class="line">';
+            echo $this->formCheckbox($productLine->id,
+                                    $productLine->id,
+                                    array("class" => 'line_selector',
+                                          'checked' => selectFilterValue($productLine->id, $this->conditions),
+                                          "onclick" => "showSelected(this, 'auto')"
+                                    ));
+            echo '</th>';
+            foreach($this->headers1 as $propertyName => $v) {
+                    if ((is_string($productLine->items[$propertyName]) || is_integer($productLine->items[$propertyName])) && array_key_exists($productLine->items[$propertyName], $this->issnDescription)) {
+                        $tooltip = $this->issnDescription[$productLine->items[$propertyName]];
+                    } else {
+                        $tooltip = 'No description';
+                    }
+                    $val = $productLine->items[$propertyName];
+                    echo '<td title="' . $tooltip .'">'. $this->escape($val) . '</td>'."";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers1 as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <div id='num_rec'>
+                            <b>
+                            Total
+                            <?php echo $this->numRecords1 . " records. ";?>
+                            <?php echo "Show from " . ($this->navigation['show_by1'] * $this->navigation['pageselector1'] + 1); ?>
+                            <?php echo " to " . ($this->navigation['show_by1'] * $this->navigation['pageselector1'] + $this->maxno1);?>
+                            </b>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <b>
+                                Total On Hand Qty = <span id="onHandQty"><?php echo $this->onHandQty;?></span>
+                            </b>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <b>
+                                Total Available Qty = <span id="availableQty"><?php echo $this->availableQty; ?></span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </div>
+
+        <div id="tab2">
+    <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <table style="width:99%">
+            <tr>
+                <td>
+                    <div style="float:left;">
+                         <b>
+                            Selected: <span  id="selected_num">0</span>
+                        </b>
+                    </div>
+                </td>
+<?php if ($this->from == 'transfer-order' || $this->from == 'pick-order' || $this->from == 'fso') : ?>
+                <td>
+                    <div>
+                        <b>
+                            Total Selected Qty =
+                            <?php echo $this->formText('total_qty', $this->qtyProducts2, array('readonly' => true, 'style' => 'width:8ex;text-align:right;')); ?>
+                            <!-- <span id="total_qty"><?php echo $this->qtyProducts2; ?></span> -->
+                        </b>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <b>
+                            Required Qty for Order:
+                            <?php echo $this->formText('required_qty2', $this->requiredQty2, array('style' => 'width:8ex;text-align:right;')); ?>
+                        </b>
+                    </div>
+                </td>
+<?php endif ?>
+            </tr>
+        </table>
+    </div>
+            <div>
+                Select All Rows on all pages
+                <?php echo $this->formCheckbox('select_complete', '', array()); ?>
+                <label for='show_by2'>View By : </label>
+                <?php echo $this->formSelect('show_by2',
+                                             $this->navigation['show_by2'],
+                                             array('onchange' => 'onPaginatorChange()'),
+                                             array(  5 => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                   100 => 100));?>
+                <label for='pageselector2'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector2',
+                                                   $this->navigation['pageselector2'],
+                                                   array('onchange' => 'onPaginatorChange()'),
+                                                   $this->pages2); ?>
+            </div>
+        <table id="table2" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+                <th>
+                <?php echo $this->formCheckbox('select_all',
+                                               '',
+                                               array('onclick' => 'selectAll(this)'));?>
+                </th>
+<?php
+    foreach ($this->headers2 as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->lines2) > 0) {
+        for ($i = 0; $i < count($this->lines2); $i++) {
+            $productLine = $this->lines2[$i];
+            echo '<tr>';
+            echo '<th class="line">';
+            echo $this->formCheckbox($productLine->id,
+                                    $productLine->id,
+                                    array("class" => 'line_selector',
+                                          'checked' => selectFilterValue($productLine->id, $this->conditions),
+                                          "onclick" => "showSelected(this, 'auto')"
+                                    ));
+            echo '</th>';
+            foreach($this->headers2 as $propertyName => $v) {
+                    if ((is_string($productLine->items[$propertyName]) || is_integer($productLine->items[$propertyName])) && array_key_exists($productLine->items[$propertyName], $this->issnDescription)) {
+                        $tooltip = $this->issnDescription[$productLine->items[$propertyName]];
+                    } else {
+                        $tooltip = 'No description';
+                    }
+                    $val = $productLine->items[$propertyName];
+                    echo '<td title="' . $tooltip . '">'. $this->escape($val) . '</td>'."";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+            echo "<tr><th/>";
+        foreach($this->headers2 as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <div id='num_rec'>Total
+                            <b>
+                            <?php echo $this->numRecords2 . " records. ";?>
+                            <?php echo "Show from " . ($this->navigation['show_by2'] * $this->navigation['pageselector2'] + 1); ?>
+                            <?php echo " to " . ($this->navigation['show_by2'] * $this->navigation['pageselector2'] + $this->maxno2);?>
+                            </b>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <b>
+                                Total On Hand Qty = <span id="onHandQty"><?php echo $this->onHandQty;?></span>
+                            </b>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <b>
+                                Total Available Qty = <span id="availableQty"><?php echo $this->availableQty; ?></span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </div>
+
+        <div id="tab3">
+    <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <table style="width:99%">
+            <tr>
+                <td>
+                    <div style="float:left;">
+                        <b>
+                            Selected: <span  id="selected_num">0</span>
+                        </b>
+                    </div>
+                </td>
+<?php if ($this->from == 'pick-order' || $this->from == 'fso') : ?>
+                <td>
+                    <div>
+                        <b>
+                            Total Selected Qty =
+                            <?php echo $this->formText('total_qty', $this->qtyProducts3, array('readonly' => true ,'style' => 'width:8ex;text-align:right;')); ?>
+                            <!-- <span id="total_qty"><?php echo $this->qtyProducts3; ?></span> -->
+                        </b>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <b>
+                            Required Qty for Order:
+                            <?php echo $this->formText('required_qty3', $this->requiredQty3, array('style' => 'width:8ex;text-align:right;')); ?>
+                        </b>
+                    </div>
+                </td>
+<?php endif ?>
+            </tr>
+        </table>
+    </div>
+            <div>
+                Select All Rows on all pages
+                <?php echo $this->formCheckbox('select_complete', '', array()); ?>
+                <label for='show_by3'>View By : </label>
+                <?php echo $this->formSelect('show_by3',
+                                             $this->navigation['show_by3'],
+                                             array('onchange' => 'onPaginatorChange()'),
+                                             array(  5 => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                   100 => 100));?>
+                <label for='pageselector3'>Page : </label>
+                <?php echo $this->formSelectStrict('pageselector3',
+                                                   $this->navigation['pageselector3'],
+                                                   array('onchange' => 'onPaginatorChange()'),
+                                                   $this->pages3); ?>
+            </div>
+        <table id="table3" class="withborder tablesorter" style="width:99%">
+            <thead>
+            <tr>
+                <th>
+                <?php echo $this->formCheckbox('select_all',
+                                               '',
+                                               array('onclick' => 'selectAll(this)'));?>
+                </th>
+<?php
+    foreach ($this->headers3 as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->lines3) > 0) {
+        for ($i = 0; $i < count($this->lines3); $i++) {
+            $productLine = $this->lines3[$i];
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox($productLine->id,
+                                    $productLine->id,
+                                    array("class" => 'line_selector',
+                                          'checked' => selectFilterValue($productLine->id, $this->conditions),
+                                          "onclick" => "showSelected(this, 'auto')"
+                                    ));
+            echo '</th>';
+            foreach($this->headers3 as $propertyName => $v) {
+                    $val = $productLine->items[$propertyName];
+                    if ((is_string($productLine->items[$propertyName]) || is_integer($productLine->items[$propertyName])) && array_key_exists($productLine->items[$propertyName], $this->issnDescription)) {
+                        $tooltip = $this->issnDescription[$productLine->items[$propertyName]];
+                    } else {
+                        $tooltip = 'No description';
+                    }
+                    echo '<td title="' . $tooltip .'">'. $this->escape($val) . '</td>'."";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers3 as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:100%">
+                <tr>
+                    <td>
+                        <div id='num_rec'>
+                        <b>Total
+                            <?php echo $this->numRecords3 . " records. ";?>
+                            <?php echo "Show from " . ($this->navigation['show_by3'] * $this->navigation['pageselector3'] + 1); ?>
+                            <?php echo " to " . ($this->navigation['show_by3'] * $this->navigation['pageselector3'] + $this->maxno3);?>
+                        </b>
+                        </div>
+                    </td>
+                    <td>
+                        <div><b>Total On Hand Qty = <span id="onHandQty"><?php echo $this->onHandQty;?></span></b></div>
+                    </td>
+                    <td>
+                        <div>
+                        <b>
+                        Total Available Qty = <span id="availableQty"><?php echo $this->availableQty; ?></span>
+                        </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        </div>
+    </div>
+<?php if ($this->from == 'pick-order' || $this->from == 'fso') : ?>
+    <ul class="toolbar" style="clear: both;">
+        <li>
+            <?php 
+                $addAttrs = array('onclick' => 'return frmSubmit(this);', 'class' => 'action_button');
+                if ($this->minder->defaultControlValues['CONFIRM_WITH_NO_PROD'] != 'T')
+                    $addAttrs['disabled'] = 'disabled';
+                echo $this->formSubmit('action', 'ADD', $addAttrs);
+                
+            ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'ADD & CONTINUE', array('onclick' => 'return frmSubmit(this);', 'disabled' => 'disabled'/*, 'class' => 'action_button'*/)) ?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'CANCEL ADD') ?>
+        </li>
+    </ul>
+<?php else : ?>
+    <ul class="toolbar" style="clear: both;">
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: TXT', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: XML', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+        <li>
+            <?php echo $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return frmSubmit();'))?>
+        </li>
+    </ul>
+<?php endif ?>
+    <div id='filter' style="display:none">
+        <input type='text' value='' class='flt' id="active_tab" name="active_tab">
+    </div>
+<?php } ?>
+</form>
+
+<div class="hidden" id="DESCRIPTION_FILTER_SYNTAX">
+<h4>Filter syntax:</h4>
+<table>
+    <tr>
+        <th>Wildcard</th>
+        <td>- %,</td>
+    </tr>
+    <tr>
+        <th>Logical operators</th>
+        <td>- AND, OR, NOT</td>
+    </tr>
+</table>
+<br />
+<h4>Examples:</h4>
+<table>
+    <tr>
+        <th><i>TORCH BODY% AND NOT %T150%</i></th>
+        <td>- show all products wich have in description TORCH BODY but not T150</td>
+    </tr>
+    <tr>
+        <th><i>TORCH BODY% OR PLASMA%</i></th>
+        <td>- show all products wich have in description TORCH BODY or PLASMA</td>
+    </tr>
+</table>
+</div>
+
+
+<script type="text/javascript">
+<!--
+var cacheValue = 50;
+$(document).ready( function () {
+        $.ajaxSetup({async: false,
+                     complete: onAjaxSuccess,
+                     error: onAjaxError,
+                     beforeSend: onAjaxBeforeSend});
+        $("#table1").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+        $("#table2").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+        $("#table3").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+        $('#table1').dragCols({
+            'drop': savePosition,
+            'params': ['<?php echo $this->url(array('module'    => 'warehouse',
+                                                   'controller' => 'settings',
+                                                   'action'     => 'save-position')) ?>', 'products', 'index']
+        });
+        $('#table2').dragCols({
+            'drop': savePosition,
+            'params': ['<?php echo $this->url(array('module'    => 'warehouse',
+                                                   'controller' => 'settings',
+                                                   'action'     => 'save-position')) ?>', 'products', 'index']
+        });
+        $('#table3').dragCols({
+            'drop': savePosition,
+            'params': ['<?php echo $this->url(array('module'    => 'warehouse',
+                                                   'controller' => 'settings',
+                                                   'action'     => 'save-position')) ?>', 'products', 'index']
+        });
+        //$("#short_desc").autocomplete;
+        //$("#long_desc").autocomplete;
+        $("#tabs > ul").tabs({selected: <?php echo $this->activeTab - 1; ?>});
+        $("#tab1 #select_complete").bind("click", selectWholeTable);
+        $("#tab2 #select_complete").bind("click", selectWholeTable);
+        $("#tab3 #select_complete").bind("click", selectWholeTable);
+        $("#required_qty1").bind("keyup", checkRequired).keyup();
+        $("#required_qty2").bind("keyup", checkRequired).keyup();
+        $("#required_qty3").bind("keyup", checkRequired).keyup();
+        showSelected($("#tab1 #select_all").get(0), "init");
+        showSelected($("#tab2 #select_all").get(0), "init");
+        showSelected($("#tab3 #select_all").get(0), "init");
+        
+        $('#short_desc').tooltip({
+            bodyHandler: function() {
+                return $("#DESCRIPTION_FILTER_SYNTAX").html();
+            }
+        });
+        $('#long_desc').tooltip({
+            bodyHandler: function() {
+                return $("#DESCRIPTION_FILTER_SYNTAX").html();
+            }
+        });
+<?php
+
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'products',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+});
+
+function checkRequired()
+{
+    if (!$('#total_qty').length) {
+        return;
+    }
+    var fieldToColor = $('#total_qty', $(this).parent().parent().parent().parent())[0];
+    var requiredQty = $('#required_qty' + getSelectedTab()).val();
+    if (parseInt(fieldToColor.value) >= parseInt(requiredQty)) {
+        <?php if ($this->minder->defaultControlValues['CONFIRM_WITH_NO_PROD'] != 'T') {?>
+            $('.action_button').removeAttr('disabled');
+        <?php }?>
+        $(fieldToColor).css("background-color", "#00FF00");
+    } else {
+        <?php if ($this->minder->defaultControlValues['CONFIRM_WITH_NO_PROD'] != 'T') {?>
+            $('.action_button').attr('disabled', 'disabled');
+        <?php }?>
+        $(fieldToColor).css("background-color", "#FF0000");
+    }
+}
+
+function limitChanged()
+{
+    frmSubmit();
+    return true;
+}
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function selectWholeTable()
+{
+    var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+    var checkOnOff = this.checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    calcOther(this, $($(this).parent().parent()[0]));
+    return true;
+}
+
+function checkKeys(e)
+{
+    if (e.keyCode == 13) {
+        frmSubmit();
+    }
+    return true;
+}
+function frmClear()
+{
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (
+            this.id != "show_by1" && this.id != "pageselector1"
+            && this.id != "show_by2" && this.id != "pageselector2"
+            && this.id != "show_by3" && this.id != "pageselector3"
+            ) {
+            this.selectedIndex = 0;
+        }
+        });
+    
+    return false;
+}
+
+function calcOther(element, method)
+{
+    var countEl =   0;
+    var from    =   $('#from').val();
+    if ('auto' == method) {
+        var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = element.checked;
+    } else if ('init' == method) {
+        var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = 'init';
+    } else {
+        var container_id = '#' + $(method)[0].id;
+        var method = element.checked;
+    }
+    $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 'products', 'module' => 'warehouse')); ?>',
+             { field:       'QTY',
+               activeTab:   container_id,
+               method:      method,
+               id:          element.id,
+               value:       element.value,
+               from:        from
+             }, function(json) {
+                   var answer = eval(json);
+                   $("#selected_num", container_id).text(answer.selected_num);
+                   if ($('#total_qty').length) {
+                       $("#total_qty", container_id)[0].value = (answer.total_qty);
+                       $("#required_qty" + getSelectedTab()).keyup();
+                   }
+               });
+}
+
+function show(n)
+{
+    frmSubmit();
+    return true;
+}
+
+// Return current tab.
+function getSelectedTab()
+{
+    return parseInt($('#tabs > ul').tabs().data('selected.tabs') + 1);
+}
+
+function frmSubmit()
+{
+    if (arguments.length) {
+        var button = arguments[0];
+        $(button.form).append('<input type="hidden" name="action" value="' + button.value + '" />');
+    }
+    $('#active_tab').val(getSelectedTab());
+    document.forms.main.submit();
+    return true;
+/*
+var req = $('#required_qty', $('#tab' + selected)).val();
+$('input[name=required_qty]').val(req);
+*/
+}
+
+<?php
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'ssn',
+                        'action'     => 'seek'));
+?>
+
+function updateSsnTypeII()
+{
+    $.ajax(
+           {
+            type: "GET",
+            url: "<?php echo $url; ?>",
+            cache: false,
+            data: {
+                   field:     "generic",
+                   ssn_type: $("#ssn_type").get(0).value
+            },
+            success: function (data) {
+                $("#generic").get(0).length = 0;
+                var options = eval('(' + data + ')');
+                var i = 0;
+                $("#generic").get(0).options[i] = new Option('', '');
+                for (var key in options) {
+                    i++;
+                    var newOpt = new Option(options[key], key);
+                    $("#generic").get(0).options[i] = newOpt;
+                }
+            },
+            error: function () {
+                alert("Try again");
+            }
+           }
+          );
+}
+
+function updateSsnTypeIII()
+{
+$.ajax(
+       {
+        type: "GET",
+        url: "<?php echo $url; ?>",
+        cache: false,
+        data: {
+            field:     "ssn_sub_type",
+            ssn_type: $("#ssn_type").get(0).value,
+            generic:  $("#generic").get(0).value
+        },
+        success: function (data) {
+            $("#ssn_sub_type").get(0).length = 0;
+            var options = eval('(' + data + ')');
+            var i = 0;
+            $("#ssn_sub_type").get(0).options[i] = new Option('', '');
+            for (var key in options) {
+                i++;
+                var newOpt = new Option(options[key], key);
+                $("#ssn_sub_type").get(0).options[i] = newOpt;
+            }
+        },
+        error: function () {
+            alert("Try again");
+        }
+       }
+      );
+}
+
+function onPaginatorChange() {
+    if ($('#main input[type="hidden"][name="action"]').length < 1) {
+        $('<input type="hidden" name="action" />').appendTo('#main');
+    }
+    $('#main input[type="hidden"][name="action"]').val('search');
+    frmSubmit();
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

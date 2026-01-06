@@ -1,0 +1,1194 @@
+<?php echo $this->render('header.phtml'); ?>
+<div class="errors" style="display: none;" id ="div_errors">
+    <li id="js_error"></li>
+</div>
+
+<?php if ($this->connote_result!='') {?>
+	<div class="messages" id ="div_errors">
+	    <li><?php echo $this->connote_result; ?></li>
+	</div>
+<?php } ?>
+
+<input name="tmp_selected_order" type="hidden" id="TMP_SELECTED_ORDER" value="<?php echo $this->escape($this->selected_order);?>">
+<input name="order_lines_opened"  type="hidden" id="ORDER_LINES_OPENED" value="<?php echo $this->escape($this->orderStatus['LINES_OPENED'])?>">
+<input name="order_lines_completed" type="hidden" id="ORDER_LINES_COMPLETED" value="<?php echo $this->escape($this->orderStatus['LINES_COMPLETED'])?>">
+
+<form id="sel_tr" action="/minder/trolley" method="post">
+<input type="hidden" name="restore_view" value="true">
+Location: 
+<?php echo $this->formSelect('selected_trolley', $this->selected_trolley,
+                                         null , array_merge(array(''=>''), $this->trolleys)); ?>&nbsp;
+<input id="TOGGLE_VIEW" type="button" value="DISPLAY <?php if ($this->view_toogle == 'trolley') {?>STANDARD<?php } else { ?>TROLLEY<?php } ?>" style="background-color: lightgreen;">
+Order No: 	 
+<?php echo $this->formSelect('order_num', $this->selected_order,
+	array("onchange"=>"copyId();"), $this->orders_list); ?>&nbsp;
+<input type="submit" value="DISPLAY ORDER" style="background-color: lightgreen;" 
+onclick="dontToogle();">
+&nbsp;
+
+Supplier List=<?php
+if($this->supplier_list) { ?>
+<input id="supplier_list" type="button" value="TRUE" style="background-color: red;">
+<?php } else { ?> 
+<input id="supplier_list" type="button" value="FALSE" style="background-color: lightyellow;">
+<?php } ?>	
+&nbsp;
+<!-- 
+<input type="button" id="hide" value="HIDE" style="background-color: lightgreen;"
+	onclick="toogle_side(); return false;">
+ -->
+</form>
+
+
+<script type="text/javascript">
+<!--
+function dontToogle() {
+	$('#supplier_list').after("<input type=\"hidden\" name=\"toogle_view\" value=\"false\"");
+}
+
+function toogle_side() {
+	$('#sides_panel').toggle();
+}
+
+<?php
+    $descriptor = $this->getHelper('SymbologyPrefixDescriptor');
+    $paramDescription = $descriptor->getDescription('SALESORDER');
+    
+    $salesorderPrefix = '';
+    
+    if (reset($paramDescription['PREFIX_ARRAY'])) {
+        $salesorderPrefix = current($paramDescription['PREFIX_ARRAY']);
+    }
+    
+?>
+function copyId() {
+//	$('#order_num')[0].value = ']A0C' + $('#order_num_dd')[0].value;
+
+    var keyPressEvt = jQuery.Event("keypress");
+    keyPressEvt.keyCode = 13;
+    $('#barcode_input').val('<?php echo $salesorderPrefix; ?>' + $('#order_num').val());
+    $('#barcode_input').trigger(keyPressEvt);
+}
+//-->
+</script>
+
+<?php if ($this->view_toogle=='trolley') { ?>
+
+
+<?php
+    $slots = $this->slots;
+    $x_dim = max(array_keys($slots));
+    $y_dim = 1;
+    foreach ($slots as $subSlots) {
+        $y_dim = max($y_dim, max(array_keys($subSlots)));
+    }
+    $slot_orders = $this->slot_orders;
+
+
+    ?>
+<table width="100%">
+  <tr>
+    <td>
+    
+		<table cellpadding="10"  cellspacing="10" style="border: 1px solid black;">
+		<?php for($j=$y_dim; $j>0; $j--) { ?> 
+			<tr style="height: 90px;">
+				<?php for($i=1; $i<=$x_dim; $i++) { ?>
+				
+					<?php
+						$no = $qty = null; 
+						$border_color = 'black';
+						$has_popup = false;
+						$orders = array();
+						if (isset($slots[$i][$j])) {
+							if(isset($slots[$i][$j]['no']) && isset($slots[$i][$j]['qty'])) {
+								$no = $slots[$i][$j]['no'];
+								$qty = $slots[$i][$j]['qty'];
+							} else {
+							 	$no = null;
+								$qty = null;
+							}
+							if ($slots[$i][$j]['status']=='CL') {
+																
+								$color = 'white';	
+								$border_color  = 'white';
+												
+								$qty = '';
+								$orders = array();
+							} else {
+								$color = 'yellow';
+								$has_popup = true;
+								
+								if ($qty=='') {
+									$color = 'lightyellow';
+								}	
+								
+								if (isset($slot_orders[$slots[$i][$j]['slot_name']])) {
+									$orders = $slot_orders[$slots[$i][$j]['slot_name']];
+									$color = '#D8FF99';
+								} else {
+									$orders = array();
+								}
+								
+							}
+							
+						// new emergency fix
+						
+							$qty = 0;
+						
+							if(isset($slot_orders[$slots[$i][$j]['slot_name']])) {
+//								var_dump($slot_orders[$slots[$i][$j]['slot_name']]); die();
+								foreach ($slot_orders[$slots[$i][$j]['slot_name']] as $po) {
+//										var_dump($po, $qty);
+										if ($po['PICK_ORDER']==$this->selected_order) {
+											$qty=$qty+$po['ISSN_QTY'];
+										}
+								}
+							}
+							
+							if ($qty==0) {
+								$qty = '';
+							}							
+							
+						} else {
+							$color = 'white';	
+							$border_color  = 'white';					
+						}
+					?>
+					
+				<td id="container_<?php echo $slots[$i][$j]['slot_name']; ?>" 
+	style="width: 180px; border: 1px solid <?php echo $border_color; ?>; padding: 3px; background-color: <?php echo $color; ?>;"
+					<?php if ($has_popup) { echo "onClick=\"show_slot_popup($i$j)\""; }?>>
+					<input type="hidden" id="slot_<?php echo $no; ?>" value="<?php echo $slots[$i][$j]['slot_name']; ?>" />
+					<table width="100%" cellpadding="0" cellspacing="0" style="border: none;">
+						<tr>
+							<td style="font-size: 10px;" class="caption_<?php echo $no;?>">
+								<?php if ($qty!='') echo $slots[$i][$j]['slot_name']; ?>&nbsp;
+								<br><br>
+							</td>
+						</tr>
+						<tr>
+							<td id="qty_<?php echo $no; ?>" class="caption_<?php echo $no; ?>" style="font-size: 64px; font-weight: bold; text-align: center;">
+								<?php echo $qty; ?>
+							</td>
+						</tr>
+						<tr>
+							<td id="qty_<?php echo $no; ?>" class="caption_<?php echo $no; ?>" style="font-size: 20px; text-align: center;">
+								<br><?php echo substr($no, -6); ?>
+							</td>
+						</tr>
+					</table>
+					
+<?php if ($has_popup) {?>
+					<div id="slot_popup_<?php echo "$i$j"; ?>" class="flora" title="Slot orders" style="display: none;">
+						<table width="100%">
+							<tr>
+								<td><b>Product:</b> <?php echo $slots[$i][$j]['no']; ?></td>
+								<td><b>Location:</b> <?php echo $slots[$i][$j]['slot_name']; ?></td>
+							</tr>
+							<tr>
+								<td>
+									<b>Description:</b> <?php echo $slots[$i][$j]['prod_desc']; ?>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<hr>
+									<table width="100%">
+										<thead>
+											<tr>
+												<th><b>Order No:</b></th>
+												<th><b>Qty:</b></th>
+											</tr>
+										</thead>
+										<tbody>
+	<?php
+		foreach ($orders as $order) { 
+	 ?>
+	 										<tr>											
+												<td><?php echo $order['PICK_ORDER']; ?></td>
+												<td id="o_<?php echo $order['PICK_ORDER']; ?>_p_<?php echo $slots[$i][$j]['no']; ?>_qty"><?php echo $order['ISSN_QTY']; ?></td>
+											</tr>
+	<?php
+		} 
+	 ?>											
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</div>
+					<script type="text/javascript">
+					$(document).ready(function(){
+					 	$('#slot_popup_<?php echo "$i$j"; ?>').dialog({buttons: {
+					 			'CLOSE': function(){
+										$('#slot_popup_<?php echo "$i$j"; ?>').dialog('close');
+					        		}
+					        },
+					        modal: true,
+					        width: '400px',
+							height: '250px',       
+					        resizable: false,
+							draggable: true,
+							position: 'center',
+					        autoOpen: false,
+					    
+                        }).bind('dialogopen', function(event, ui) {
+                            $(this).show();     
+                        });                    
+					});
+					</script>				
+<?php }?>					
+				</td>
+				
+				
+				<?php } ?>		
+			</tr>
+		<?php } ?>
+		</table>
+<?php } ?>
+			
+<?php if ($this->view_toogle=='standard') { 
+
+	$totalProducts =0; $tmpArray = array();
+	
+	foreach ($this->rows as $row) {
+		if (!isset($tmpArray[$row['order_id']])) {
+			$totalProducts++;
+			$tmpArray[$row['order_id']] = 0;
+		}
+	}
+	
+	
+	
+	?>			
+			<div id="table_items">
+			    <table id="rows_table" class="withborder tablesorter" style="margin-bottom: 0;">
+			     <thead>
+			        <tr>
+						<th><input type="checkbox" id="select_all_rows"
+						<?php if (count($this->rows_selected)==$this->total_orders) {?>
+								checked="checked" 
+						<?php } ?>
+						></th>
+						<th>Order #</th>
+						<th>Location</th>
+						<th>Product ID</th>
+						<th>SSN_ID</th>
+						<th>Description</th>
+						<th>Qty</th>
+						<th>From WH</th>
+						<th>From Location</th>
+                        <th>Status</th>
+			        </tr>
+			     </thead>
+			     <tbody>
+<?php
+foreach ($this->rows as $rowKey => $row) { ?>			     	
+			     	<tr>
+			     		<td><input class="rows" type="checkbox" id="<?php echo $rowKey; ?>"
+			     			<?php if (isset($this->rows_selected[$rowKey])) { ?>
+			     			 checked="checked"
+			     			<?php } ?>
+			     		onClick="selectRow(this);"></td>
+			     		<td><?php echo $row['order_id']; ?></td>
+			     		<td><?php echo $row['location']; ?></td>
+			     		<td><?php echo $row['prod_id']; ?></td>
+			     		<td><?php echo $row['ssn']; ?></td>
+			     		<td><?php echo $row['description']; ?></td>
+			     		<td><?php echo $row['qty']; ?></td>
+			     		<td><?php echo $row['from_wh']; ?></td>
+			     		<td><?php echo $row['from_location']; ?></td>
+                        <td><?php echo $row['pid_status']; ?></td>
+			     	</tr>
+<?php } ?>
+			     </tbody>
+			    </table>
+			<br>
+			<form id="reportForm" action="<?php echo $this->url(array('action' => 'report', 'controller' => 'trolley'), null, true);?>">
+				<table>
+				  <tr style="height: 25px;">
+				    <td><input type="submit" name="do" value="REPORT: CSV" style="width: 120px; background-color: lightgreen;"></td>
+				    <td><input type="submit" name="do" value="REPORT: XLS" style="width: 120px; background-color: lightgreen;"></td>
+				    <!-- <td><input type="submit" name="do" value="REPORT: XML" style="width: 120px; background-color: lightgreen;"></td>   -->
+				    <!-- <td><input type="submit" name="do" value="REPORT: TXT" style="width: 120px; background-color: lightgreen;"></td>  -->
+				    <td><input type="button" name="do" value="CANCEL" style="width: 120px; background-color: lightgreen;"></td>
+				  </tr>
+				</table>
+			</form>
+			<table width="100%">
+				<tr>
+					<td>Total Orders Lines Selected: <span id="rows_selected"><?php echo count($this->rows_selected); ?></span></td>
+					<td>Total Product Codes Selected: <span id="prods_selected"><?php echo $this->selected_prod; ?></span></td>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>Total Records: <span id="total_rows"><?php echo count($this->rows) ?></span></td>
+					<td>Total Product Codes Displayed: <span id="total_prods"><?php echo $this->total_prod ?></span></td>
+					<td>&nbsp;</td>
+				</tr>
+			</table>
+			
+			    
+			<script type="text/javascript">
+				$('#select_all_rows').click(function(){
+                    var status = $(this).attr('checked');
+					$.getJSON('/minder/trolley/mark-action-ajax',
+                    {row_key: 'all', status: status},
+					function (data) {
+						$('#rows_selected').html(data.selected);
+                        $('#prods_selected').html(data.selected_prod);
+					})
+					
+					if($('#select_all_rows')[0].checked==true) {
+						$('input.rows[type=checkbox]').attr('checked', 'true');
+					} else {
+						$('input.rows[type=checkbox]').removeAttr('checked');
+					}
+					
+					return;
+				});
+				
+				 function  selectRow(node){
+					var id = $(node).attr('id');
+                    var status = $(node).attr('checked');
+					$.getJSON('<?php echo $this->url(array('action' => 'mark-action-ajax', 'controller' => 'trolley'), null, true);?>',
+					{row_key: id, status: status},
+					function (data) {
+						$('#rows_selected').html(data.selected);
+                        $('#prods_selected').html(data.selected_prod);
+					});
+					return;
+				}
+			</script>
+						    
+			</div>
+<?php } ?>			
+<!--  input panel below -->
+
+			<br>
+			<form action="#">
+			<table cellpadding="3" cellspacing="3">
+			  <tr style="height: 25px;">
+			  	<td>Last Scanned:</td>
+			  	<td><input id="last_scanned_id" type="text" value="" style="width: 120px;" disabled="disabled"></td>
+			  	<td id="last_scanned_desc">&nbsp;</td>
+			  	<td>&nbsp;
+			  		<!--<input id="getaddress" type="button" value="Get Address" style="width: 120px; background-color: lightgreen;">-->
+			  	</td>
+			  	<td rowspan="3">
+			  		Instructions:&nbsp;
+				    <?php
+						if(empty($this->external_instructions) && empty($this->internal_instructions)) { ?>
+							<input id="supplier_list" type="button" value="FALSE" style="background-color: lightyellow;"><hr>
+					<?php } else { ?>
+					<input id="supplier_list" type="button" value="TRUE" style="background-color: red;"><hr>						
+				    <div id="instructions_tabs" style="width:99%" class="ui-tabs-container">
+				        <ul>
+				            <li><a href="#int_tab"><span><b>Internal</b></span></a></li>
+				            <li><a href="#ext_tab"><span><b>External</b></span></a></li>
+				        </ul>
+				        <div id="int_tab">			
+				        	<?php echo $this->internal_instructions; ?>&nbsp;
+						</div>
+				        <div id="ext_tab">			  	
+				        	<?php echo $this->external_instructions; ?>&nbsp;  	
+						</div>
+						<script type="text/javascript">
+						<!--
+						$(document).ready(function(){
+						    $("#instructions_tabs > ul").tabs();
+						});
+						--></script>
+					</div>
+					<?php } ?>&nbsp; 
+			  	</td>			
+			  	<td>&nbsp;</td>  	
+			  </tr>
+			  <tr style="height: 25px;">
+			    <td style="width: 150px;">Barcode Input:</td>
+			    <td style="width: 150px;"><input type="text" id="barcode_input" name="barcode_input" style="width: 120px;" onkeypress="barcodeInputing(event); return void(0);"></input></td>
+			    <td style="width: 150px;"><input type="button" name="do" value="Accept" style="width: 120px; background-color: lightgreen;" onclick="accept1(); return false;"></td>
+			    <td style="width: 150px;"><input type="button" name="do" id="acceptX" value="Accept X" style="width: 120px; background-color: lightgreen;" onclick="accept2(); return false;"></td>
+			    <td>&nbsp;</td>
+			  </tr>
+			  <tr style="height: 25px;">
+			    <td><input type="button" name="do" value="CANCEL" style="width: 120px; background-color: lightgreen;" onclick="location.href='<?php echo $this->url(array('controller' => 'despatches'), null, true);?>'; return false;"></td>
+			    <td><input type="button" id="connote" name="do" value="Connote" style="width: 120px; background-color: lightgreen;"></td>
+                <td><input type="button" id="cancel_order_btn" value="CANCEL ORDER" style="width: 120px; background-color: red;" onclick="return false;"></td>
+			    <td>&nbsp;<!-- <input type="button" name="do" value="REPORT:Activity" style="width: 120px; background-color: lightgreen;"> --></td>
+			    <td>&nbsp;<!-- <input type="button" id="viewrevisions" name="do" value="View Revisions" style="width: 120px; background-color: lightgreen;">--></td>
+			    <td>&nbsp;</td>
+			  </tr>
+			  <tr style="height: 25px;">
+			    <td><input type="button" id="reprint1" name="do" value="RePrint Enclosures" style="width: 120px; background-color: lightgreen;"></td>
+			    <td><input type="checkbox" id="cl" value="cl" style="vertical-align:middle !important;" checked="checked"> Cover Letter</td>
+			    <td><input type="checkbox" id="sl" value="sl" style="vertical-align:middle !important;"> Supplier List</td>
+			    <td><input type="button" id="getaddress1" name="do" value="Get Address" style="width: 120px; background-color: lightgreen;"></td> 
+			    <td>&nbsp;<!-- <input type="button" id="check_imports" name="do" value="Check Imports" style="width: 120px; background-color: lightgreen;">--></td>
+			  </tr>
+			</table>
+			</form>
+
+<div class="flora" id="dialog-cancel-order" title="Reason for cancelling" style="display: none;">
+    This reason will be applied to all selected orders:<br />
+    <?php echo $this->formSelect('reason', null, array('id' => 'cancel_order_reason'), $this->cancelOrderReasons);?>
+</div>
+
+
+
+
+			
+			<br /><br />
+			<div id="table_items" <?php echo (count($this->completedLines) > 0)? '': 'style="display: none;"';?>  >
+			    <table id="scanned_items" class="withborder tablesorter" style="margin-bottom: 0;">
+			     <thead>
+			        <tr>
+			            <?php
+			                foreach ($this->headers as $header) {
+			                    echo '<th>'. $this->escape($header) . '</th>';
+			                }
+			            ?>
+			        </tr>
+			     </thead>
+			     <tbody>
+                    <?php
+                        $rowNo = 0;
+                        foreach ($this->completedLines as $prodDesc) {
+                            $rowNo++;
+                    ?>
+                    <tr class="<?php echo (($rowNo % 2) == 0) ? 'even' : 'odd';?>">
+                        <?php
+                            foreach ($this->headers as $fieldName => $header) {
+                                echo '<td>'. ((isset($prodDesc[$fieldName]))? $this->escape($prodDesc[$fieldName]) : '-') . '</td>';
+                            }
+                        ?>
+                    </tr>
+                    <?php }?>
+			     </tbody>
+			    </table>
+			</div>
+
+    
+	</td>
+    <td id="sides_panel">
+    
+<?php 
+
+if ($this->view_toogle=='trolley') {
+
+		$sides = $this->sides;
+		
+		$left_side = $sides['VL'];
+		$right_side = $sides['VR'];
+		
+?>
+		
+		    <div id="side_tabs" style="width:99%" class="ui-tabs-container">
+		        <ul>
+		            <li id="left_tab_caption"><a href="#left_tab"><span><b>Left</b></span></a></li>
+		            <li id="right_tab_caption"><a href="#right_tab"><span><b>Right</b></span></a></li>
+		        </ul>
+		        <div id="left_tab">			
+		        	
+		        	
+		<?php if ($left_side!=null) { ?>
+				<table width="275">
+					<tr>
+						<td id="vl" style="background-color: lightyellow; height: 24px; text-align: center; vertical-align: middle;">
+							<b>Left</b>
+						</td>
+					</tr>
+				</table>
+				<table id="left_side_table" class="withborder tablesorter" width="275">
+					<thead>
+						<tr>
+							<th>
+								Pos
+							</th>
+							<th>
+								Barcode
+							</th>
+							<th>
+								Qty
+							</th>
+							<th>
+								Desc
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+		<?php
+		
+		$j=0;
+		foreach ($left_side as $pos=>$row) {
+			$has_popup = true;
+			
+			if ($row['qty']=='') {
+                continue;
+				$row['barcode'] = '';
+			}
+			
+            $j++;
+			if (isset($slot_orders[$row['name']])) {
+				$orders = $slot_orders[$row['name']];
+			} else {
+				$orders = array();
+			}	
+			
+		
+		?>			
+					<tr id="container_<?php echo $row['name']; ?>" <?php if ($has_popup) { echo "onClick=\"show_slot_popup('vl$j')\""; }?>>
+						<input type="hidden" id="slot_<?php echo $row['barcode'] ?>" value="<?php echo $row['name']; ?>" />
+						<td class="container_<?php echo $row['barcode']; ?>">
+		<?php echo $pos; ?>&nbsp;
+        <?php if ($has_popup) {?>
+                            <div id="slot_popup_<?php echo "vl$j"; ?>" class="flora" title="Slot orders" style="display: none;">
+                                <table width="100%">
+                                    <tr>
+                                        <td><b>Product:</b> <?php echo $row['barcode']; ?></td>
+                                        <td><b>Location:</b> <?php echo $row['name']; ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <hr>
+                    <?php if ($orders!=null) { ?>
+                                            <table width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th><b>Order No:</b></th>
+                                                        <th><b>Qty:</b></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                            <?php
+                                foreach ($orders as $order) { 
+                             ?>
+                                                     <tr>                                            
+                                                        <td><?php echo $order['PICK_ORDER']; ?></td>
+                                                        <td id="o_<?php echo $order['PICK_ORDER']; ?>_p_<?php echo $row['barcode']; ?>_qty"><?php echo $order['ISSN_QTY']; ?></td>
+                                                    </tr>
+                            <?php
+                                } 
+                             ?>                                            
+                                                </tbody>
+                                            </table>
+                    <?php } ?>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <script type="text/javascript">
+                            $(document).ready(function(){
+                                 $('#slot_popup_<?php echo "vl$j"; ?>').dialog({buttons: {
+                                         'CLOSE': function(){
+                                                $('#slot_popup_<?php echo "vl$j"; ?>').dialog('close');
+                                            }
+                                    },
+                                    modal: true,
+                                    width: '400px',
+                                    height: '250px',       
+                                    resizable: false,
+                                    draggable: true,
+                                    position: 'center',
+                                    autoOpen: false,
+                            
+                                }).bind('dialogopen', function(event, ui) {
+                                    $(this).show();     
+                                });                    
+                            });
+                            </script>                
+        <?php }?>    
+						</td>
+						<td class="container_<?php echo $row['barcode'];?> caption_<?php echo $row['barcode'];?>">
+		<?php echo $row['barcode'] ?>&nbsp;
+						</td>
+						<td id="qty_<?php echo $row['barcode'] ?>"  class="qty_container container_<?php echo $row['barcode'];?> caption_<?php echo $row['barcode'];?>"><?php echo $row['qty'];?></td>
+						<td  class="container_<?php echo $row['barcode']; ?> caption_<?php echo $row['barcode'];?>">
+		<?php echo $row['desc'] ?>&nbsp;
+                        </td>
+					</tr>
+					
+		<?php }; ?>	
+					</tbody>		
+				</table>
+		<?php } else { echo '&nbsp;'; } ?>		
+		        	
+		        	
+		        	
+			</div>
+			<div id="right_tab">			  	
+		        	
+		<?php if ($right_side!=null) { ?>
+				<table width="275">
+					<tr>
+						<td id="vr" style="background-color: lightyellow; height: 24px; text-align: center; vertical-align: middle;">
+							<b>Right</b>
+						</td>
+					</tr>
+				</table>
+				<table id="right_side_table" class="withborder tablesorter" width="275">
+					<thead>
+						<tr>
+							<th>
+								Pos
+							</th>
+							<th>
+								Barcode
+							</th>
+							<th>
+								Qty
+							</th>
+							<th>
+								Desc
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+		<?php
+		
+		$j=0;
+		foreach ($right_side as $pos=>$row) {
+			$has_popup = true;
+			
+			if ($row['qty']=='') {
+                continue;
+				$row['barcode'] = '';
+			}
+			
+            $j++;
+			if (isset($slot_orders[$row['name']])) {
+				$orders = $slot_orders[$row['name']];
+			} else {
+				$orders = array();
+			}	
+			
+		?>			
+					<tr id="container_<?php echo $row['name']; ?>" <?php if ($has_popup) { echo "onClick=\"show_slot_popup('vr$j')\""; }?>>
+					<input type="hidden" id="slot_<?php echo $row['barcode'] ?>" value="<?php echo $row['name']; ?>" />
+						<td>
+		<?php echo $pos; ?>&nbsp;
+        <?php if ($has_popup) {?>
+                            <div id="slot_popup_<?php echo "vr$j"; ?>" class="flora" title="Slot orders" style="display: none;">
+                                <table width="100%">
+                                    <tr>
+                                        <td><b>Product:</b> <?php echo $row['barcode']; ?></td>
+                                        <td><b>Location:</b> <?php echo $row['name']; ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <hr>
+                    <?php if ($orders!=null) { ?>
+                                            <table width="100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th><b>Order No:</b></th>
+                                                        <th><b>Qty:</b></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                            <?php
+                                foreach ($orders as $order) { 
+                             ?>
+                                                     <tr>                                            
+                                                        <td><?php echo $order['PICK_ORDER']; ?></td>
+                                                        <td id="o_<?php echo $order['PICK_ORDER']; ?>_p_<?php echo $row['barcode']; ?>_qty"><?php echo $order['ISSN_QTY']; ?></td>
+                                                    </tr>
+                            <?php
+                                } 
+                             ?>                                            
+                                                </tbody>
+                                            </table>
+                    <?php } ?>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <script type="text/javascript">
+                            $(document).ready(function(){
+                                 $('#slot_popup_<?php echo "vr$j"; ?>').dialog({buttons: {
+                                         'CLOSE': function(){
+                                                $('#slot_popup_<?php echo "vr$j"; ?>').dialog('close');
+                                            }
+                                    },
+                                    modal: true,
+                                    width: '400px',
+                                    height: '250px',       
+                                    resizable: false,
+                                    draggable: true,
+                                    position: 'center',
+                                    autoOpen: false,
+                                
+                                }).bind('dialogopen', function(event, ui) {
+                                    $(this).show();     
+                                });                    
+                            });
+                            </script>                
+        <?php }?>    
+						</td>
+						<td class="caption_<?php echo $row['barcode'];?>">
+		<?php echo $row['barcode'] ?>&nbsp;
+						</td>
+						<td id="qty_<?php echo $row['barcode'] ?>" class="qty_container caption_<?php echo $row['barcode'];?>"><?php echo $row['qty'];?></td>
+						<td class="caption_<?php echo $row['barcode'];?>">
+		<?php echo $row['desc'] ?>&nbsp;
+                        </td>
+					</tr>
+					
+		<?php }; ?>	
+					</tbody>		
+				</table>
+		<?php } else { echo '&nbsp;'; } ?>
+		        	
+		        	
+		        	  	
+			</div>
+			<script type="text/javascript">
+			<!--
+			$(document).ready(function(){
+			    $("#side_tabs > ul").tabs();
+			});
+			--></script>
+		</div>
+
+
+
+<?php } ?>
+
+
+  	</td>
+  </tr>
+</table>
+
+<div id="imports" style="display: none;"></div>
+<div id="revisions" style="display: none;"></div>
+
+<?php
+    if ($this->renderCanceledLines)
+        echo $this->render('trolley/canceled-lines.phtml');
+?>
+
+
+<script type="text/javascript">
+<!--
+
+function onCancelOrderCallback(response) {
+    if (response.errors && response.errors.length > 0) {
+       showErrors(response.errors);
+    }
+
+    if (response.messages && response.messages.length > 0) {
+        showMessage(response.messages);
+    }
+
+    if (response.location && response.location.length > 0)
+        location.href = response.location; 
+}
+
+$(document).ready(function(){
+
+	showError(null, false);
+	//showHideLeft();
+
+    $('#cancel_order_btn').click(function(){
+        $('#dialog-cancel-order').dialog('open');
+        return false;
+    });
+
+    $('#dialog-cancel-order').dialog({buttons: {OK: function(){
+            $.getJSON(
+                '<?php echo $this->url(array('action' => 'cancel-order'));?>',
+                {
+                    'reason': $('#cancel_order_reason').val()
+                },
+                onCancelOrderCallback
+            );
+        $('#cancel_order_reason').val('');
+            $('#dialog-cancel-order').dialog('close');
+        }},
+        autoOpen: false
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();
+    });
+
+	$('#left_side_table').tablesorter({ widgets: ['zebra']});
+	$('#right_side_table').tablesorter({ widgets: ['zebra']});
+	$('#scanned_items').tablesorter({widgets: ['zebra']});
+	$('#rows_table').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+	
+	$('#TOGGLE_VIEW').click(function() {
+        $('#sel_tr').attr('action', '<?php echo $this->url(array('action' => 'toggle-view', 'controller' => 'trolley'), null, true);?>').submit();
+    });
+    
+	$('#check_imports').click(function(){
+		$("#revisions").hide();
+        showError('', false);
+		$("#imports").load("<?php echo $this->url(array('action' => 'check-imports', 'controller' => 'trolley'), null, true);?>");
+		$("#imports").toggle();
+	});
+	
+	$('#viewrevisions').click(function(){
+		$("#imports").hide();
+		$("#revisions").load("<?php echo $this->url(array('action' => 'view-revisions', 'controller' => 'trolley'), null, true);?>");
+		$("#revisions").toggle();
+	});
+	
+	
+	
+	$('#reprint').click(function()
+	{
+        showError('', false);
+		$.getJSON("<?php echo $this->url(array('action' => 'reprint', 'controller' => 'trolley'), null, true);?>", function(json) { 
+			if(json.error!=undefined) {
+				showError(json.error, true);
+				return;
+			}
+			
+			alert(json.msg);
+			$("#imports").load("<?php echo $this->url(array('action' => 'check-imports', 'controller' => 'trolley'), null, true);?>");
+		});
+	});
+
+	$('#reprint1').click(function()
+	{
+        showError('', false);
+		$.getJSON("<?php echo $this->url(array('action' => 'reprint', 'controller' => 'trolley'), null, true);?>", function(json) { 
+			if(json.error!=undefined) {
+				showError(json.error, true);
+				return;
+			}
+			
+			alert(json.msg);
+			$("#imports").load("<?php echo $this->url(array('action' => 'check-imports', 'controller' => 'trolley'), null, true);?>");
+		});
+	});
+	
+	$('#getaddress').click(function()
+	{
+        showError('', false);
+		$.getJSON("<?php echo $this->url(array('action' => 'get-address-ajax', 'controller' => 'trolley'), null, true);?>", function(json) { 
+			if(json.error!=undefined) {
+				showError(json.error, true);
+				return;
+			}
+			
+			alert(json.msg);
+		});
+	});
+
+	$('#getaddress1').click(function()
+	{
+        showError('', false);
+		$.getJSON("<?php echo $this->url(array('action' => 'get-address-ajax', 'controller' => 'trolley'), null, true);?>", function(json) { 
+			if(json.error!=undefined) {
+				showError(json.error, true);
+				return;
+			}
+			
+			alert(json.msg);
+		});
+	});	
+	
+	$('#cl').click(function(){
+		if ($('#cl')[0].checked == true ) {
+			flag = 'true';
+		} else {
+			flag = 'false';
+		}	
+        showError('', false);
+		$.getJSON("<?php echo $this->url(array('action' => 'cover-letter-ajax', 'controller' => 'trolley'), null, true);?>/flag/" + flag, function() {});
+	});
+	
+	$('#sl').click(function(){
+		if ($('#sl')[0].checked == true ) {
+			flag = 'true';
+		} else {
+			flag = 'false';
+		}	
+        showError('', false);
+		$.getJSON("<?php echo $this->url(array('action' => 'supplier-list-ajax', 'controller' => 'trolley'), null, true);?>/supplier-list-ajax/flag/" + flag, function() {});
+	
+	});
+	
+	$('#connote').click(function(){
+        var selectedOrder  = $('#TMP_SELECTED_ORDER').val();
+        var linesOpened    = parseInt($('#ORDER_LINES_OPENED').val());
+        var linesCompleted = parseInt($('#ORDER_LINES_COMPLETED').val());
+        var error          = false;
+        linesOpened    = isNaN(linesOpened)    ? 0 : linesOpened;
+        linesCompleted = isNaN(linesCompleted) ? 0 : linesCompleted;
+        
+        switch (true) {
+            case selectedOrder.length < 1:
+                showError('Select order first.', true);
+                error = true;
+                break;
+            case linesCompleted < 1:
+                showError('No Lines completed for Despatch.', true);
+                error = true;
+                break;
+            case linesOpened != linesCompleted:
+                showError('Order Line is not completed for this Despatch.', true);
+                error = true;
+                break;
+        }
+        
+        if (error !== true) {
+		    location.href = '<?php echo $this->url(array('action' => 'connote', 'controller' => 'trolley'), null, true);?>';
+        }
+		return;
+	});
+	
+	updateTabsCaptionStyle();
+    $('#barcode_input')[0].focus();
+});
+
+function updateTabsCaptionStyle() {
+    var leftTotalQty = 0;
+    var rightTotalQty = 0;
+    
+    $('#right_tab .qty_container').each(function() {
+        rightTotalQty += isNaN(parseInt($(this).html()))? 0: parseInt($(this).html());
+    });
+            
+    $('#left_tab .qty_container').each(function() {
+        leftTotalQty += isNaN(parseInt($(this).html()))? 0: parseInt($(this).html());
+    });
+    
+    if (rightTotalQty > 0)
+        $('#right_tab_caption a, #right_tab_caption span').css('background-image','url("<?php echo $this->baseUrl();?>/scripts/ui/themes/flora/i/tabs_red.png")');
+    else
+        $('#right_tab_caption a, #right_tab_caption span').removeAttr('style');
+        
+    if (leftTotalQty > 0)
+        $('#left_tab_caption a, #left_tab_caption span').css('background-image','url("<?php echo $this->baseUrl();?>/scripts/ui/themes/flora/i/tabs_red.png")');
+    else
+        $('#left_tab_caption a, #left_tab_caption span').removeAttr('style');
+        
+}
+
+                            
+function show_slot_popup(slot_num){
+    $('#slot_popup_'+slot_num).dialog('open');
+}
+                            
+
+
+var last_id      = null;
+var last_barcode = null;
+var countLine    = <?php echo count($this->completedLines);?>;
+var show         = false;
+var last_container_id    = null;
+var last_container_total = null;
+
+
+function accept2() {
+
+	id = last_id;
+	num = last_barcode;
+	
+	qty = $('#qty_' + id)[0].textContent.replace(/^1234567890/g,"");
+	if (qty<5) {
+		showError('Qty must be above 5', true);
+		return;
+	}
+	
+    showError('', false);
+	$.getJSON("<?php echo $this->url(array('action' => 'input', 'controller' => 'trolley'), null, true);?>/barcode_input/"+num+"/qty/"+qty, barcodeInputCallback);
+};
+
+function barcodeInputing(e){
+	if(e.keyCode==13 && barcode!="") {
+		accept1();
+	}
+}
+
+function accept1() {
+	dontToogle();
+	num = $('#barcode_input')[0].value;
+	showError(null, false);
+	
+	$('#barcode_input')[0].value='';
+    $('#barcode_input')[0].focus();
+	
+	$('#error_mes').css('display', 'none');
+	
+	if (num=='') {
+		showError('Incorrect input', true);
+		return;
+	}
+    showError('', false);
+    
+	
+	$.getJSON("<?php echo $this->url(array('action' => 'input', 'controller' => 'trolley'), null, true);?>/barcode_input/"+num+"/qty/1", barcodeInputCallback);
+}
+
+function barcodeInputCallback(json) {
+        if(json.error!=undefined) {
+            showError(json.error, true);
+            return;
+        }
+        
+        if(json.redirect!=undefined) {
+            if(json.message!=undefined) {
+                alert(json.message);
+            }
+            location.href = json.redirect;
+            return;
+        }
+        
+        $('#ORDER_LINES_OPENED').val(json.order_lines_opened);
+        $('#ORDER_LINES_COMPLETED').val(json.order_lines_completed);
+        
+        tt = json.time;
+        locn = json.locn;
+        id = json.id;
+        order_id = json.order_id;
+        desc = json.desc;
+        qty = json.qty;
+        qty_picked = json.qty_picked
+        qty_left = json.qty_left
+        wh = json.wh;
+        old_location = json.old_location;
+        
+        $("#last_scanned_id")[0].value = id;
+        $("#last_scanned_desc")[0].textContent = desc;
+        
+        if (typeof($('#qty_' + id))) {
+            
+            if (last_container_id != null && last_container_total != null && last_container_total > 0) {
+                $('#container_' + last_container_id).css("background-color","#D8FF99");
+                $('.container_' + last_container_id).css("background-color","#D8FF99");
+            }
+            
+            qty = qty_left;
+            $('#qty_' + id)[0].textContent = qty;
+            $('#container_' + json.container_id).css("background-color","limegreen");
+            $('.container_' + json.container_id).css("background-color","limegreen");
+
+            if (json.container_id.search("VL")!=-1) {
+                side = "VL";
+                $('#vl').css("background-color","limegreen");
+                $('#vr').css("background-color","lightyellow");
+            } else if (json.container_id.search("VR")!=-1) {
+                side = "VR";
+                $('#vr').css("background-color","limegreen");
+                $('#vl').css("background-color","lightyellow");
+            } else {
+                side = -1;
+                $('#vr').css("background-color","lightyellow");
+                $('#vl').css("background-color","lightyellow");
+            }
+
+            last_id = id;
+            last_barcode = num;
+            last_container_id    = json.container_id;
+            last_container_total = json.qty_left_total;
+                            
+            if (qty>5) {
+                $('#acceptX')[0].value = 'Accept ' + qty;
+                $('#acceptX').css("background-color","litegreen");
+                $($('#acceptX')[0]).removeAttr('disabled');                
+            } else if (qty <= 5 && qty>0) {
+                $('#acceptX')[0].value = 'Accept X';
+                $('#acceptX').css("background-color","lightgrey");
+                $($('#acceptX')).attr('disabled', 'disabled');
+            } else {
+                $('#acceptX')[0].value = 'Accept X';
+                $('#acceptX').css("background-color","lightgrey");
+                $($('#acceptX')).attr('disabled', 'disabled');
+                
+                $('.caption_' + id).html('');
+                
+                if (json.qty_left_total > 0) {
+                    if (side == -1) {
+                        $('#container_' + json.container_id).css("background-color","#D8FF99");
+                        $('.container_' + json.container_id).css("background-color","#D8FF99");    
+                    }
+                } else {
+                    if (side == -1) {
+                        $('#container_' + json.container_id).css("background-color","lightyellow");
+                        $('.container_' + json.container_id).css("background-color","lightyellow");    
+                    } else {
+                        $('#container_' + json.container_id).remove();
+                        last_id = null;
+                        last_barcode = null;
+                        last_container_id = null;
+                    }
+                }
+            }
+            
+            showTable();
+            addTableLine(tt, order_id, locn, id, desc, qty_picked, wh, old_location);
+            
+            order_id = $('#order_num')[0].value;
+            $('#o_'+order_id+'_p_'+id+'_qty').html(qty_left); 
+            
+            updateTabsCaptionStyle();
+        } else {
+            showError('Not "Literature No" scanned!', true);
+        }
+}
+
+
+
+function showError(message, disabled) {
+    $('#js_error').text(message);
+    if(disabled) {
+        $('#div_errors').css("display", "block");
+        $('#barcode_input')[0].value='';
+        $('#barcode_input')[0].focus();
+    } else {
+        $('#div_errors').css("display", "none")
+    }         
+}
+
+// 'TIMESTAMP', 'Order #', 'Location', 'PROD_ID', 'ISSN', 'SHORT_DESC', 'QTY', 'From WH', 'From Location');
+
+function addTableLine(tt, order_id, locn, prod_id, short_desc, qty_picked, wh, old_location) {
+
+
+//    d = new Date();
+//    th = d.getHours();
+//    tm = d.getMinutes();
+//    ts = d.getSeconds();
+//    
+//    if (th.toString().length==1)
+//    	th = '0' + th;
+//
+//    if (tm.toString().length==1)
+//    	tm = '0' + tm;
+//    	
+//    if (ts.toString().length==1)
+//    	ts = '0' + ts;
+//    	    	    
+//    tt = th + ':' + tm + ':' + ts;
+    
+    var id_line = $('#' + prod_id +'');
+    if(id_line.length == 0) {
+        countLine++;
+        if(countLine % 2 == 0) {
+        	eo = 'even';
+        } else {
+        	eo = 'odd';
+        }
+        
+            $('#scanned_items').append('<tr class="'+eo+'"><td>' + tt + '</td><td>' + order_id + '</td><td>' + locn + '</td><td>' + prod_id + '</td><td>' + short_desc + '</td><td id="' + prod_id + '">' + qty_picked + '</td><td>' + wh + '</td><td>' + old_location + '</td></tr>');
+                    
+    } else {
+        id_line[0].textContent = parseInt(qty_picked);    
+    }
+}
+
+function showTable() {
+    if(!show) {
+        $('#table_items').css('display', 'block');
+        show = true;
+    }    
+}
+
+//-->
+</script>
+
+
+<?php echo $this->render('footer.phtml'); ?>

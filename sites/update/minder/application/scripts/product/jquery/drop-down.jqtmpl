@@ -1,0 +1,9 @@
+<select>
+    {{each($value, $label) $item.data.getOptions()}}
+        {{if $item.data.getValue() == $value}}
+            <option value="{{= $value}}" selected="selected">{{= $label}}</option>
+        {{else}}
+            <option value="{{= $value}}">{{= $label}}</option>
+        {{/if}}
+    {{/each}}
+</select>

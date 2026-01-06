@@ -1,0 +1,214 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php
+    $defaultParams = array(
+        'style' => 'width: 250px;'
+    );
+?>
+
+<?php echo $this->messenger()->all() ?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+ <div style="width:99%;">
+        <table style="width: 100%">
+            <tr>
+                <td>
+                    <b>AWAITING DESPATCH</b> 
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <th>Order No:</th>
+                <td><?php echo $this->formText('order_no', $this->orderNo, $defaultParams); ?></td>
+                <th>Ship Via:</th>
+                <td><?php echo $this->formSelect('ship_via', $this->shipVia, $defaultParams, $this->shipViaList); ?></td>
+            </tr>
+            <tr>
+                <th>Sold To:</th>
+                <td><?php echo $this->formSelect('sold_to', $this->soldTo, $defaultParams, $this->soldToList); ?></td>
+                <th>Contact Name:</th>
+                <td><?php echo $this->formText('contact_name', $this->contactName, $defaultParams); ?></td>
+            </tr>
+            <tr>
+                <th>Company:</th>
+                <td><?php echo $this->formSelect('company_id', $this->companyId, $defaultParams, $this->companyList); ?></td>
+                <th>Despatch Location:</th>
+                <td><?php echo $this->formSelect('despatch_location', $this->despatch, $defaultParams, $this->locationList); ?></td>
+            </tr>
+        </table>
+    </div>
+    <br />
+    <input type="submit" class="green-button" name="action" value="Submit Search" />
+    <input type="button" class="green-button" name="action" value="Clear" id="clear" onclick="return frmClear();" />
+    <input type="submit" class="green-button" name="action" value="Clear Selection" />
+ 
+    <br /><br />
+
+    <hr>
+    <div id="order-list">
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">Orders List</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(5  => 5,
+                                               10 => 10,
+                                               15 => 15,
+                                               20 => 20,
+                                               30 => 30,
+                                               40 => 40,
+                                               50 => 50,
+                                               100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span id="orders_selected">0</span></li>
+    </ul>
+    <table id="pick_orders" class="withborder tablesorter" style="margin-bottom: 0;">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_orders" onclick="selectAll(this)" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody>
+<?php
+    foreach ($this->pickOrders as $pickOrder => $order) {
+        echo '<tr>';
+        echo '<th>';
+        echo $this->formCheckbox($pickOrder, $pickOrder, array('checked' => array_key_exists($pickOrder, $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'showSelected(this)'));
+        echo '</th>';
+        foreach ($this->headers as $key => $value) {
+            if ($key == 'PICK_STATUS') {
+                if (array_key_exists($order[$key], $this->pickStatusDescription)) {
+                    $tooltip = $this->pickStatusDescription[$order[$key]];
+                } else {
+                    $tooltip = 'No description';
+                }
+                echo '<td>' . $this->escape($order[$key]) . '</td>';
+            } else {
+                echo '<td>'. $this->escape($order[$key]) . '</td>';
+            }
+        }
+        echo "</tr>\n";
+    }
+
+
+?>
+<?php if (!count($this->pickOrders)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) : ?>
+                <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" width="100%">
+        <tr>
+            <td style="white-space: nowrap; text-align: right;" colspan="2">&nbsp;</td>
+        </tr>
+        <tr>
+            <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+            <td style="white-space: nowrap; text-align: right;" width="20%">&nbsp;</td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="CONNOTE" disabled="disabled" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: XLS" /></li>
+    </ul>
+</form>
+
+<div id="lines-list" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999;"></div>
+
+<script src="<?php echo $this->baseUrl ?>scripts/jquery.scrollTo-min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    
+    $('#pick_orders').tablesorter({headers:{0:{sorter:false}}, sortList:[[3,0],[2,0]], widgets: ['zebra']});
+    
+    // Mark selected elements.
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: 'init', id: 'select_all'}, showLinesAndShowSelected);
+
+});
+
+// The handler the one element selection.
+function showSelected(target) {
+
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: target.checked, id: target.value, value: target.value}, showLinesAndShowSelected);
+
+}
+function showLinesAndShowSelected() {
+    if ($('#json').length) {
+        var json = eval('(' + $('#json').html() + ')');
+
+        $('#orders_selected').text(json.orders_selected);
+        $('#json').remove();
+        
+        if (!json.orders_selected) {
+            $('#lines-list').hide('normal');
+            //$('.order-button').attr('disabled', true).css('background', '#eee');
+        } else {
+            $('#lines-list').show('normal');
+            //$('.order-button').removeAttr('disabled').css('background', '#fff');
+        }
+        
+        if(json.orders_selected <= 0 || json.with_status_ds <= 0) {
+            $('input[value=CONNOTE]').attr('disabled', true).addClass('disabled').removeClass('order-button'); 
+        } else {
+            $('input[value=CONNOTE]').removeAttr('disabled').css('background', '#fff').addClass('order-button');
+        }
+        
+    }
+    $('#select_all_pick_orders')[0].checked = checkSelected('#pick_orders', '.pick-order-selector');
+
+    if ($('#total_displayed').length) {
+        $('.total_displayed').text($('#total_displayed').text());
+    }
+    if ($('#total_selected').length) {
+        $('.total_selected').text($('#total_selected').text());
+    }
+
+    onAjaxSuccess();
+}
+function selectAll(target) {
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: target.checked, id: 'select_all'}, function(){
+        $('.pick-order-selector').attr('checked', target.checked);
+        showLinesAndShowSelected();
+    });
+}
+function checkSelected(tableId, checkBoxesClass) {
+    var checkBoxes = $(tableId).find(checkBoxesClass);
+    return checkBoxes.length == checkBoxes.filter(':checked').length;
+}
+
+function frmClear()
+{
+    
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+</script>
+
+
+<?php echo $this->render('footer.phtml'); ?>

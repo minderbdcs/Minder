@@ -1,0 +1,238 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all() ?>
+
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+ <div style="width:99%;">
+        <table style="width: 100%">
+            <tr>
+                <td>
+                    <b>AWAITING EXIT:</b> 
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <th>Connote #:</th>
+                <td><?php echo $this->formText('connote_no', $this->connoteNo); ?></td>
+                <th>Ship By:</th>
+                <td><?php echo $this->formSelect('ship_by', $this->shipBy, null, $this->shipByList); ?></td>
+            </tr>
+            <tr>
+                <th>Suburb:</th>
+                <td><?php echo $this->formText('suburb', $this->suburb); ?></td>
+                <th>Post Code:</th>
+                <td><?php echo $this->formText('post_code', $this->postCode); ?></td>
+            </tr>
+            <tr>
+                <th>Payer:</th>
+                <td><?php echo $this->formSelect('payer', $this->payer, null, $this->payerList); ?></td>
+                <th</th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <br />
+    <input type="submit" class="green-button" name="action" value="Submit Search" />
+    <input type="button" class="green-button" name="action" value="Clear" id="clear" onclick="frmClear();" />
+    <br /><br />
+
+    <hr>
+    <div id="order-list">
+        <div style="float: left; font-weight: bold; text-transform: uppercase;">Orders List</div>
+        <div style="position: relative; left:10px;">
+            <label for="results_per_page">View By:</label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(5  => 5,
+                                               10 => 10,
+                                               15 => 15,
+                                               20 => 20,
+                                               30 => 30,
+                                               40 => 40,
+                                               50 => 50,
+                                               100 => 100)) ?>
+            <label for="page">Page:</label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+    </div>
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+        <li style="display: inline;">Selected: <span id="orders_selected">0</span></li>
+    </ul>
+    <table id="awaiting_items" class="withborder tablesorter" style="margin-bottom: 0;">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_orders" onclick="selectAll(this)" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody class="data_set">
+<?php
+    foreach ($this->despatchList as $despatchKey => $despatchValue) {
+        echo '<tr class="ROW-ID-' . $despatchValue['DESPATCH_ID'] . '" row_id="' . $despatchValue['DESPATCH_ID'] . '">';
+        echo '<th>';
+        echo $this->formCheckbox($despatchValue['DESPATCH_ID'], $despatchValue['DESPATCH_ID'], array('checked' => in_array($despatchValue['DESPATCH_ID'], $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'showSelected(this)'));
+        echo '</th>';
+        foreach ($this->headers as $key => $value) {
+            echo '<td>' . $this->escape($despatchValue[$key]) . '</td>';
+        }
+        echo "</tr>\n";
+    }
+
+
+?>
+<?php if (!count($this->despatchList)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) : ?>
+                <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" width="100%">
+        <tr>
+            <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input type="submit" name="action" class="order-button" value="DESPATCH EXIT" "<?php echo $this->exitButton; ?>" /></li>
+        <li><input type="submit" name="action" class="order-button" value="PRINT LABELS" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: CSV" /></li>
+        <li><input type="submit" name="action" class="order-button" value="REPORT: XML" /></li>
+    </ul>
+</form>
+
+<div id="exit-list" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999;"></div>
+
+<div id="CRUD_FORM_CONTAINER"></div>
+<div id="SERVICE_CONTAINER" style="display: none;"></div>
+
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+      $('#awaiting_items').tablesorter({headers:{0:{sorter:false}}, sortList:[[2,0],[2,0]], widgets: ['zebra']});
+      
+      // Mark selected elements.
+      $('#exit-list').load('<?php echo $this->url(array('action' => 'exit-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: 'init', id: 'select_all'}, showLinesAndShowSelected);
+
+      <?php if ($this->minder->isAdmin) {?>
+      $('#awaiting_items .data_set tr').dblclick(function(evt){
+          evt.preventDefault();
+          
+          var recordId = $(this).attr('row_id');
+          $('#CRUD_FORM_CONTAINER').hide();
+          
+          //preparing search envirinment to fetch record
+          $('#SERVICE_CONTAINER').load(
+            '<?php echo $this->url(array('action' => 'crud', 'controller' => 'admin', 'module' => 'default', 'table' => 'pick_despatch'), null, true);?> #frm_PICK_DESPATCH',
+            {action: 'SEARCH', DESPATCH_ID: recordId},
+            function() {
+                //getting edit screen
+                $('#CRUD_FORM_CONTAINER').load(
+                    '<?php echo $this->url(array('action' => 'crud', 'controller' => 'admin', 'module' => 'default', 'table' => 'pick_despatch'), null, true);?>',
+                    {mode: 'edit', record_id: recordId},
+                    function() {
+                        $('#CRUD_FORM_CONTAINER .toolbar input').each(function(){
+                            if ($(this).val() != 'SAVE' && $(this).val() != 'CANCEL') {
+                                $(this).hide();
+                            }
+                        });
+                        
+                        $('#CRUD_FORM_CONTAINER .toolbar input[value=CANCEL]').removeAttr('onclick');
+                        $('#CRUD_FORM_CONTAINER .toolbar input[value=CANCEL]').unbind('click.awaiting_exit');
+                        $('#CRUD_FORM_CONTAINER .toolbar input[value=CANCEL]').bind('click.awaiting_exit', function(evt){
+                            evt.preventDefault();
+                            $('#CRUD_FORM_CONTAINER').hide();
+                            $('#CRUD_FORM_CONTAINER').html('');
+                        });
+                        
+                        $('#CRUD_FORM_CONTAINER .toolbar input[value=SAVE]').removeAttr('onclick');
+                        $('#CRUD_FORM_CONTAINER .toolbar input[value=SAVE]').unbind('click.awaiting_exit');
+                        $('#CRUD_FORM_CONTAINER .toolbar input[value=SAVE]').bind('click.awaiting_exit', function(evt){
+                            evt.preventDefault();
+                            
+                            var dataToSave = {};
+                            
+                            $('#CRUD_FORM_CONTAINER #ajaxmain input').each(function(){
+                                dataToSave[$(this).attr('name')] = $(this).val();
+                            });
+                            dataToSave['action'] = 'SAVE';
+                            
+                            $('#SERVICE_CONTAINER').load(
+                                '<?php echo $this->url(array('action' => 'crud', 'controller' => 'admin', 'module' => 'default', 'table' => 'pick_despatch'), null, true);?> #flash',
+                                dataToSave,
+                                function(){
+                                    var response = $('#SERVICE_CONTAINER #flash').html();
+                                    showMessage([response]);
+                                }
+                            );
+                        });
+                        
+                        $('#CRUD_FORM_CONTAINER').show();
+                    }
+                );
+            }
+          );
+          
+      });
+      <?php }?>
+      /**/
+});
+
+// The handler the one element selection.
+function showSelected(target) {
+
+    $('#exit-list').load('<?php echo $this->url(array('action' => 'exit-lines', 'controller' => 'despatch', 'module' => 'default')); ?>', {method: target.checked, id: target.value, value: target.value}, showLinesAndShowSelected);
+
+}
+
+function showLinesAndShowSelected() {
+  
+    if ($('#json').length) {
+        
+        var json = eval('(' + $('#json').html() + ')');
+        
+        if (!json.total_showed) {
+           $('#orders_selected').text(0);
+           $('#exit-list').hide();
+        } else {
+            $('#exit-list').show('normal');
+            $('#orders_selected').text(json.despatch_selected);
+        }
+        
+    }
+    
+    onAjaxSuccess();
+}
+
+function frmClear()
+{
+    $("form#main input:text").each(function() {
+        this.value = "";
+        });
+    $("form#main select").each(function() {
+        if (this.id != "show_by" && this.id != "pageselector") {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+
+
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

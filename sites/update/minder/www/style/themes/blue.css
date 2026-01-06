@@ -1,0 +1,2238 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-size: 13px;
+  font-family: arial, sans-serif;
+  line-height: 1.23em;
+}
+body,
+form,
+table,
+tr,
+td,
+th,
+h1,
+h2,
+h3,
+h4,
+p,
+img {
+  font-weight: normal;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-size: 100%;
+}
+td {
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  text-align: left;
+}
+table.withborder,
+table.withborder td,
+table.withborder th {
+  border-top: 1px solid #999999;
+  border-bottom: 1px solid #999999;
+  border-collapse: collapse;
+}
+table.withborder td,
+table.withborder th {
+  padding: 2px;
+}
+#left select {
+  width: 23ex;
+}
+a:link,
+a:visited,
+a:hover {
+  color: #333333;
+  text-decoration: none;
+}
+a:hover {
+  color: #003399;
+}
+h1,
+h2,
+h3,
+h4 {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-weight: bold;
+}
+h1 {
+  font-size: 115%;
+  text-transform: uppercase;
+}
+h2 {
+  font-size: 108%;
+  text-transform: uppercase;
+}
+h3 {
+  font-size: 100%;
+}
+h4 {
+  font-size: 100%;
+}
+#header {
+  margin-bottom: 10px;
+}
+#header ul,
+ul#modules {
+  list-style-type: none;
+  padding: 0;
+  border-top: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
+  border-left: 0;
+  border-right: 0;
+  margin: 0;
+}
+#header li,
+ul#modules li {
+  display: inline;
+  padding: 0 10px;
+  line-height: 1.6em;
+  border: 0;
+  border-right: 1px solid #cccccc;
+  margin: 0;
+}
+#header #logo {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+}
+#header #top-nav {
+  float: right;
+}
+#header #top-nav li a {
+  font-weight: bold;
+}
+#header #minder-logo {
+  float: right;
+  clear: both;
+  width: 30px;
+  height: 29px;
+  margin: 3px;
+}
+#header #modules li,
+ul#modules li {
+  font-weight: bold;
+}
+#header #modules li.selected a:link {
+  color: #003399;
+}
+#left {
+  float: left;
+  width: 170px;
+  padding: 0 0 0 10px;
+  border-right: 1px solid #cccccc;
+  margin-bottom: 10px;
+}
+#left h2 {
+  border-top: 1px solid #999999;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+#left ul {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 10px;
+  list-style-type: none;
+}
+#left li {
+  border: 0;
+  border-top: 1px solid #cccccc;
+  padding: 0;
+  margin: 0;
+  line-height: 1.5em;
+}
+#page {
+  margin-left: 190px;
+  border-top: 1px solid #cccccc;
+  /*border-bottom: 1px solid #cccccc;*/
+  padding: 10px 10px;
+}
+#footer {
+  clear: both;
+  margin-top: 20px;
+  padding: 20px 0;
+  border-top: 1px solid #999999;
+  text-align: center;
+}
+#page > h1 {
+  margin-bottom: 20px;
+}
+div.section {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-top: 1px solid #999999;
+  border-bottom: 1px solid #999999;
+}
+div.section + div.section {
+  margin-top: 15px;
+}
+div.section table {
+  width: 100%;
+}
+div.section table td {
+  width: 35%;
+}
+div.section table th {
+  width: 15%;
+}
+div.section > div > .left {
+  display: table-cell;
+  left: 0;
+  top: 0;
+  width: 50%;
+}
+div.section > div > .right {
+  display: table-cell;
+  right: 0;
+  top: 0;
+  width: 0%;
+}
+table.summary,
+table.summary td,
+table.summary th {
+  border-top: 1px solid #999999;
+  border-bottom: 1px solid #999999;
+  border-collapse: collapse;
+  width: 100%;
+}
+table.summary th {
+  background-color: #eeeeff;
+  text-align: right;
+  padding: 2px 5px 2px 2px;
+  width: 15%;
+}
+table.summary td {
+  padding: 2px 2px 2px 5px;
+  width: 35%;
+}
+table.search th {
+  /*background-color: #D1FBA7;*/
+  text-align: right;
+  padding: 2px 5px 2px 2px;
+}
+table.search td {
+  font-weight: bold;
+  text-align: left;
+  padding: 2px 5px 2px 2px;
+}
+ul.toolbar {
+  list-style-type: none;
+  border: 0;
+  padding: 0;
+  margin: 5px 0;
+}
+ul.toolbar li {
+  display: inline;
+  border: 0;
+  padding: 2px 5px 2px 0;
+  margin: 0;
+}
+#flash {
+  border: 3px solid #ff0000;
+  padding: 5px 10px;
+  margin: 5px 10px;
+}
+#message {
+  border: 3px solid #00ff00;
+  padding: 5px 10px;
+  margin: 5px 10px;
+}
+.floats {
+  overflow: hidden;
+  zoom: 1;
+}
+.floats fieldset {
+  border: solid 1px #ccc;
+  float: left;
+  margin-right: .5em;
+  padding: .5em;
+}
+.block-field {
+  margin: .5em 0;
+  clear: both;
+}
+.block-field input {
+  width: auto !important;
+}
+.cl {
+  clear: both;
+}
+.cl_r {
+  clear: right;
+}
+.fl {
+  float: left;
+}
+.fr {
+  float: right;
+}
+ul.float {
+  float: left;
+}
+#tab1,
+#tab2,
+#tab3 {
+  float: left;
+  width: 99%;
+}
+.calendar_header select {
+  width: 11ex;
+}
+.datepicker_header select {
+  width: 11ex;
+}
+.import_fields th {
+  padding: 2px 2px 2px 2px;
+  border-bottom: 1px solid #999999;
+  border-collapse: collapse;
+  background-color: #D1FBA7;
+}
+#sourcelist,
+.field-list {
+  float: left;
+  overflow: auto;
+  height: 250px;
+  min-width: 270px;
+  width: 20%;
+  padding-right: 2px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border: 5px double #CCCCCC;
+  margin-left: 0px;
+  margin-bottom: 10px;
+}
+#importlist {
+  float: left;
+  overflow: auto;
+  height: 250px;
+  min-width: 270px;
+  width: 20%;
+  padding-left: 2px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border: 5px double #CCCCCC;
+  margin-left: 0px;
+  margin-bottom: 10px;
+}
+#columnList {
+  border: 5px double #CCCCCC;
+  float: left;
+  height: 250px;
+  margin-bottom: 10px;
+  min-width: 70px;
+  overflow: auto;
+  padding-bottom: 5px;
+  padding-left: 2px;
+  padding-top: 5px;
+  width: 3%;
+}
+.fields {
+  list-style-type: none;
+  padding: 2px;
+  margin: 0;
+}
+.fields li {
+  /*background-color: #D1FBA7;*/
+  cursor: pointer;
+}
+.fields li input {
+  cursor: pointer;
+  font-weight: bold;
+  border: none;
+  background-color: #e6f8fd;
+  border-bottom: 1px solid #999999;
+  margin: 2px 2px 2px 2px;
+}
+#columnList .fields li input {
+  background-color: #D1FBA7;
+  border-color: -moz-use-text-color -moz-use-text-color #999999;
+  border-style: none none solid;
+  border-width: medium medium 1px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 2px;
+}
+#ignore_column {
+  background-color: #ff0000 !important;
+}
+#sample_table {
+  float: left;
+  width: 500px;
+}
+#lines-info td {
+  white-space: nowrap;
+}
+dt {
+  display: inline;
+}
+dd {
+  display: inline;
+}
+.leftside {
+  float: left;
+  width: 48%;
+  padding: 4px 4px 4px 4px;
+  margin-bottom: 5px;
+}
+.rightside {
+  float: left;
+  width: 48%;
+  padding: 4px 4px 4px 4px;
+  margin-bottom: 5px;
+}
+.label {
+  width: 10ex;
+}
+li.field {
+  list-style-type: none;
+}
+.notes {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 2px solid #000000;
+}
+.rightalign {
+  text-align: right;
+}
+.errors {
+  border: 3px solid #ff0000;
+  padding: 5px 10px;
+  margin: 5px 10px;
+  list-style-type: none;
+}
+.button_toolbar {
+  width: 99%;
+  clear: both;
+}
+tr.form_element td,
+tr.form_element th {
+  padding-bottom: 4px;
+  padding-top: 4px;
+}
+.form_element td {
+  /*background-color: #0066CC;*/
+}
+.ui-tabs-container {
+  float: left;
+}
+#table-wrapper {
+  width: 99%;
+}
+/* Messages */
+.warnings,
+.messages,
+.errors,
+.mdr-warnings,
+.mdr-messages,
+.mdr-errors,
+.restore-warnings,
+.restore-messages,
+.restore-errors {
+  margin: 0;
+  padding: 0 .5em 0 2.5em;
+  margin-bottom: 1em;
+  list-style: none;
+}
+.warnings li,
+.messages li,
+.errors li,
+.mdr-warnings li,
+.mdr-messages li,
+.mdr-errors li,
+.restore-warnings li,
+.restore-messages li,
+.restore-errors li {
+  list-style: none;
+  margin: .5em;
+  padding: 0;
+}
+.warnings,
+.mdr-warnings,
+.restore-warnings {
+  background: #ffffce url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAANkE3LLaAgAAAhRJREFUOE+1km9IU1EYh1+sD8NPgX0qIkiIaIIpFlhqkMyoCYMyCgaDCKoJyQgUUrDCciVpeqUgM2+i5RS3zKX5oXKj2HKLZGgsyDKXJf7BabVEm++vNwK/SCwDLzzcezjv/Z33OecQrfZj1lHOf68x89Q4wWEPDiVr9qw45NIxKpgbuoeXjxzgKQdWGrCGhy/C1XQdPNKIycFu9N/Jdv9zSKQnY9bfXIjQk1Lcr6jAJ28z+LMNhlTKjBlSYqATUf9xBNtP4XWLBer5YnCoAUG3qAxdjqmiYd8+tJ3Tg98dgb/FhLrCfCyGqjE/omKyrwYDt7Tev3YRsSWEA0oaosEMcdfBZzPgtsWExXEreEyBq+40+AEhfQslLQu5cpTOcvdGuKoTxTcJHN6JHxNZeNF6GBwpAI9mggOEm7kE7qRlKmvZGQdrdjz4SwJ4dhOYt6H37i6U79ciuhAnRyk/viWM2YVaQrCKfEtdfFVp6k0Z4btXiqalmDVCFr6FjeiqTJHvNEHmxoVBQpVe3g8Je7fTDsrR0m52EErTCbUy0WgkdFgIzy6sg79yMwJKIjzWDegpjkebmVCfR1AOEjpPSki7qOi20gF+LIPngkda/72B0ybxVsELAfDP9+A5J3jGInqp4Fei6JJap6D+2Yv1vfn0wX2Ght0lwlXhhtAk2IUOoVVoEBShTCgSzPTxmp7sMS9WrIJfhKdgmMjBAHAAAAAASUVORK5CYII=") no-repeat 0.8em 50%;
+  color: #000;
+  border: solid 2px #f0c000;
+}
+.messages,
+.mdr-messages,
+.restore-messages {
+  background: #d8e4f1 url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAANkE3LLaAgAAArNJREFUOE+tk21IU1Ecxm9lXxQrsr5IkX2SvhSoX4L2QXojeyUSS8oytDTBFFQ0LUkylDJzEdZMg8yp822LEhXddNhm7iWXzon5Nl/mXu5sl5LM3Hk6d4NFRULQgYf757nn+d1z7vkfhvnv47T0QHBK+2xenQkS9Rwa+maR3zCCkJRWKxN67vhq31u3M12xopt0wWDmoJ/koJlwQTvhrXlvYIrDrht9oJCA30Fro8qG0GNyosvIQk6fctMCCCEeKUYWPB7/rtvE4sxjIw8J9EGCUpVLUp0NjRobWt6zkBqcaNSzcLvdHoBEy3ssWvQO7xytFdszVDyEH8FB+bJJVCgtqFLZUN3PokbrhFj/CfqZRWip+Jr3XvQ7UPXWClGPBYWvp8D4h+xhmLCElJKOGZR0WSBU2lGudqJC44JIy/m2INJwHq9cxdI5NtzvnMODjmkwEVeFjP/eK9kC4TASJWbcVTjwUO3CI81nCHWLPgBfC6lXqnKhUO5AQr0Z+8qM2HTotoTxi0jMiXr2ETG1M7gkcyC5g0NW7xJyNSs+QG7/d2T2fkVSO4eLUjuixdM4LBpFYGROHcNsERy90GxFHNU1Gs6k4Xw9QfGQ9wR4FQ0S3NIRZFBIcpsL55vmEdtgAbPtyE3PbwwvNCH+FYu07kXkad0Qmgiej/8EVI4RlA4Tz6quy78gjq5iv3CcP4Ud3oMISxcnyezIVn3DHYM33GYnqB5cgHjYhTdWAh5SMEA8W0ltdWLrsYJ3vzRTwKmKyZOV42ieI2iYpc3DEowuE5iWCDppXWsmaKL+2RozIrJkThre8EdbbxZcfiq4Z0BqkxUS4zLU8wQqqvqhZaRJbYitGcPu6EwpDW5c7U4EBYcfzIvMrvgQ80TBxVcqueiil6bQyBPFNBT6r5fXjwbWU635W/AH3U4jaNuElqwAAAAASUVORK5CYII=") no-repeat 0.8em 50%;
+  color: #000;
+  border: solid 2px #3c78b5;
+}
+.errors,
+.mdr-errors,
+.restore-errors {
+  background: #ffcccc url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAANkE3LLaAgAAAjVJREFUOE+tUz1Im1EUvVhBkQ6iwaCDQhFtEeKg2EWUKiJCcRCkg0vRTjUgsdYOUkiHSLFOgg4x/gs6VHHxbxENdkkUsR2iVSgdtMGGatBgjfWcvvd92hDtz9IPDve+99173n333Cfyv7/XIq8wMUHMzMRjdpYf09I+/fW8dyJebG4SGxu/RyDAaEUFFUniDaKD7OwjrK8T29tEMEh4vcTqagxra0QkYq7b2lgqYrsiuY2aGmJpidjaIgAToRChysbCAuH3x/ajUWJ+nvB46BJxyEORR5iaooHJSUbD4Vjw8bF5lStSZc+mp83YuTnuJyaeymORJxgZIYaHidFRYmiI3/f24pI0wYVCdGyMRoMHBggRfhM5F7vIM/T2En19RH8/MTho2IuTkziSHzppfJyorSWysoiMDEZSUijPRZzo7CR6egi3mwbZ4eGNCoxrVFYSZWVEURGRn09YrRSnyBtYLERODpGbG5/s8xEORzxZYyNRVUWUlBB5edRXeInCQqK4mKdOZyx4cZHo6CBcLsJu/7Uf0TLX1xPV1fxss1Huidz3q4ac1dUZP6LNzWaTurrMvmhf9eW8tZURLXV7O9HSwvcFBXwrEjRm4Y5I6a4iCTc1mQHd3WYztWRacw3ta6WU/h8yM+kW8V2fRuu+Igk1NJjBy8s0xnpnx4T2V1a4m5DAFyKeP72JW4H09JCqi1812aU9UPbL5VoN3tN/PmBrUtIDS3JyuSU1tdywIgZU4t3ryT8BByhBA6fCSYEAAAAASUVORK5CYII=") no-repeat 0.8em 50%;
+  color: #000;
+  border: solid 2px #c00;
+}
+td > a {
+  display: block;
+}
+/* table selected row */
+tr.rowselected,
+tr.rowselected td,
+tr.rowselected th {
+  background-color: #bcf2fd;
+}
+/* fix z-index for datepicker to place it above dialog window */
+#datepicker_div {
+  z-index: 1012;
+}
+.report_body {
+  width: 99%;
+  float: left;
+}
+div.report_body > table {
+  clear: both;
+  float: left;
+}
+/* new css button */
+#table {
+  float: left;
+}
+.yellow-button {
+  padding: 0px 0px 0px 0px;
+  background-color: yellow;
+  font-weight: bolder;
+  border: 1px solid;
+}
+.red-button {
+  padding: 0px 0px 0px 0px;
+  background-color: red;
+  font-weight: bolder;
+  border: 1px solid;
+}
+table.tablesorter > thead > tr > th > input[type="checkbox"] {
+  /*background-image: url('/minder/icons/buttonback3.png');*/
+  background-color: #b1db87;
+  color: #b1db87;
+}
+table > tbody > tr > th > input[type="checkbox"] {
+  background: none transparent scroll repeat 0% 0%;
+}
+#search_map {
+  max-height: 200px;
+  overflow: auto;
+}
+.hidden {
+  display: none;
+}
+.edit-variance {
+  cursor: pointer;
+  border: 1px solid;
+  text-align: right;
+  width: 5ex;
+}
+.edit-variance .cell {
+  width: 5ex;
+  font-size: 100%;
+  border: none;
+}
+td.toolbutton {
+  width: 32px;
+  padding: 0px !important;
+}
+.toolbutton[name="add"] {
+  background-image: url(/minder/icons/add.png);
+  width: 16px;
+  height: 16px;
+}
+.toolbutton[name="close"] {
+  background-image: url(/minder/icons/close.png);
+  width: 16px;
+  height: 16px;
+}
+fieldset,
+legend {
+  padding: 3px;
+}
+textarea[disabled="true"],
+input[disabled="true"],
+button[disabled="true"],
+select[disabled="true"],
+textarea[disabled],
+input[disabled],
+button[disabled],
+select[disabled],
+textarea[disabled="disabled"],
+input[disabled="disabled"],
+button[disabled="disabled"],
+select[disabled="disabled"],
+.disabled,
+input#action[disabled="disabled"],
+button#action[disabled="disabled"],
+input#add_action[disabled="disabled"] {
+  background: none;
+  background-color: #eeeeee;
+  color: #000000;
+}
+.mandatory {
+  border: solid 1px !important;
+  border-color: red !important;
+}
+/*----------------SYS SCREEN AREA STYLES START---------------*/
+.sys-screen-title {
+  float: left;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.paginator-container {
+  float: left;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.selected-container-top {
+  clear: both;
+}
+.black-top-border {
+  border-top-color: #999999;
+  border-top-style: solid;
+  border-top-width: 1px;
+}
+/*----------------SYS SCREEN AREA STYLES START---------------*/
+table.tablesorter tbody tr.bad-line.odd td {
+  background-color: #FF2010;
+}
+table.tablesorter tbody tr.bad-line.even td {
+  background-color: #FFA0A0;
+}
+table.tablesorter tbody tr.unchecked.odd td {
+  background-color: darkorange;
+}
+table.tablesorter tbody tr.unchecked.even td {
+  background-color: #fbb450;
+}
+table.tablesorter tbody tr.selected-row.even td,
+table.tablesorter tbody tr.selected-row.odd td,
+table.tablesorter tbody tr.selected-row.even th,
+table.tablesorter tbody tr.selected-row.odd th {
+  background-color: yellow;
+}
+.summary-screen tr {
+  background-color: yellow;
+}
+.summary-screen th {
+  text-align: right;
+}
+.modules-switcher:hover {
+  cursor: pointer;
+}
+/*SFI style block*/
+/*
+body {
+    background-image: url("/minder/custom/siteback.jpg");
+}
+.glossymenu a.menuitem{
+    background: inherit;
+}
+.glossymenu div.submenu{
+    background: inherit;
+}
+/*end of SFI style block*/
+.mdr-with-border,
+div.section.mdr-with-border {
+  border: 1px solid #50adf4;
+}
+.mdr-wait-prompt {
+  background: none repeat scroll 0% 0% #b6d6ee;
+}
+.screen-prompt {
+  font-size: 2em;
+  line-height: 0.5em;
+  color: #0000ff;
+}
+/* This file skins tableSorter */
+table.tablesorter {
+  font-family: arial;
+  background-color: #CDCDCD;
+  margin: 0px 0px 15px;
+  font-size: 8pt;
+  width: 100%;
+  text-align: left;
+}
+table.tablesorter thead tr th,
+table.tablesorter tfoot tr th {
+  border: 1px solid #FFF;
+  padding: 4px;
+  background-color: #b6d6ee;
+}
+table.tablesorter thead tr .header {
+  background-image: url(i/bg.gif);
+  background-repeat: no-repeat;
+  background-position: right;
+  cursor: pointer;
+  text-align: left;
+}
+table.tablesorter thead tr .headerSortUp {
+  background-image: url(i/asc.gif);
+}
+table.tablesorter thead tr .headerSortDown {
+  background-image: url(i/desc.gif);
+}
+table.tablesorter thead tr .headerSortUp,
+table.tablesorter thead tr .headerSortDown {
+  background-color: #50adf4;
+}
+table.tablesorter tbody td {
+  color: #3d3d3d;
+  padding: 4px;
+  background-color: #ffffff;
+  vertical-align: top;
+}
+table.tablesorter tbody tr.odd td {
+  background-color: #bcf2fd;
+}
+table.tablesorter tbody tr.rowselected,
+table.tablesorter tbody tr.rowselected td,
+table.tablesorter tbody tr.rowselected th {
+  background-color: #bcf2fd;
+}
+.ui-wrapper {
+  border: 1px solid #50A029;
+}
+.ui-wrapper input,
+.ui-wrapper textarea {
+  border: 0;
+}
+/* Caution! Ensure accessibility in print and other media types... */
+@media projection, screen {
+  /* Use class for showing/hiding tab content, so that visibility can be better controlled in different media types... */
+  .ui-tabs-hide {
+    display: none;
+  }
+}
+/* Hide useless elements in print layouts... */
+@media print {
+  .ui-tabs-nav {
+    display: none;
+  }
+}
+/* Skin */
+.ui-tabs-nav,
+.ui-tabs-panel {
+  font-family: "Trebuchet MS", Trebuchet, Verdana, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+}
+.ui-tabs-nav.ui-tabs-nav-add-tool {
+  font-size: inherit;
+}
+.ui-tabs-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 3px;
+}
+.ui-tabs-nav:after {
+  /* clearing without presentational markup, IE gets extra treatment */
+  display: block;
+  clear: both;
+  content: " ";
+}
+.ui-tabs-nav li {
+  float: left;
+  margin: 0 0 0 2px;
+  font-weight: bold;
+}
+.ui-tabs-nav a,
+.ui-tabs-nav a span {
+  float: left;
+  /* fixes dir=ltr problem and other quirks IE */
+  padding: 0 12px;
+  background: url('blue/i/tabs.png') no-repeat;
+}
+.ui-tabs-nav.ui-tabs-nav-add-tool a,
+.ui-tabs-nav.ui-tabs-nav-add-tool a span {
+  background: #ff9900 none;
+}
+.ui-tabs-nav a {
+  margin: 5px 0 0;
+  /* position: relative makes opacity fail for disabled tab in IE */
+  padding-left: 0;
+  background-position: 100% 0;
+  text-decoration: none;
+  white-space: nowrap;
+  /* @ IE 6 */
+  outline: 0;
+  /* @ Firefox, prevent dotted border after click */
+}
+.ui-tabs-nav.ui-tabs-nav-add-tool a {
+  margin: 0;
+  padding-left: 12px;
+  line-height: 20px;
+}
+.ui-tabs-nav a:link,
+.ui-tabs-nav a:visited {
+  color: #464646;
+}
+.ui-tabs-nav.ui-tabs-nav-add-tool a:link,
+.ui-tabs-nav a:visited {
+  color: #000;
+}
+.ui-tabs-nav .ui-tabs-selected a {
+  position: relative;
+  top: 1px;
+  z-index: 2;
+  margin-top: 0;
+  background-position: 100% -23px;
+}
+.ui-tabs-nav.ui-tabs-nav-add-tool .ui-tabs-selected a {
+  top: 0;
+  background: #ffda00 none;
+}
+.ui-tabs-nav a span {
+  padding-top: 1px;
+  padding-right: 0;
+  height: 20px;
+  background-position: 0 0;
+  line-height: 20px;
+}
+.ui-tabs-nav .ui-tabs-selected a span {
+  padding-top: 0;
+  height: 27px;
+  background-position: 0 -23px;
+  line-height: 27px;
+}
+.ui-tabs-nav .ui-tabs-selected a:link,
+.ui-tabs-nav .ui-tabs-selected a:visited,
+.ui-tabs-nav .ui-tabs-disabled a:link,
+.ui-tabs-nav .ui-tabs-disabled a:visited {
+  /* @ Opera, use pseudo classes otherwise it confuses cursor... */
+  cursor: text;
+}
+.ui-tabs-nav a:hover,
+.ui-tabs-nav a:focus,
+.ui-tabs-nav a:active,
+.ui-tabs-nav .ui-tabs-unselect a:hover,
+.ui-tabs-nav .ui-tabs-unselect a:focus,
+.ui-tabs-nav .ui-tabs-unselect a:active {
+  /* @ Opera, we need to be explicit again here now... */
+  cursor: pointer;
+}
+.ui-tabs-disabled {
+  opacity: .4;
+  filter: alpha(opacity=40);
+}
+.ui-tabs-nav .ui-tabs-disabled a:link,
+.ui-tabs-nav .ui-tabs-disabled a:visited {
+  color: #8e8e8e;
+}
+.ui-tabs-panel {
+  border: 1px solid #50adf4;
+  padding: 10px;
+  background: #fff;
+  /* declare background color for container to avoid distorted fonts in IE while fading */
+}
+.ui-tabs-panel.ui-tabs-panel-content {
+  border-top: medium none;
+  padding-top: 0;
+}
+.ui-tabs-panel-header {
+  border: 1px solid #50adf4;
+  border-bottom: none;
+  padding: 10px;
+  background: #fff;
+  /* declare background color for container to avoid distorted fonts in IE while fading */
+}
+/*.ui-tabs-loading em {
+    padding: 0 0 0 20px;
+    background: url(loading.gif) no-repeat 0 50%;
+}*/
+/* Additional IE specific bug fixes... */
+* html .ui-tabs-nav {
+  /* auto clear @ IE 6 & IE 7 Quirks Mode */
+  display: inline-block;
+}
+*:first-child + html .ui-tabs-nav {
+  /* auto clear @ IE 7 Standards Mode - do not group selectors, otherwise IE 6 will ignore complete rule (because of the unknown + combinator)... */
+  display: inline-block;
+}
+/*---------------------------* ddaccordion *---------------------------*/
+.glossymenu {
+  margin: 5px 0;
+  padding: 0;
+  width: 168px;
+  /*width of menu*/
+  /*border: 1px solid #9A9A9A;*/
+  border-bottom-width: 0;
+}
+.glossymenu a.menuitem {
+  background: black url('ddaccordion/item-back.png') repeat-x bottom left;
+  font-size: 14px;
+  font-weight: bold;
+  color: black;
+  display: block;
+  position: relative;
+  /*To help in the anchoring of the ".statusicon" icon image*/
+  width: auto;
+  padding: 4px 0;
+  padding-left: 10px;
+  text-decoration: none;
+  border-bottom: 1px solid #000000;
+}
+.glossymenu a.menuitem:visited,
+.glossymenu .menuitem:active {
+  color: black;
+}
+.glossymenu a.menuitem .statusicon {
+  /*CSS for icon image that gets dynamically added to headers*/
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  border: none;
+}
+.glossymenu a.menuitem:hover {
+  background: #DFDCCB;
+  background-image: url('blue/ddaccordion/item-back-hover.png');
+  color: #000000;
+}
+.glossymenu div.submenu {
+  /*DIV that contains each sub menu*/
+  background: white;
+}
+.glossymenu div.submenu ul {
+  /*UL of each sub menu*/
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.glossymenu div.submenu ul li {
+  /*border-bottom: 1px solid blue;*/
+  padding-bottom: 1px !important;
+  color: red;
+}
+.glossymenu div.submenu ul li a {
+  display: block;
+  font-weight: normal;
+  font-size: 12px;
+  color: black;
+  text-decoration: none;
+  padding: 2px 0;
+  padding-left: 10px;
+}
+.glossymenu div.submenu ul li a:hover {
+  background: #DFDCCB;
+  background-image: url('blue/ddaccordion/item-back-hover.png');
+  color: #000000;
+}
+/*---------------------------* /ddaccordion *---------------------------*/
+.mdr-button {
+  padding: 2px 5px;
+  background-image: url('blue/buttons/button-background.png');
+  background-repeat: repeat-x;
+  font-weight: bolder;
+}
+.mdr-button-cancel {
+  padding: 2px 5px;
+  background-image: url('blue/buttons/button-background.png');
+  background-repeat: repeat-x;
+  font-weight: bolder;
+  background-image: none;
+  background-color: #ffff00;
+}
+.mdr-tool-button {
+  padding: 0px;
+  background-image: url('blue/buttons/button-background.png');
+  background-repeat: repeat-x;
+  font-weight: bolder;
+}
+.mdr-tool-button-cancel {
+  padding: 0px;
+  background-image: url('blue/buttons/button-background.png');
+  background-repeat: repeat-x;
+  font-weight: bolder;
+  background-image: none;
+  background-color: #ffff00;
+}
+.toolbar button,
+.toolbar input[type="submit"],
+.toolbar input[type="reset"],
+.toolbar input[type="button"] {
+  padding: 0px;
+  background-image: url('blue/buttons/button-background.png');
+  background-repeat: repeat-x;
+  font-weight: bolder;
+}
+button,
+input {
+  background-color: #ffffff;
+  color: #000000;
+}
+button,
+textarea,
+input[type="text"],
+input[type="password"],
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+select {
+  border: 1px solid #999999;
+}
+button[disabled],
+textarea[disabled],
+input[type="text"][disabled],
+input[type="password"][disabled],
+input[type="submit"][disabled],
+input[type="reset"][disabled],
+input[type="button"][disabled],
+select[disabled] {
+  color: #808080;
+}
+input[type="text"],
+select {
+  width: 30ex;
+}
+input.number {
+  width: 15ex;
+  text-align: right;
+}
+textarea {
+  height: 10ex;
+}
+select {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.ui-dialog-buttonpane button {
+  background-image: url('blue/buttons/button-background.png');
+  background-repeat: repeat-x;
+}
+/* This file skins dialog */
+.flora .ui-dialog,
+.flora.ui-dialog {
+  background-color: #e6f8fd;
+}
+.flora .ui-dialog .ui-dialog-titlebar,
+.flora.ui-dialog .ui-dialog-titlebar {
+  border-bottom: 1px solid #d8d2aa;
+  background: #ff9900 url(i/dialog-title.gif) repeat-x;
+  padding: 0px;
+  height: 28px;
+  _height: 29px;
+}
+.flora .ui-dialog.ui-draggable .ui-dialog-titlebar,
+.flora.ui-dialog.ui-draggable .ui-dialog-titlebar {
+  cursor: move;
+}
+.flora .ui-dialog .ui-dialog-titlebar-close,
+.flora.ui-dialog .ui-dialog-titlebar-close {
+  width: 16px;
+  height: 16px;
+  background: url(i/dialog-titlebar-close.png) no-repeat;
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  cursor: default;
+}
+.flora .ui-dialog .ui-dialog-titlebar-close span,
+.flora.ui-dialog .ui-dialog-titlebar-close span {
+  display: none;
+}
+.flora .ui-dialog .ui-dialog-titlebar-close-hover,
+.flora.ui-dialog .ui-dialog-titlebar-close-hover {
+  background: url(i/dialog-titlebar-close-hover.png) no-repeat;
+}
+.flora .ui-dialog .ui-dialog-title,
+.flora.ui-dialog .ui-dialog-title {
+  margin-left: 5px;
+  color: white;
+  font-weight: bold;
+  position: relative;
+  top: 7px;
+  left: 4px;
+}
+.flora .ui-dialog .ui-dialog-content,
+.flora.ui-dialog .ui-dialog-content {
+  margin: 1.2em;
+}
+.flora .ui-dialog .ui-dialog-buttonpane,
+.flora.ui-dialog .ui-dialog-buttonpane {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  width: 100%;
+  text-align: right;
+}
+.flora .ui-dialog .ui-dialog-buttonpane button,
+.flora.ui-dialog .ui-dialog-buttonpane button {
+  margin: 6px;
+}
+/* Dialog handle styles */
+.flora .ui-dialog .ui-resizable-n,
+.flora.ui-dialog .ui-resizable-n {
+  cursor: n-resize;
+  height: 6px;
+  width: 100%;
+  top: 0px;
+  left: 0px;
+  background: transparent url(i/dialog-n.gif) repeat scroll center top;
+}
+.flora .ui-dialog .ui-resizable-s,
+.flora.ui-dialog .ui-resizable-s {
+  cursor: s-resize;
+  height: 8px;
+  width: 100%;
+  bottom: 0px;
+  left: 0px;
+  background: transparent url('blue/i/dialog-s.gif') repeat scroll center top;
+}
+.flora .ui-dialog .ui-resizable-e,
+.flora.ui-dialog .ui-resizable-e {
+  cursor: e-resize;
+  width: 7px;
+  right: 0px;
+  top: 0px;
+  height: 100%;
+  background: transparent url('blue/i/dialog-e.gif') repeat scroll right center;
+}
+.flora .ui-dialog .ui-resizable-w,
+.flora.ui-dialog .ui-resizable-w {
+  cursor: w-resize;
+  width: 7px;
+  left: 0px;
+  top: 0px;
+  height: 100%;
+  background: transparent url('blue/i/dialog-w.gif') repeat scroll right center;
+}
+.flora .ui-dialog .ui-resizable-se,
+.flora.ui-dialog .ui-resizable-se {
+  cursor: se-resize;
+  width: 9px;
+  height: 9px;
+  right: 0px;
+  bottom: 0px;
+  background: transparent url('blue/i/dialog-se.gif');
+}
+.flora .ui-dialog .ui-resizable-sw,
+.flora.ui-dialog .ui-resizable-sw {
+  cursor: sw-resize;
+  width: 9px;
+  height: 9px;
+  left: 0px;
+  bottom: 0px;
+  background: transparent url('blue/i/dialog-sw.gif');
+}
+.flora .ui-dialog .ui-resizable-nw,
+.flora.ui-dialog .ui-resizable-nw {
+  cursor: nw-resize;
+  width: 9px;
+  height: 29px;
+  left: 0px;
+  top: 0px;
+  background: transparent url(i/dialog-nw.gif);
+}
+.flora .ui-dialog .ui-resizable-ne,
+.flora.ui-dialog .ui-resizable-ne {
+  cursor: ne-resize;
+  width: 9px;
+  height: 29px;
+  right: 0px;
+  top: 0px;
+  background: transparent url(i/dialog-ne.gif);
+}
+.flora.ui-dialog-content.success,
+#EXIT-CARRIER.success {
+  background-color: #90EE90;
+}
+.flora.ui-dialog-content.error,
+#EXIT-CARRIER.error {
+  background-color: #FFA0A0;
+}
+/* Main Flora Style Sheet for jQuery UI Datepicker */
+#datepicker_div,
+.datepicker_inline {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+  background: #DDD;
+  width: 185px;
+}
+#datepicker_div {
+  display: none;
+  border: 1px solid #FF9900;
+  z-index: 10;
+}
+.datepicker_inline {
+  float: left;
+  display: block;
+  border: 0;
+}
+.datepicker_dialog {
+  padding: 5px !important;
+  border: 4px ridge #DDD !important;
+}
+button.datepicker_trigger {
+  width: 25px;
+}
+img.datepicker_trigger {
+  margin: 2px;
+  vertical-align: middle;
+}
+.datepicker_prompt {
+  float: left;
+  padding: 2px;
+  background: #DDD;
+  color: #000;
+}
+*html .datepicker_prompt {
+  width: 185px;
+}
+.datepicker_control,
+.datepicker_links,
+.datepicker_header,
+.datepicker {
+  clear: both;
+  float: left;
+  width: 100%;
+  color: #FFF;
+}
+.datepicker_control {
+  background: #FF9900;
+  padding: 2px 0px;
+}
+.datepicker_links {
+  background: #e6f8fd;
+  padding: 2px 0px;
+}
+.datepicker_control,
+.datepicker_links {
+  font-weight: bold;
+  font-size: 80%;
+  letter-spacing: 1px;
+}
+.datepicker_links label {
+  padding: 2px 5px;
+  color: #888;
+}
+.datepicker_clear,
+.datepicker_prev {
+  float: left;
+  width: 34%;
+}
+.datepicker_current {
+  float: left;
+  width: 30%;
+  text-align: center;
+}
+.datepicker_close,
+.datepicker_next {
+  float: right;
+  width: 34%;
+  text-align: right;
+}
+.datepicker_header {
+  padding: 1px 0 3px;
+  background: #50adf4;
+  text-align: center;
+  font-weight: bold;
+  height: 1.3em;
+}
+.datepicker_header select {
+  background: #50adf4;
+  color: #000;
+  border: 0px;
+  font-weight: bold;
+}
+.datepicker {
+  background: #CCC;
+  text-align: center;
+  font-size: 100%;
+}
+.datepicker a {
+  display: block;
+  width: 100%;
+}
+.datepicker .datepicker_titleRow {
+  background: #b6d6ee;
+  color: #000;
+}
+.datepicker .datepicker_daysRow {
+  background: #FFF;
+  color: #666;
+}
+.datepicker_weekCol {
+  background: #b6d6ee;
+  color: #000;
+}
+.datepicker .datepicker_daysCell {
+  color: #000;
+  border: 1px solid #DDD;
+}
+#datepicker .datepicker_daysCell a {
+  display: block;
+}
+.datepicker .datepicker_weekEndCell {
+  background: #e6f8fd;
+}
+.datepicker .datepicker_daysCellOver {
+  background: #FFF;
+  border: 1px solid #777;
+}
+.datepicker .datepicker_unselectable {
+  color: #888;
+}
+.datepicker_today {
+  background: #b6d6ee !important;
+}
+.datepicker_currentDay {
+  background: #50adf4 !important;
+}
+#datepicker_div a,
+.datepicker_inline a {
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: #000;
+}
+.datepicker_inline .datepicker_links a {
+  padding: 0 5px !important;
+}
+.datepicker_control a,
+.datepicker_links a {
+  padding: 2px 5px !important;
+  color: #000 !important;
+}
+.datepicker_titleRow a {
+  color: #000 !important;
+}
+.datepicker_control a:hover {
+  background: #FDD !important;
+  color: #333 !important;
+}
+.datepicker_links a:hover,
+.datepicker_titleRow a:hover {
+  background: #FFF !important;
+  color: #333 !important;
+}
+.datepicker_multi .datepicker {
+  border: 1px solid #83C948;
+}
+.datepicker_oneMonth {
+  float: left;
+  width: 185px;
+}
+.datepicker_newRow {
+  clear: left;
+}
+.datepicker_cover {
+  display: block;
+  position: absolute;
+  z-index: -1;
+  filter: mask();
+  top: -4px;
+  left: -4px;
+  width: 193px;
+  height: 200px;
+}
+.ui-dialog-buttonpane button.otc-dialog-button {
+  background: #A0DF82;
+  border: 1px solid;
+  font-weight: bold;
+  font-size: 16pt;
+  padding: 4;
+  width: 100px;
+  height: 50px;
+}
+#otc_printer_select {
+  width: 30ex;
+}
+#issues_tab .tool_transaction_message,
+#returns_tab .tool_transaction_message,
+#audit_tab .tool_transaction_message {
+  margin-left: 166px;
+  width: 1056px;
+}
+#issues_tab .tool_transaction_message.error,
+#returns_tab .tool_transaction_message.error,
+#audit_tab .tool_transaction_message.error {
+  background-color: red;
+}
+#issues_tab .tool_transaction_message.success,
+#returns_tab .tool_transaction_message.success,
+#audit_tab .tool_transaction_message.success {
+  background-color: greenyellow;
+}
+#issues_tab input,
+#returns_tab input,
+#audit_tab input {
+  font-family: inherit;
+}
+#issues_tab input.green,
+#returns_tab input.green,
+#audit_tab input.green {
+  background: #A0DF82;
+  border: 1px solid;
+  font-weight: bold;
+  font-size: 16pt;
+  padding: 0;
+  width: 100px;
+  height: 50px;
+  font-family: inherit;
+}
+#issues_tab input.green.small,
+#returns_tab input.green.small,
+#audit_tab input.green.small {
+  width: 50px;
+}
+#issues_tab input.green.large,
+#returns_tab input.green.large,
+#audit_tab input.green.large {
+  width: 160px;
+}
+#issues_tab input.infield,
+#returns_tab input.infield,
+#audit_tab input.infield {
+  width: 350px;
+}
+#issues_tab input.comment,
+#returns_tab input.comment,
+#audit_tab input.comment {
+  width: 700px;
+}
+#issues_tab input.short,
+#returns_tab input.short,
+#audit_tab input.short {
+  width: 50px;
+}
+#issues_tab .fields,
+#returns_tab .fields,
+#audit_tab .fields {
+  line-height: 33px;
+}
+#issues_tab .inline-field-set,
+#returns_tab .inline-field-set,
+#audit_tab .inline-field-set {
+  display: inline-block;
+  vertical-align: top;
+}
+#issues_tab .inline-field-set.hidden,
+#returns_tab .inline-field-set.hidden,
+#audit_tab .inline-field-set.hidden {
+  display: none;
+}
+#issues_tab .label,
+#returns_tab .label,
+#audit_tab .label {
+  display: inline-block;
+  width: 162px;
+}
+#issues_tab .big,
+#returns_tab .big,
+#audit_tab .big {
+  font-size: 16pt;
+  font-weight: bold;
+  vertical-align: middle;
+}
+#issues_tab .safety-indicator,
+#returns_tab .safety-indicator,
+#audit_tab .safety-indicator,
+#issues_tab .calibration-indicator,
+#returns_tab .calibration-indicator,
+#audit_tab .calibration-indicator,
+#issues_tab .inspection-indicator,
+#returns_tab .inspection-indicator,
+#audit_tab .inspection-indicator {
+  line-height: 22px;
+  font-size: 18px;
+  border: dashed 1px #0000ff;
+}
+#issues_tab .safety-indicator .expire-caption,
+#returns_tab .safety-indicator .expire-caption,
+#audit_tab .safety-indicator .expire-caption,
+#issues_tab .calibration-indicator .expire-caption,
+#returns_tab .calibration-indicator .expire-caption,
+#audit_tab .calibration-indicator .expire-caption,
+#issues_tab .inspection-indicator .expire-caption,
+#returns_tab .inspection-indicator .expire-caption,
+#audit_tab .inspection-indicator .expire-caption {
+  display: block;
+}
+#issues_tab .safety-indicator .expired-caption,
+#returns_tab .safety-indicator .expired-caption,
+#audit_tab .safety-indicator .expired-caption,
+#issues_tab .calibration-indicator .expired-caption,
+#returns_tab .calibration-indicator .expired-caption,
+#audit_tab .calibration-indicator .expired-caption,
+#issues_tab .inspection-indicator .expired-caption,
+#returns_tab .inspection-indicator .expired-caption,
+#audit_tab .inspection-indicator .expired-caption {
+  display: none;
+}
+#issues_tab .safety-indicator.expired,
+#returns_tab .safety-indicator.expired,
+#audit_tab .safety-indicator.expired,
+#issues_tab .calibration-indicator.expired,
+#returns_tab .calibration-indicator.expired,
+#audit_tab .calibration-indicator.expired,
+#issues_tab .inspection-indicator.expired,
+#returns_tab .inspection-indicator.expired,
+#audit_tab .inspection-indicator.expired {
+  background-color: red;
+  border: none;
+}
+#issues_tab .safety-indicator.expired .expire-caption,
+#returns_tab .safety-indicator.expired .expire-caption,
+#audit_tab .safety-indicator.expired .expire-caption,
+#issues_tab .calibration-indicator.expired .expire-caption,
+#returns_tab .calibration-indicator.expired .expire-caption,
+#audit_tab .calibration-indicator.expired .expire-caption,
+#issues_tab .inspection-indicator.expired .expire-caption,
+#returns_tab .inspection-indicator.expired .expire-caption,
+#audit_tab .inspection-indicator.expired .expire-caption {
+  display: none;
+}
+#issues_tab .safety-indicator.expired .expired-caption,
+#returns_tab .safety-indicator.expired .expired-caption,
+#audit_tab .safety-indicator.expired .expired-caption,
+#issues_tab .calibration-indicator.expired .expired-caption,
+#returns_tab .calibration-indicator.expired .expired-caption,
+#audit_tab .calibration-indicator.expired .expired-caption,
+#issues_tab .inspection-indicator.expired .expired-caption,
+#returns_tab .inspection-indicator.expired .expired-caption,
+#audit_tab .inspection-indicator.expired .expired-caption {
+  display: block;
+}
+#issues_tab .issues-switch,
+#returns_tab .issues-switch,
+#audit_tab .issues-switch,
+#issues_tab .returns-switch,
+#returns_tab .returns-switch,
+#audit_tab .returns-switch,
+#issues_tab .audit-switch,
+#returns_tab .audit-switch,
+#audit_tab .audit-switch {
+  border: none;
+  font-weight: bold;
+  font-size: 16pt;
+  padding: 0;
+  width: 120px;
+  height: 50px;
+  font-family: inherit;
+}
+#issues_tab .issues-switch:hover,
+#returns_tab .issues-switch:hover,
+#audit_tab .issues-switch:hover,
+#issues_tab .returns-switch:hover,
+#returns_tab .returns-switch:hover,
+#audit_tab .returns-switch:hover,
+#issues_tab .audit-switch:hover,
+#returns_tab .audit-switch:hover,
+#audit_tab .audit-switch:hover {
+  cursor: pointer;
+}
+#issues_tab .returns-switch,
+#returns_tab .returns-switch,
+#audit_tab .returns-switch {
+  background-color: lightyellow;
+}
+#issues_tab .issues-switch,
+#returns_tab .issues-switch,
+#audit_tab .issues-switch {
+  background-color: lightgreen;
+}
+#issues_tab .audit-switch,
+#returns_tab .audit-switch,
+#audit_tab .audit-switch {
+  background-color: lightblue;
+}
+#field5_tip_issues.overdue,
+#field5_tip_returns.overdue {
+  background-color: #ff0000;
+  color: #000000;
+}
+table.tablesorter tbody td.mdr-otc-issued {
+  background-color: lightcoral;
+}
+table.tablesorter tbody td.mdr-otc-returned {
+  background-color: lightgreen;
+}
+.otc-page-body #datepicker_div,
+.otc-page-body .datepicker_oneMonth {
+  width: 300px;
+  font-size: 16pt;
+  line-height: 22pt;
+}
+.otc-page-body .datepicker_header select {
+  width: 13ex;
+}
+@media screen and (max-width: 1459px) {
+  #issues_tab input.comment,
+  #returns_tab input.comment,
+  #audit_tab input.comment {
+    margin-left: 166px;
+  }
+  #issues_tab input.infield,
+  #returns_tab input.infield,
+  #audit_tab input.infield,
+  #issues_tab input.tool_transaction_message,
+  #returns_tab input.tool_transaction_message,
+  #audit_tab input.tool_transaction_message,
+  #issues_tab input.comment,
+  #returns_tab input.comment,
+  #audit_tab input.comment {
+    width: 900px;
+  }
+}
+@media screen and (max-width: 1319px) {
+  #issues_tab input.comment,
+  #returns_tab input.comment,
+  #audit_tab input.comment,
+  #issues_tab input.infield,
+  #returns_tab input.infield,
+  #audit_tab input.infield,
+  #issues_tab input.tool_transaction_message,
+  #returns_tab input.tool_transaction_message,
+  #audit_tab input.tool_transaction_message {
+    margin-left: 0;
+    width: 95%;
+  }
+}
+#otc-image-capture-dialog .captured-image-container div {
+  display: inline-block;
+  margin-right: 10px;
+}
+#otc-image-capture-dialog .dialog-messages,
+#otc-image-capture-dialog .camera {
+  display: inline-block;
+  vertical-align: top;
+}
+#otc-image-capture-dialog .camera {
+  margin-right: 10px;
+}
+.otc-query-dialog input,
+.otc-add-product-dialog input,
+.otc-add-borrower-dialog input,
+.otc-confirm_borrower_prefix_dialog input,
+.otc-confirm_borrower_rename_dialog input,
+.otc-add_cost_centre_dialog input,
+.otc-list_loans_dialog input,
+.otc-history_dialog input,
+.otc-dispose_tool_dialog input,
+.otc-import_audit_dialog input,
+.otc-image-capture-dialog input,
+.otc-confirm_expiration_dialog input,
+.otc-confirm_tool-transfer_dialog input,
+.otc-add-tool-dialog input {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+.otc-query-dialog.flora.ui-dialog .ui-dialog-title,
+.otc-add-product-dialog.flora.ui-dialog .ui-dialog-title,
+.otc-add-borrower-dialog.flora.ui-dialog .ui-dialog-title,
+.otc-confirm_borrower_prefix_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-confirm_borrower_rename_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-add_cost_centre_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-list_loans_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-history_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-dispose_tool_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-import_audit_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-image-capture-dialog.flora.ui-dialog .ui-dialog-title,
+.otc-confirm_expiration_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-confirm_tool-transfer_dialog.flora.ui-dialog .ui-dialog-title,
+.otc-add-tool-dialog.flora.ui-dialog .ui-dialog-title {
+  top: 0;
+}
+@media screen {
+  .otc-image-capture-dialog,
+  .otc-dispose_tool_dialog,
+  .otc-confirm_tool-transfer_dialog,
+  .otc-confirm_expiration_dialog,
+  .otc-confirm_borrower_rename_dialog,
+  .otc-confirm_borrower_prefix_dialog,
+  .otc-add_cost_centre_dialog,
+  .otc-add-product-dialog,
+  .otc-add-tool-dialog,
+  .otc-import_audit_dialog,
+  .otc-add-borrower-dialog {
+    font-size: 16pt;
+    line-height: 22pt;
+  }
+  .otc-image-capture-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-dispose_tool_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-confirm_tool-transfer_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-confirm_expiration_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-confirm_borrower_rename_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-confirm_borrower_prefix_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-add_cost_centre_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-add-product-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-add-tool-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-import_audit_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-add-borrower-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a {
+    line-height: 22pt;
+  }
+  .otc-image-capture-dialog form,
+  .otc-dispose_tool_dialog form,
+  .otc-confirm_tool-transfer_dialog form,
+  .otc-confirm_expiration_dialog form,
+  .otc-confirm_borrower_rename_dialog form,
+  .otc-confirm_borrower_prefix_dialog form,
+  .otc-add_cost_centre_dialog form,
+  .otc-add-product-dialog form,
+  .otc-add-tool-dialog form,
+  .otc-import_audit_dialog form,
+  .otc-add-borrower-dialog form,
+  .otc-image-capture-dialog table,
+  .otc-dispose_tool_dialog table,
+  .otc-confirm_tool-transfer_dialog table,
+  .otc-confirm_expiration_dialog table,
+  .otc-confirm_borrower_rename_dialog table,
+  .otc-confirm_borrower_prefix_dialog table,
+  .otc-add_cost_centre_dialog table,
+  .otc-add-product-dialog table,
+  .otc-add-tool-dialog table,
+  .otc-import_audit_dialog table,
+  .otc-add-borrower-dialog table,
+  .otc-image-capture-dialog tr,
+  .otc-dispose_tool_dialog tr,
+  .otc-confirm_tool-transfer_dialog tr,
+  .otc-confirm_expiration_dialog tr,
+  .otc-confirm_borrower_rename_dialog tr,
+  .otc-confirm_borrower_prefix_dialog tr,
+  .otc-add_cost_centre_dialog tr,
+  .otc-add-product-dialog tr,
+  .otc-add-tool-dialog tr,
+  .otc-import_audit_dialog tr,
+  .otc-add-borrower-dialog tr,
+  .otc-image-capture-dialog td,
+  .otc-dispose_tool_dialog td,
+  .otc-confirm_tool-transfer_dialog td,
+  .otc-confirm_expiration_dialog td,
+  .otc-confirm_borrower_rename_dialog td,
+  .otc-confirm_borrower_prefix_dialog td,
+  .otc-add_cost_centre_dialog td,
+  .otc-add-product-dialog td,
+  .otc-add-tool-dialog td,
+  .otc-import_audit_dialog td,
+  .otc-add-borrower-dialog td,
+  .otc-image-capture-dialog th,
+  .otc-dispose_tool_dialog th,
+  .otc-confirm_tool-transfer_dialog th,
+  .otc-confirm_expiration_dialog th,
+  .otc-confirm_borrower_rename_dialog th,
+  .otc-confirm_borrower_prefix_dialog th,
+  .otc-add_cost_centre_dialog th,
+  .otc-add-product-dialog th,
+  .otc-add-tool-dialog th,
+  .otc-import_audit_dialog th,
+  .otc-add-borrower-dialog th,
+  .otc-image-capture-dialog h1,
+  .otc-dispose_tool_dialog h1,
+  .otc-confirm_tool-transfer_dialog h1,
+  .otc-confirm_expiration_dialog h1,
+  .otc-confirm_borrower_rename_dialog h1,
+  .otc-confirm_borrower_prefix_dialog h1,
+  .otc-add_cost_centre_dialog h1,
+  .otc-add-product-dialog h1,
+  .otc-add-tool-dialog h1,
+  .otc-import_audit_dialog h1,
+  .otc-add-borrower-dialog h1,
+  .otc-image-capture-dialog h2,
+  .otc-dispose_tool_dialog h2,
+  .otc-confirm_tool-transfer_dialog h2,
+  .otc-confirm_expiration_dialog h2,
+  .otc-confirm_borrower_rename_dialog h2,
+  .otc-confirm_borrower_prefix_dialog h2,
+  .otc-add_cost_centre_dialog h2,
+  .otc-add-product-dialog h2,
+  .otc-add-tool-dialog h2,
+  .otc-import_audit_dialog h2,
+  .otc-add-borrower-dialog h2,
+  .otc-image-capture-dialog h3,
+  .otc-dispose_tool_dialog h3,
+  .otc-confirm_tool-transfer_dialog h3,
+  .otc-confirm_expiration_dialog h3,
+  .otc-confirm_borrower_rename_dialog h3,
+  .otc-confirm_borrower_prefix_dialog h3,
+  .otc-add_cost_centre_dialog h3,
+  .otc-add-product-dialog h3,
+  .otc-add-tool-dialog h3,
+  .otc-import_audit_dialog h3,
+  .otc-add-borrower-dialog h3,
+  .otc-image-capture-dialog h4,
+  .otc-dispose_tool_dialog h4,
+  .otc-confirm_tool-transfer_dialog h4,
+  .otc-confirm_expiration_dialog h4,
+  .otc-confirm_borrower_rename_dialog h4,
+  .otc-confirm_borrower_prefix_dialog h4,
+  .otc-add_cost_centre_dialog h4,
+  .otc-add-product-dialog h4,
+  .otc-add-tool-dialog h4,
+  .otc-import_audit_dialog h4,
+  .otc-add-borrower-dialog h4,
+  .otc-image-capture-dialog p,
+  .otc-dispose_tool_dialog p,
+  .otc-confirm_tool-transfer_dialog p,
+  .otc-confirm_expiration_dialog p,
+  .otc-confirm_borrower_rename_dialog p,
+  .otc-confirm_borrower_prefix_dialog p,
+  .otc-add_cost_centre_dialog p,
+  .otc-add-product-dialog p,
+  .otc-add-tool-dialog p,
+  .otc-import_audit_dialog p,
+  .otc-add-borrower-dialog p,
+  .otc-image-capture-dialog img,
+  .otc-dispose_tool_dialog img,
+  .otc-confirm_tool-transfer_dialog img,
+  .otc-confirm_expiration_dialog img,
+  .otc-confirm_borrower_rename_dialog img,
+  .otc-confirm_borrower_prefix_dialog img,
+  .otc-add_cost_centre_dialog img,
+  .otc-add-product-dialog img,
+  .otc-add-tool-dialog img,
+  .otc-import_audit_dialog img,
+  .otc-add-borrower-dialog img,
+  .otc-image-capture-dialog input,
+  .otc-dispose_tool_dialog input,
+  .otc-confirm_tool-transfer_dialog input,
+  .otc-confirm_expiration_dialog input,
+  .otc-confirm_borrower_rename_dialog input,
+  .otc-confirm_borrower_prefix_dialog input,
+  .otc-add_cost_centre_dialog input,
+  .otc-add-product-dialog input,
+  .otc-add-tool-dialog input,
+  .otc-import_audit_dialog input,
+  .otc-add-borrower-dialog input,
+  .otc-image-capture-dialog textarea,
+  .otc-dispose_tool_dialog textarea,
+  .otc-confirm_tool-transfer_dialog textarea,
+  .otc-confirm_expiration_dialog textarea,
+  .otc-confirm_borrower_rename_dialog textarea,
+  .otc-confirm_borrower_prefix_dialog textarea,
+  .otc-add_cost_centre_dialog textarea,
+  .otc-add-product-dialog textarea,
+  .otc-add-tool-dialog textarea,
+  .otc-import_audit_dialog textarea,
+  .otc-add-borrower-dialog textarea,
+  .otc-image-capture-dialog keygen,
+  .otc-dispose_tool_dialog keygen,
+  .otc-confirm_tool-transfer_dialog keygen,
+  .otc-confirm_expiration_dialog keygen,
+  .otc-confirm_borrower_rename_dialog keygen,
+  .otc-confirm_borrower_prefix_dialog keygen,
+  .otc-add_cost_centre_dialog keygen,
+  .otc-add-product-dialog keygen,
+  .otc-add-tool-dialog keygen,
+  .otc-import_audit_dialog keygen,
+  .otc-add-borrower-dialog keygen,
+  .otc-image-capture-dialog select,
+  .otc-dispose_tool_dialog select,
+  .otc-confirm_tool-transfer_dialog select,
+  .otc-confirm_expiration_dialog select,
+  .otc-confirm_borrower_rename_dialog select,
+  .otc-confirm_borrower_prefix_dialog select,
+  .otc-add_cost_centre_dialog select,
+  .otc-add-product-dialog select,
+  .otc-add-tool-dialog select,
+  .otc-import_audit_dialog select,
+  .otc-add-borrower-dialog select,
+  .otc-image-capture-dialog button,
+  .otc-dispose_tool_dialog button,
+  .otc-confirm_tool-transfer_dialog button,
+  .otc-confirm_expiration_dialog button,
+  .otc-confirm_borrower_rename_dialog button,
+  .otc-confirm_borrower_prefix_dialog button,
+  .otc-add_cost_centre_dialog button,
+  .otc-add-product-dialog button,
+  .otc-add-tool-dialog button,
+  .otc-import_audit_dialog button,
+  .otc-add-borrower-dialog button,
+  .otc-image-capture-dialog meter,
+  .otc-dispose_tool_dialog meter,
+  .otc-confirm_tool-transfer_dialog meter,
+  .otc-confirm_expiration_dialog meter,
+  .otc-confirm_borrower_rename_dialog meter,
+  .otc-confirm_borrower_prefix_dialog meter,
+  .otc-add_cost_centre_dialog meter,
+  .otc-add-product-dialog meter,
+  .otc-add-tool-dialog meter,
+  .otc-import_audit_dialog meter,
+  .otc-add-borrower-dialog meter,
+  .otc-image-capture-dialog progress,
+  .otc-dispose_tool_dialog progress,
+  .otc-confirm_tool-transfer_dialog progress,
+  .otc-confirm_expiration_dialog progress,
+  .otc-confirm_borrower_rename_dialog progress,
+  .otc-confirm_borrower_prefix_dialog progress,
+  .otc-add_cost_centre_dialog progress,
+  .otc-add-product-dialog progress,
+  .otc-add-tool-dialog progress,
+  .otc-import_audit_dialog progress,
+  .otc-add-borrower-dialog progress {
+    font-size: 16pt;
+    line-height: 22pt;
+  }
+  .otc-image-capture-dialog table.tablesorter,
+  .otc-dispose_tool_dialog table.tablesorter,
+  .otc-confirm_tool-transfer_dialog table.tablesorter,
+  .otc-confirm_expiration_dialog table.tablesorter,
+  .otc-confirm_borrower_rename_dialog table.tablesorter,
+  .otc-confirm_borrower_prefix_dialog table.tablesorter,
+  .otc-add_cost_centre_dialog table.tablesorter,
+  .otc-add-product-dialog table.tablesorter,
+  .otc-add-tool-dialog table.tablesorter,
+  .otc-import_audit_dialog table.tablesorter,
+  .otc-add-borrower-dialog table.tablesorter {
+    font-size: 16pt;
+  }
+  .otc-image-capture-dialog table.tablesorter thead tr th,
+  .otc-dispose_tool_dialog table.tablesorter thead tr th,
+  .otc-confirm_tool-transfer_dialog table.tablesorter thead tr th,
+  .otc-confirm_expiration_dialog table.tablesorter thead tr th,
+  .otc-confirm_borrower_rename_dialog table.tablesorter thead tr th,
+  .otc-confirm_borrower_prefix_dialog table.tablesorter thead tr th,
+  .otc-add_cost_centre_dialog table.tablesorter thead tr th,
+  .otc-add-product-dialog table.tablesorter thead tr th,
+  .otc-add-tool-dialog table.tablesorter thead tr th,
+  .otc-import_audit_dialog table.tablesorter thead tr th,
+  .otc-add-borrower-dialog table.tablesorter thead tr th {
+    font-size: 16pt;
+  }
+  .otc-confirm_borrower_prefix_dialog .ui-dialog-buttonpane button.otc-dialog-button {
+    width: 200px;
+  }
+  .otc-dispose_tool_dialog table.summary th,
+  .otc-dispose_tool_dialog table.summary td {
+    width: auto;
+  }
+  .otc-dispose_tool_dialog table.summary input,
+  .otc-dispose_tool_dialog table.summary textarea {
+    width: 90%;
+  }
+}
+@media screen and (min-width: 1460px) {
+  #otc-image-capture-dialog .dialog-messages {
+    width: 680px;
+  }
+  #otc-image-capture-dialog .captured-image-container img {
+    width: 320px;
+  }
+  #query_dialog [name="prompt"] .summary {
+    max-width: 900px;
+  }
+  .otc-history_dialog,
+  .otc-list_loans_dialog,
+  .otc-query-dialog {
+    font-size: 16pt;
+    line-height: 22pt;
+    width: 95%;
+    height: 700px;
+  }
+  .otc-history_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-list_loans_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-query-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a {
+    line-height: 22pt;
+  }
+  .otc-history_dialog form,
+  .otc-list_loans_dialog form,
+  .otc-query-dialog form,
+  .otc-history_dialog table,
+  .otc-list_loans_dialog table,
+  .otc-query-dialog table,
+  .otc-history_dialog tr,
+  .otc-list_loans_dialog tr,
+  .otc-query-dialog tr,
+  .otc-history_dialog td,
+  .otc-list_loans_dialog td,
+  .otc-query-dialog td,
+  .otc-history_dialog th,
+  .otc-list_loans_dialog th,
+  .otc-query-dialog th,
+  .otc-history_dialog h1,
+  .otc-list_loans_dialog h1,
+  .otc-query-dialog h1,
+  .otc-history_dialog h2,
+  .otc-list_loans_dialog h2,
+  .otc-query-dialog h2,
+  .otc-history_dialog h3,
+  .otc-list_loans_dialog h3,
+  .otc-query-dialog h3,
+  .otc-history_dialog h4,
+  .otc-list_loans_dialog h4,
+  .otc-query-dialog h4,
+  .otc-history_dialog p,
+  .otc-list_loans_dialog p,
+  .otc-query-dialog p,
+  .otc-history_dialog img,
+  .otc-list_loans_dialog img,
+  .otc-query-dialog img,
+  .otc-history_dialog input,
+  .otc-list_loans_dialog input,
+  .otc-query-dialog input,
+  .otc-history_dialog textarea,
+  .otc-list_loans_dialog textarea,
+  .otc-query-dialog textarea,
+  .otc-history_dialog keygen,
+  .otc-list_loans_dialog keygen,
+  .otc-query-dialog keygen,
+  .otc-history_dialog select,
+  .otc-list_loans_dialog select,
+  .otc-query-dialog select,
+  .otc-history_dialog button,
+  .otc-list_loans_dialog button,
+  .otc-query-dialog button,
+  .otc-history_dialog meter,
+  .otc-list_loans_dialog meter,
+  .otc-query-dialog meter,
+  .otc-history_dialog progress,
+  .otc-list_loans_dialog progress,
+  .otc-query-dialog progress {
+    font-size: 16pt;
+    line-height: 22pt;
+  }
+  .otc-history_dialog table.tablesorter,
+  .otc-list_loans_dialog table.tablesorter,
+  .otc-query-dialog table.tablesorter {
+    font-size: 16pt;
+  }
+  .otc-history_dialog table.tablesorter thead tr th,
+  .otc-list_loans_dialog table.tablesorter thead tr th,
+  .otc-query-dialog table.tablesorter thead tr th {
+    font-size: 16pt;
+  }
+  .otc-confirm_borrower_prefix_dialog {
+    width: 1100px;
+    height: 280px;
+  }
+  .otc-image-capture-dialog {
+    width: 1080px;
+    height: 700px;
+  }
+}
+@media screen and (min-width: 1024px) and (max-width: 1459px) {
+  #otc-image-capture-dialog .dialog-messages {
+    width: 550px;
+  }
+  #otc-image-capture-dialog .captured-image-container img {
+    width: 260px;
+  }
+  #query_dialog [name="prompt"] .summary {
+    max-width: 840px;
+  }
+  .otc-history_dialog,
+  .otc-list_loans_dialog,
+  .otc-query-dialog {
+    font-size: 14pt;
+    line-height: 20pt;
+    width: 95%;
+    height: 700px;
+  }
+  .otc-history_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-list_loans_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-query-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a {
+    line-height: 20pt;
+  }
+  .otc-history_dialog form,
+  .otc-list_loans_dialog form,
+  .otc-query-dialog form,
+  .otc-history_dialog table,
+  .otc-list_loans_dialog table,
+  .otc-query-dialog table,
+  .otc-history_dialog tr,
+  .otc-list_loans_dialog tr,
+  .otc-query-dialog tr,
+  .otc-history_dialog td,
+  .otc-list_loans_dialog td,
+  .otc-query-dialog td,
+  .otc-history_dialog th,
+  .otc-list_loans_dialog th,
+  .otc-query-dialog th,
+  .otc-history_dialog h1,
+  .otc-list_loans_dialog h1,
+  .otc-query-dialog h1,
+  .otc-history_dialog h2,
+  .otc-list_loans_dialog h2,
+  .otc-query-dialog h2,
+  .otc-history_dialog h3,
+  .otc-list_loans_dialog h3,
+  .otc-query-dialog h3,
+  .otc-history_dialog h4,
+  .otc-list_loans_dialog h4,
+  .otc-query-dialog h4,
+  .otc-history_dialog p,
+  .otc-list_loans_dialog p,
+  .otc-query-dialog p,
+  .otc-history_dialog img,
+  .otc-list_loans_dialog img,
+  .otc-query-dialog img,
+  .otc-history_dialog input,
+  .otc-list_loans_dialog input,
+  .otc-query-dialog input,
+  .otc-history_dialog textarea,
+  .otc-list_loans_dialog textarea,
+  .otc-query-dialog textarea,
+  .otc-history_dialog keygen,
+  .otc-list_loans_dialog keygen,
+  .otc-query-dialog keygen,
+  .otc-history_dialog select,
+  .otc-list_loans_dialog select,
+  .otc-query-dialog select,
+  .otc-history_dialog button,
+  .otc-list_loans_dialog button,
+  .otc-query-dialog button,
+  .otc-history_dialog meter,
+  .otc-list_loans_dialog meter,
+  .otc-query-dialog meter,
+  .otc-history_dialog progress,
+  .otc-list_loans_dialog progress,
+  .otc-query-dialog progress {
+    font-size: 14pt;
+    line-height: 20pt;
+  }
+  .otc-history_dialog table.tablesorter,
+  .otc-list_loans_dialog table.tablesorter,
+  .otc-query-dialog table.tablesorter {
+    font-size: 14pt;
+  }
+  .otc-history_dialog table.tablesorter thead tr th,
+  .otc-list_loans_dialog table.tablesorter thead tr th,
+  .otc-query-dialog table.tablesorter thead tr th {
+    font-size: 14pt;
+  }
+  .otc-confirm_borrower_prefix_dialog {
+    width: 950px;
+    height: 300px;
+  }
+  .otc-image-capture-dialog {
+    width: 950px;
+    height: 640px;
+  }
+}
+@media screen and (max-width: 1023px) {
+  #otc-image-capture-dialog .dialog-messages {
+    width: 550px;
+  }
+  #otc-image-capture-dialog .captured-image-container img {
+    width: 260px;
+  }
+  #query_dialog [name="prompt"] .summary {
+    max-width: 780px;
+  }
+  .otc-history_dialog,
+  .otc-list_loans_dialog,
+  .otc-query-dialog {
+    font-size: 12pt;
+    line-height: 16pt;
+    width: 95%;
+    height: 700px;
+  }
+  .otc-history_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-list_loans_dialog .ui-tabs-nav.ui-tabs-nav-add-tool a,
+  .otc-query-dialog .ui-tabs-nav.ui-tabs-nav-add-tool a {
+    line-height: 16pt;
+  }
+  .otc-history_dialog form,
+  .otc-list_loans_dialog form,
+  .otc-query-dialog form,
+  .otc-history_dialog table,
+  .otc-list_loans_dialog table,
+  .otc-query-dialog table,
+  .otc-history_dialog tr,
+  .otc-list_loans_dialog tr,
+  .otc-query-dialog tr,
+  .otc-history_dialog td,
+  .otc-list_loans_dialog td,
+  .otc-query-dialog td,
+  .otc-history_dialog th,
+  .otc-list_loans_dialog th,
+  .otc-query-dialog th,
+  .otc-history_dialog h1,
+  .otc-list_loans_dialog h1,
+  .otc-query-dialog h1,
+  .otc-history_dialog h2,
+  .otc-list_loans_dialog h2,
+  .otc-query-dialog h2,
+  .otc-history_dialog h3,
+  .otc-list_loans_dialog h3,
+  .otc-query-dialog h3,
+  .otc-history_dialog h4,
+  .otc-list_loans_dialog h4,
+  .otc-query-dialog h4,
+  .otc-history_dialog p,
+  .otc-list_loans_dialog p,
+  .otc-query-dialog p,
+  .otc-history_dialog img,
+  .otc-list_loans_dialog img,
+  .otc-query-dialog img,
+  .otc-history_dialog input,
+  .otc-list_loans_dialog input,
+  .otc-query-dialog input,
+  .otc-history_dialog textarea,
+  .otc-list_loans_dialog textarea,
+  .otc-query-dialog textarea,
+  .otc-history_dialog keygen,
+  .otc-list_loans_dialog keygen,
+  .otc-query-dialog keygen,
+  .otc-history_dialog select,
+  .otc-list_loans_dialog select,
+  .otc-query-dialog select,
+  .otc-history_dialog button,
+  .otc-list_loans_dialog button,
+  .otc-query-dialog button,
+  .otc-history_dialog meter,
+  .otc-list_loans_dialog meter,
+  .otc-query-dialog meter,
+  .otc-history_dialog progress,
+  .otc-list_loans_dialog progress,
+  .otc-query-dialog progress {
+    font-size: 12pt;
+    line-height: 16pt;
+  }
+  .otc-history_dialog table.tablesorter,
+  .otc-list_loans_dialog table.tablesorter,
+  .otc-query-dialog table.tablesorter {
+    font-size: 12pt;
+  }
+  .otc-history_dialog table.tablesorter thead tr th,
+  .otc-list_loans_dialog table.tablesorter thead tr th,
+  .otc-query-dialog table.tablesorter thead tr th {
+    font-size: 12pt;
+  }
+  .otc-history_dialog.flora.ui-dialog .ui-dialog-title,
+  .otc-list_loans_dialog.flora.ui-dialog .ui-dialog-title,
+  .otc-query-dialog.flora.ui-dialog .ui-dialog-title {
+    top: 4px;
+  }
+  .otc-confirm_borrower_prefix_dialog {
+    width: 800px;
+    height: 300px;
+  }
+  .otc-image-capture-dialog {
+    width: 950px;
+    height: 640px;
+  }
+}
+#confirm_data_identifier_dialog .data-identifier-list-container {
+  height: 350px;
+  overflow: auto;
+}
+#confirm_data_identifier_dialog .data-identifier-list tr:hover td {
+  background-color: #50adf4;
+}
+#confirm_data_identifier_dialog .data-identifier-list label {
+  line-height: 2em;
+  font-size: 2em;
+  font-weight: bold;
+  display: block;
+  width: 100%;
+}
+#confirm_data_identifier_dialog .data-identifier-list label:hover {
+  cursor: pointer;
+  background-color: #50adf4;
+}
+#confirm_data_identifier_dialog .data-identifier-list label input {
+  display: none;
+}

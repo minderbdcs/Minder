@@ -1,0 +1,729 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php echo $this->messenger()->all(); ?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+  <div style="width:99%;">
+        <table style="width: 100%" id="table1">
+            <tr>
+                <th><?php echo $this->searchInputs[0]['SSV_TITLE']; ?></th>
+                <td><?php echo $this->formText($this->searchInputs[0]['SSV_NAME'], $this->searchInputs[0]['SEARCH_PARAM'], null); ?></td>
+                <th><?php echo $this->searchInputs[1]['SSV_TITLE']; ?></th>
+                <td><?php echo $this->formText($this->searchInputs[1]['SSV_NAME'], $this->searchInputs[1]['SEARCH_PARAM'], null); ?></td>
+                <th><?php echo $this->searchInputs[2]['SSV_TITLE']; ?></th>
+                <td><?php echo $this->formText($this->searchInputs[2]['SSV_NAME'], $this->searchInputs[2]['SEARCH_PARAM'], null); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->dropDownListNames[0]; ?></th>
+                <td><?php echo $this->formSelect('field_name1', $this->fieldName1, null, $this->dropDownList1); ?></td>
+                <th>------------></th>
+                <td><?php echo $this->formText('field_value1', $this->fieldValue1, null); ?></td>
+                <th><?php echo $this->searchInputs[3]['SSV_TITLE']; ?></th>
+                <td><?php echo $this->formText($this->searchInputs[3]['SSV_NAME'], $this->searchInputs[3]['SEARCH_PARAM'], null); ?></td>
+            </tr>
+            <tr>
+                <th><?php echo $this->dropDownListNames[1]; ?></th>
+                <td><?php echo $this->formSelect('field_name2', $this->fieldName2, null, $this->dropDownList2); ?></td>
+                <th>------------></th>
+                <td><?php echo $this->formText('field_value2', $this->fieldValue2, null); ?></td>
+                <th><b>Pick Mode:</b></th>
+                <td>
+                    <?php echo $this->formSelectExt('pick_mode', $this->pick_mode, null , $this->listPickModes, "<br />\n" , array('onclick' => 'pickModeChange(this)')); ?>
+                
+                </td>
+            </tr>
+            <tr>
+                <td colspan="=4">
+                    <ul class="toolbar">
+                        <input type="submit" class="green-button" name="action" value="Submit Search" />
+                        <input type="button" class="green-button" id="clear" value="Clear" />
+                        <input type="button" name="action" value="New Order" class="green-button" id="new_button" />
+                        <?php if($this->minder->isAdmin) { ?>
+                                <input type="button" name="action" value="Get Order" class="green-button" onclick="return newPrompt();" />
+                        <?php } ?>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script type="text/javascript">
+    	$('#clear').click(function() {
+    		$('#table1 input[type=text]').val('');
+    		
+    		$('#table1 select').attr('selectedIndex', 0);
+    		$('#table2 select').attr('selectedIndex', 0);
+    	});
+    </script> 
+    <hr>
+    
+    <div id="order_tabs" class="ui-tabs-container">
+        <ul>
+            <li><a href="#order_tab1"><span><b>General:</b></span></a></li>
+            <li><a href="#order_tab2"><span><b>Supplied By:</b></span></a></li>
+            <li><a href="#order_tab3"><span><b>Invoice To:</b></span></a></li>
+            <li><a href="#order_tab4"><span><b>Deliver To:</b></span></a></li>
+            <li><a href="#order_tab5"><span><b>Shipping:</b></span></a></li>
+            <li><a href="#order_tab6"><span><b>Billing:</b></span></a></li>
+        </ul>
+        <div id="order_tab1">
+        
+        <div id="order-list">
+            <div style="float: left; font-weight: bold; text-transform: uppercase;">Orders List</div>
+            <div style="position: relative; left:10px;">
+                <label for="results_per_page">View By:</label>
+                <?php echo $this->formSelect('show_by',
+                                             $this->navigation['show_by'],
+                                             array('onchange' => 'frmSubmit()'),
+                                             array(5  => 5,
+                                                   10 => 10,
+                                                   15 => 15,
+                                                   20 => 20,
+                                                   30 => 30,
+                                                   40 => 40,
+                                                   50 => 50,
+                                                   100 => 100)) ?>
+                <label for="page">Page:</label>
+                <?php echo $this->formSelectStrict('pageselector',
+                                                   $this->navigation['pageselector'],
+                                                   array('onchange' => 'frmSubmit()'),
+                                                   $this->pages); ?>
+            </div>
+        </div>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999;">
+            <li style="display: inline;">Selected: <span id="orders_selected">0</span></li>
+        </ul>
+            
+        <table id="pick_orders" class="withborder tablesorter" style="margin-bottom: 0;">
+        <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_pick_orders" onclick="selectAll(this)" /></th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+        </tr>
+        </thead>
+        <tbody id="pick_orders_inner">
+<?php
+    foreach ($this->pickOrders as $pickOrder => $order) {
+        echo '<tr>';
+        echo '<th onmouseover="loadOrderLines(this);">';
+        echo $this->formCheckbox($pickOrder, $pickOrder, array('checked' => array_key_exists($pickOrder, $this->conditions) ? 'checked' : '', 'class' => 'pick-order-selector', 'onclick' => 'showSelected(this)'));
+        echo '</th>';
+        
+        if($this->minder->isAdmin || $this->minder->isAdjustPickOrder){
+            foreach ($this->headers as $key => $value) {
+                if(array_key_exists($key, $this->editInputs)){
+                    switch($this->editInputs[$key]['SSV_INPUT_METHOD']){
+                        case 'RO':
+                            echo '<td><a href="' . $this->url(array('controller' => 'pick-order', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">'. $this->escape($order[$key]) . '</a></td>';
+                            break;
+                        case 'DD':
+                            echo '<td>' . $this->formSelect($order['PICK_ORDER'] . '-' . $key  , $order[$key], array('style' => 'width: 150px;', 'type2' => 'editable'), $this->editInputs[$key]['DD_VALUES']) . '</td>';
+                            break;
+                        case 'DP':
+                            echo '<td>' . $this->formText($order['PICK_ORDER'] . '-' . $key, $order[$key], array('style' => 'width: 120px;', 'type2' => 'editable')) . '</td>';
+                            echo '<script type="text/javascript"> ';
+                            echo '$("#' . $order['PICK_ORDER'] . '-' . $key . '").datepicker({dateFormat: "yy-mm-dd"});';
+                            echo '</script> ';
+                            break;
+                        case 'IN':
+                            echo '<td>' . $this->formText($order['PICK_ORDER'] . '-' . $key, $order[$key], array('style' => 'width: 120px;', 'type2' => 'editable')) . '</td>';
+                            break;
+                    }
+                } else {
+                    echo '<td><a href="' . $this->url(array('controller' => 'pick-order', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">'. $this->escape($order[$key]) . '</a></td>';
+                }
+            }     
+       } else {
+            foreach ($this->headers as $key => $value) {
+                if ($key == 'PICK_STATUS') {
+                    if (array_key_exists($order[$key], $this->pickStatusDescription)) {
+                        $tooltip = $this->pickStatusDescription[$order[$key]];
+                    } else {
+                        $tooltip = 'No description';
+                    }
+                    echo '<td><a title="' . $tooltip . '" href="' . $this->url(array('controller' => 'pick-order', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">'. $this->escape($order[$key]) . '</a></td>';
+                } else {
+                    echo '<td><a href="' . $this->url(array('controller' => 'pick-order', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">'. $this->escape($order[$key]) . '</a></td>';
+                }
+            }
+        }
+        
+        echo "</tr>\n";
+    }
+
+
+?>
+<?php if (!count($this->pickOrders)) : ?>
+        <tr>
+            <th/>
+<?php foreach ($this->headers as $k => $v) : ?>
+                <td/>
+<?php endforeach; ?>
+        </tr>
+<?php endif ?>
+        </tbody>
+    </table>
+    <table class="withborder" width="100%">
+        <tr>
+            <td style="white-space: nowrap; text-align: right;" colspan="2">Total Selected Value $<span class="total_selected">0</span></td>
+        </tr>
+        <tr>
+            <td>Total <?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td><td style="white-space: nowrap; text-align: right;" width="20%">Total Displayed Value: $<span class="total_displayed">0</span></td>
+        </tr>
+    </table>
+    
+    <ul class="toolbar">
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Confirm" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Reserve" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Approve Pick" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Allocate Orders" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Allocate Products" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Approve Despatch" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button" value="Hold" /></li>
+        <li><input type="submit" name="action" disabled="disabled" class="order-button cancel_button" value="Cancel" /></li>
+    </ul>
+        
+        </div>
+        <div id="order_tab2"></div>
+        <div id="order_tab3"></div>
+        <div id="order_tab4"></div>
+        <div id="order_tab5"></div>
+        <div id="order_tab6"></div>
+        
+    </div>
+
+<!--    <input type="hidden" name="reason" id="reason" value="" />
+    <div id="x" class="flora">
+        This reason will be applied to all selected orders:<br /><textarea name="cancel_reason" id="cancel_reason"></textarea><br/><input type="submit" value="Cancel" id="real_cancel_button" />
+    </div>-->
+    <div class="flora" id="dialog-cancel" title="Reason for cancelling" style="display: none;">
+        This reason will be applied to all selected orders:<br /><textarea name="reason" id="cancel_reason"></textarea>
+    </div>
+</form>
+
+<div id="dialog2" class="flora" title="Get order prompt" style="display: none;">
+    <form id="prompt" name="prompt" method="post" action="">
+    <input type="hidden" name="do_action" value="get_order" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    SO Number:
+                </th>
+                <td>
+                    <?php echo $this->formText('so_number', '', array('')); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<?php
+
+$disabled_property = array('READONLY'=>'', 'style'=>'background-color: lightgrey;');
+
+//var_dump ($this->pickModes); die();
+foreach ($this->pickModes as $pickMode) {
+
+?>
+<div id="select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>" class="flora" title="Pick Mode" style="display: none;">
+    <form id="select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>" name="prompt" method="post" action="/minder/pick-order/">
+    <input type="hidden" name="action" value="run_pick_mode" >
+    <input type="hidden" name="pick_proc" value="<?php echo $pickMode['PROCEDURE_NAME']; ?>" >
+    <input type="hidden" class="one_or_accept" name="one_or_accept" value="" >
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <td>
+                    Order Type:
+                </td>
+                <td>
+                    <?php
+						$_style = ($pickMode['PICK_PARAM_TYPE']=='F')?$disabled_property:array();
+                    	echo $this->formText('PICK_PARAM_TYPE', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Mode:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_MODE']=='F')?$disabled_property:array();
+                    	 echo $this->formText('PICK_PARAM_MODE', $pickMode['DESCRIPTION'], $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order No:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_ORDNO']=='F')?$disabled_property:array(); 
+                    	echo $this->formText('PICK_PARAM_ORDNO', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Status:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_STATUS']=='F')?$disabled_property:array(); 
+                    	echo $this->formText('PICK_PARAM_STATUS', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Order Priority:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_PRIORITY']=='F')?$disabled_property:array();
+                    	 echo $this->formText('PICK_PARAM_PRIORITY', '', $_style); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Input Required ID's:
+                </td>
+                <td>
+                    <?php
+                    	$_style = ($pickMode['PICK_PARAM_ID']=='F')?$disabled_property:array();
+                    	echo $this->formText('PICK_PARAM_ID', '', $_style); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+ 	$('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog({buttons: {
+ 			'CANCEL': function(){
+ 					$('#pick_mode')[0].selectedIndex=0;
+					$('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog('close');
+        		}
+<?php if ($pickMode['PICK_PARAM_GETALLBTNVISIBLE']=='T') {?>
+			,        		
+ 			'GET ALL': function(){
+ 					$.each($('.one_or_accept'), function() {this.value = 'all'});
+ 					$('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();            
+        		}
+<?php } ?>
+<?php if ($pickMode['PICK_PARAM_ACCEPTBTNVISIBLE']=='T') {?>
+			,        		
+ 			'ACCEPT': function(){
+ 					$.each($('.one_or_accept'), function() {this.value = 'one'});
+ 					$('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();
+        		}
+<?php } ?>        		
+        },
+        modal: true,
+        width: '500px',
+		height: '250px',       
+        resizable: false,
+		draggable: true,
+		position: 'center',
+        autoOpen: false,
+        close: function() { $('#pick_mode')[0].selectedIndex=0; },
+       
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+       
+                 
+});
+</script>
+<?php
+
+}
+
+?>
+
+
+<?php echo $this->messenger()->all('lines') ?>
+<div id="lines-list" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999; border-bottom: 1px solid #999999;"></div>
+<div id="order-edit" class="section" style="display: none; padding-top: .5em;"></div>
+<div id="add_from_location_container" style="display: none; padding-top: .5em; padding-bottom: 15px; border-top: 1px solid #999999; border-bottom: 1px solid #999999;"></div>
+<script src="<?php echo $this->baseUrl ?>scripts/jquery.scrollTo-min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+    
+    window.orderList    =   new Array(); 
+    
+    $('#dialog2').dialog({buttons: {GetOrder: sendOrder, Close: closeDialog},
+         width: '70ex',
+         height: '10em',
+         autoOpen: false,
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+                    
+    $("#order_tabs > ul").tabs();
+    
+    <?php
+        foreach($this->searchInputs as $input){
+            if($input['TYPE'] == 'DP'){
+                echo '$("#' . $input['SSV_NAME'] . '").datepicker({dateFormat: "yy-mm-dd"});';
+            }
+        }
+    ?>
+    
+    $(document).keypress(function(event){
+        // save orders data
+        if(event.which == 111){
+            
+            var dataToSave  =   new Array();
+            
+            $('#pick_orders [type2=editable]').each(function(){
+                dataToSave.push({input_name: $(this).attr('id'), input_value: $(this).val()});
+            })
+            
+            $.getJSON('<?php echo $this->url(array('action' => 'ajax-save-order-data', 'controller' => 'pick-order', 'module' => 'default')); ?>',{
+                data_to_save: $.toJSON(dataToSave)     
+            }, function(json){
+                
+                var trueResults     =   json.true_result;
+                var falseResults    =   json.false_result;
+                
+                if(trueResults.length > 0){
+                    showMessage(trueResults);    
+                }
+                
+                if(falseResults.length > 0){
+                    showErrors(falseResults);    
+                } 
+            })
+        }
+        
+        // save order lines data
+        if(event.which == 108){
+            
+            var dataToSave  =   new Array();
+            
+            $('#lines [type2=editable]').each(function(){
+                dataToSave.push({input_name: $(this).attr('id'), input_value: $(this).val()});
+            })
+            
+            $.getJSON('<?php echo $this->url(array('action' => 'ajax-save-order-line-data', 'controller' => 'pick-order', 'module' => 'default')); ?>',{
+                data_to_save: $.toJSON(dataToSave)     
+            }, function(json){
+                
+                var trueResults     =   json.true_result;
+                var falseResults    =   json.false_result;
+                
+                if(trueResults.length > 0){
+                    showMessage(trueResults);    
+                }
+                
+                if(falseResults.length > 0){
+                    showErrors(falseResults);    
+                } 
+            })
+                
+        }
+        
+        //save order lines and orders both
+        if(event.which == 97){
+            
+            //save orders
+            var dataToSave  =   new Array();
+            
+            $('#pick_orders [type2=editable]').each(function(){
+                dataToSave.push({input_name: $(this).attr('id'), input_value: $(this).val()});
+            })
+            
+            $.getJSON('<?php echo $this->url(array('action' => 'ajax-save-order-data', 'controller' => 'pick-order', 'module' => 'default')); ?>',{
+                data_to_save: $.toJSON(dataToSave)     
+            }, function(json){
+                
+                var trueResults     =   json.true_result;
+                var falseResults    =   json.false_result;
+                
+                if(trueResults.length > 0){
+                    showMessage(trueResults);    
+                }
+                
+                if(falseResults.length > 0){
+                    showErrors(falseResults);    
+                } 
+            })
+            
+            
+            //save order lines
+            var dataToSave  =   new Array();
+            
+            $('#lines [type2=editable]').each(function(){
+                dataToSave.push({input_name: $(this).attr('id'), input_value: $(this).val()});
+            })
+            
+            $.getJSON('<?php echo $this->url(array('action' => 'ajax-save-order-line-data', 'controller' => 'pick-order', 'module' => 'default')); ?>',{
+                data_to_save: $.toJSON(dataToSave)     
+            }, function(json){
+                
+                var trueResults     =   json.true_result;
+                var falseResults    =   json.false_result;
+                
+                if(trueResults.length > 0){
+                    showMessage(trueResults);    
+                }
+                
+                if(falseResults.length > 0){
+                    showErrors(falseResults);    
+                } 
+            })    
+            
+                
+        }
+        
+        //get new order
+        if(event.which == 110){
+            
+            if(window.isNewOrder){
+                return;    
+            }
+             
+            window.isNewOrder = true;
+            
+            $.get('<?php echo $this->url(array('action' => 'ajax-get-new-order', 'controller' => 'pick-order', 'module' => 'default')); ?>', {
+                
+            }, function(data){
+                $('#pick_orders_inner').prepend(data);    
+            })    
+        }
+        
+        //save new order
+        if(event.which == 115 && window.isNewOrder){
+            
+            window.isNewOrder = false;
+            
+            var dataToSave  =   new Array();
+            
+            $('#new-order-line [type2=editable]').each(function(){
+                dataToSave.push({input_name: $(this).attr('id'), input_value: $(this).val()});
+            })
+            
+            $.getJSON('<?php echo $this->url(array('action' => 'ajax-save-new-order', 'controller' => 'pick-order', 'module' => 'default')); ?>', {
+                data_to_save: $.toJSON(dataToSave)
+            }, function(json){
+                
+                if(json.result){
+                    showMessage(json.message);    
+                } else {
+                    showErrors(json.message);    
+                }
+                
+                $('#pick_orders_inner #new-order-line').remove(); 
+            })    
+        }
+        
+        //cancel new order
+        if(event.which == 99 && window.isNewOrder){
+            
+            window.isNewOrder = false;
+            
+            $('#pick_orders_inner #new-order-line').remove();    
+        }
+        
+        
+        
+    })
+    
+    $('#pick_orders').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,1],[2,0]], widgets: ['zebra']}).find('tbody a').click(function(e){
+        // e.target - link in the ORDER LIST table.
+        $('#order-edit').load(e.target.href, null, function(){
+            $(this).show();
+            $.scrollTo('#order-edit');
+            onAjaxSuccess();
+        });
+        return false;
+    });
+    $('#dialog-cancel').dialog({buttons: {OK: function(){
+            var reason = $('#cancel_reason')[0].value;
+            if (reason != '') {
+                $('#main').append('<input type="hidden" name="action" value="Cancel" /><input type="hidden" name="reason" value="' + reason + '" />').submit();
+            }
+            $('#dialog-cancel').dialog('close');
+        }},
+        autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+    
+    $('.cancel_button').click(function(){
+        $('#dialog-cancel').dialog('open');
+        return false;
+    });
+
+    // Mark selected elements.
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'pick-order', 'module' => 'default')); ?>', {method: 'init', id: 'select_all'}, showLinesAndShowSelected);
+
+    $('#new_button').click(function(){
+        $('#order-edit').load('<?php echo $this->url(array('controller' => 'pick-order', 'action' => 'new', 'pick_order_type' => 'SO'), null, true) ?>', null, function(){
+            $(this).show();
+            $.scrollTo('#order-edit');
+            onAjaxSuccess();
+        });
+        return false;
+    });
+  
+});
+
+function pickModeChange(node){
+	if (node.value!=' ') {
+		num = $('#pick_mode')[0].options[$('#pick_mode')[0].selectedIndex].value;
+		$('#select_mode_popup_'+num).dialog('open');
+	} else {
+        
+        $('#main').append('<input type="hidden" name="action" value="run_pick_mode" />');
+        $('#main').append('<input type="hidden" name="pick_proc" value="reset" />');
+        
+        frmSubmit();
+    }
+}
+
+// The handler the one element selection.
+function showSelected(target) {
+    // Select the first link in the current tr.
+    var link = $(target).parent().next().find('a');
+    if (link.length) {
+        link = link.get(0).href.replace(/\/edit\//, '/lines/');
+        $('#lines-list').load(link, {method: target.checked, id: target.value, value: target.value}, showLinesAndShowSelected);
+    }
+}
+function showLinesAndShowSelected() {
+    if ($('#json').length) {
+        var json = eval('(' + $('#json').html() + ')');
+        
+        $('#orders_selected').text(json.orders_selected);
+        $('#json').remove();
+        
+        if (!json.orders_selected) {
+            $('#lines-list').hide('normal');
+            $('.order-button').attr('disabled', true).css('background', '#eee');
+        } else {
+            $('#lines-list').show('normal');
+            $('.order-button').removeAttr('disabled').css('background', '#fff');
+        }
+        
+    }
+    $('#select_all_pick_orders')[0].checked = checkSelected('#pick_orders', '.pick-order-selector');
+
+    if ($('#total_displayed').length) {
+        $('.total_displayed').text($('#total_displayed').text());
+    }
+    if ($('#total_selected').length) {
+        $('.total_selected').text($('#total_selected').text());
+    }
+
+    onAjaxSuccess();
+}
+function selectAll(target) {
+    $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'pick-order', 'module' => 'default')); ?>', {method: target.checked, id: 'select_all'}, function(){
+        $('.pick-order-selector').attr('checked', target.checked);
+        showLinesAndShowSelected();
+    });
+}
+function checkSelected(tableId, checkBoxesClass) {
+    var checkBoxes = $(tableId).find(checkBoxesClass);
+    return checkBoxes.length == checkBoxes.filter(':checked').length;
+}
+</script>
+
+<script type="text/javascript">
+<!--
+
+function addFromLocationShow()
+{
+	$('#add_from_location_container').load('<?php echo $this->url(array('action' => 'add-from-location', 'controller' => 'pick-order', 'module' => 'default')); ?>');
+	$('#add_from_location_container').show();
+}
+ 
+
+function sendOrder()
+{
+    if($('#so_number')[0].value == '') {
+        alert('Please, enter SO number');
+        return false;
+    }
+
+    var data = $('#prompt').serialize();
+
+    $('#dialog2').dialog("close");
+
+    $.ajax({url: '<?php echo $this->url(array('controller' => 'pick-order')); ?>',
+           data:  data,
+           beforeSend: onAjaxBeforeSend,
+           complete: onAjaxSuccess,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        if(answer.status == false) {
+                            alert(answer.message);
+                        //    $('#dialog').dialog("close");
+                            return false;
+                        }
+                         // get url for redirect from server
+                         url = answer.data.url;
+                         window.location = url;
+
+                       // $('#dialog').dialog("close");
+                        },
+           method: 'get'
+           });
+
+    return false;
+}
+
+function newPrompt()
+{   
+    $("#dialog2").dialog("open");
+    return false;
+}
+
+function closeDialog()
+{
+    $('#dialog2').dialog("close");
+    return false;
+}
+
+function loadOrderLines(target){
+    
+    var orderId =   $(target).find(':checkbox').val();
+    
+    if(window.orderList[orderId] != undefined){
+        
+        delete window.orderList[orderId];
+        
+        $(target).find(':checkbox').attr('checked', true); 
+        
+        $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'pick-order', 'module' => 'default')); ?>', {
+            method: true, 
+            id:     orderId,
+            value:  orderId
+        }, showLinesAndShowSelected);
+                 
+    } else {
+        
+        window.orderList[orderId]   =   orderId;
+        
+        $(target).find(':checkbox').attr('checked', false);
+        
+        $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'pick-order', 'module' => 'default')); ?>', {
+            method: false, 
+            id:     orderId,
+            value:  orderId
+        }, showLinesAndShowSelected);    
+    }
+}
+
+//-->
+</script>
+
+
+<?php echo $this->render('footer.phtml'); ?>

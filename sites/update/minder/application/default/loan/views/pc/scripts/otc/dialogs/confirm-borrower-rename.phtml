@@ -1,0 +1,62 @@
+<div id="confirm_borrower_rename_dialog" class="flora otc-confirm_borrower_rename_dialog" title="Confirm Borrower Rename" style="display: none;">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <h1>Borrower with Borrower ID <strong class="current-borrower-id"></strong> already exists.</h1>
+        <br />Current borrower name is <strong class="current-borrower-name"></strong>.
+        <br />New borrower name is <strong class="new-borrower-name"></strong>.
+        <br />Do you want to rename borrower.
+    </form>
+</div>
+
+<script type="text/javascript">
+    $(function(){
+        // dialog add tool
+        $('#confirm_borrower_rename_dialog').dialog({
+            buttons: {
+                'RENAME': confirmBorrowerRenameDialogConfirmRename,
+                'HTML': '',
+                'CANCEL': confirmBorrowerRenameDialogCancelRename
+            },
+            width: '750px',
+            height: '320px',
+            autoOpen: false,
+            position: [0, 65],
+            buttonStyle: 'otc-dialog-button'
+        }).bind('dialogopen', function(event, ui) {
+            $('#confirm_borrower_rename_dialog').attr('active', 'active');
+            $(this).show();
+            $('#barcode').focus();
+        }).bind('dialogclose', function(){
+            var $confirmBorrowerRenameDialog = $('#confirm_borrower_rename_dialog');
+
+            $confirmBorrowerRenameDialog.removeAttr('active');
+            $('#barcode').focus();
+
+            $confirmBorrowerRenameDialog.data('deferred').resolve(!!$confirmBorrowerRenameDialog.data('confirmed'));
+        });
+    });
+
+    function confirmBorrowerRenameDialogConfirm(newBorrower, existedBorrower) {
+        var result = $.Deferred(),
+            $confirmBorrowerRenameDialog = $("#confirm_borrower_rename_dialog");
+
+        $confirmBorrowerRenameDialog.find('.current-borrower-id').text(newBorrower.borrower_id);
+        $confirmBorrowerRenameDialog.find('.current-borrower-name').text(existedBorrower.borrowerName);
+        $confirmBorrowerRenameDialog.find('.new-borrower-name').text(newBorrower.borrower_name);
+
+        $confirmBorrowerRenameDialog.data('deferred', result);
+        $confirmBorrowerRenameDialog.data('confirmed', false);
+        $confirmBorrowerRenameDialog.dialog("open");
+
+        return result.promise();
+    }
+
+    function confirmBorrowerRenameDialogConfirmRename(evt) {
+        $('#confirm_borrower_rename_dialog').data('confirmed', true).dialog('close');
+        return false;
+    }
+
+    function confirmBorrowerRenameDialogCancelRename() {
+        $('#confirm_borrower_rename_dialog').data('confirmed', false).dialog('close');
+        return false;
+    }
+</script>

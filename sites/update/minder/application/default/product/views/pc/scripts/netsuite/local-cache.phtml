@@ -1,0 +1,51 @@
+<?php
+echo $this->render('header.phtml');
+?>
+<form action="" method="post" name="nav">
+<ul class="toolbar">
+        <li>Select type of Order <?php echo $this->formSelect('type', $this->selectedType, array('onchange' => 'document.forms.nav.submit();'), array('S' => 'salesOrder',
+                                                                                                                                                      'P' => 'purchaseOrder')); ?></li>
+        <li>Page <?php echo $this->formSelect('pageselector', $this->page, array('onchange' => 'document.forms.nav.submit();'), $this->pages); ?></li>
+</ul>
+</form>
+<table class="tablesorter withborder">
+<thead>
+    <tr>
+        <th>Internal ID</th>
+        <th>Type</th>
+        <th>Created Date</th>
+        <th>TranDate</th>
+        <th>TranID</th>
+        <th>Status</th>
+    </tr>
+</thead>
+<tbody>
+<?php
+foreach ($this->data as $key => $obj) {
+    echo '<tr>';
+    echo '<td>';
+    echo $obj->internalId;
+    echo '</td>';
+    echo '<td>';
+    echo $obj->type;
+    echo '</td>';
+    echo '<td>';
+    echo date('Y-m-d H:i:s', strtotime($obj->createdDate));
+    echo '</td>';
+    echo '<td>';
+    echo date('Y-m-d H:i:s', strtotime($obj->tranDate));
+    echo '</td>';
+    echo '<td>';
+    echo $obj->tranId;
+    echo '</td>';
+    echo '<td>';
+    echo $obj->status;
+    echo '</td>';
+    echo '</tr>';
+}
+?>
+</tbody>
+</table>
+<?php
+echo $this->render('footer.phtml');
+?>

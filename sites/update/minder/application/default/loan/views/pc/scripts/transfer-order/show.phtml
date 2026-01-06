@@ -1,0 +1,455 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php
+$invoiceToList = array('none' => '');
+$shipToList = array('none' => '');
+if ($this->pickOrder->personId != '') {
+    $invoiceToAddresses = $this->minder->getAddresses('MT', $this->pickOrder->personId);
+    $i = 0;
+    foreach ($invoiceToAddresses as $addr) {
+        $t = $addr->line1;
+        if ($addr->line2 != '') { $t .= ', ' . $addr->line2; }
+        if ($addr->city != '') { $t .= ', ' . $addr->city; }
+        if ($addr->state != '') { $t .= ', ' . $addr->state; }
+        if ($addr->postcode != '') { $t .= ', ' . $addr->postcode; }
+        if ($addr->country != '') { $t .= ', ' . $addr->country; }
+        $invoiceToList['r' . $addr->recordId] = $t;
+        $i++;
+    }
+    $shipToAddresses = $this->minder->getAddresses('DT', $this->pickOrder->personId);
+    $i = 0;
+    foreach ($shipToAddresses as $addr) {
+        $t = $addr->line1;
+        if ($addr->line2 != '') { $t .= ', ' . $addr->line2; }
+        if ($addr->city != '') { $t .= ', ' . $addr->city; }
+        if ($addr->state != '') { $t .= ', ' . $addr->state; }
+        if ($addr->postcode != '') { $t .= ', ' . $addr->postcode; }
+        if ($addr->country != '') { $t .= ', ' . $addr->country; }
+        $shipToList['r' . $addr->recordId] = $t;
+        $i++;
+    }
+}
+?>
+
+<form action="<?php echo $this->url(); ?>" method="post">
+    <h1>Sales Order: <?php echo $this->escape($this->pickOrder->pickOrder); ?></h1>
+
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Lines" /></li>
+        <li><input type="submit" name="action" value="Edit" /></li>
+        <li><input type="submit" name="action" value="Confirm" <?php if (!$this->pickOrder->canConfirm()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Reserve" <?php if (!$this->pickOrder->canReserve()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Approve Pick" <?php if (!$this->pickOrder->canApproveForPicking()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Approve Despatch" <?php if (!$this->pickOrder->canApproveForDespatch()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Hold" <?php if (!$this->pickOrder->canHold()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="UnHold" <?php if (!$this->pickOrder->canUnHold()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Cancel" <?php if (!$this->pickOrder->canCancel()) echo 'disabled="disabled"'; ?> onclick="cancelPickOrder()" /></li>
+    </ul>
+
+    <div class="section">
+        <h2>General</h2>
+        <table class="summary">
+            <tr>
+                <th>Status</th>
+                <td><?php $l = $this->minder->getPickOrderStatusList(); echo $this->escape(isset($l[$this->pickOrder->pickStatus]) ? $l[$this->pickOrder->pickStatus] : $this->pickOrder->pickStatus); ?></td>
+                <th>Priority</th>
+                <td><?php echo $this->escape($this->pickOrder->pickPriority); ?></td>
+            </tr>
+        <tr>
+            <th>Created</th>
+            <td><?php echo $this->escape($this->pickOrder->createDate); ?> <?php if ($this->pickOrder->createdBy != '') { echo '(' . $this->escape($this->pickOrder->createdBy) . ')'; } ?></td>
+            <th>Last Updated</th>
+            <td><?php echo $this->escape($this->pickOrder->lastUpdateDate); ?> (<?php echo $this->escape($this->pickOrder->updateId); ?>)</td>
+        </tr>
+        <tr>
+            <th>Pick Approved</th>
+            <td><?php echo $this->escape($this->pickOrder->approvedDate); ?> <?php if ($this->pickOrder->approvedBy != '') { echo '(' . $this->escape($this->pickOrder->approvedBy) . ')'; } ?></td>
+            <th>Started</th>
+            <td><?php echo $this->escape($this->pickOrder->pickOrderStarted); ?></td>
+        </tr>
+        <tr>
+            <th>Printed</th>
+            <td><?php echo $this->escape($this->pickOrder->printedDate); ?></td>
+            <th>Assembly</th>
+            <td><?php echo $this->escape($this->pickOrder->assemblyStarted); ?></td>
+        </tr>
+        <tr>
+            <th>Despatch Approved</th>
+            <td><?php echo $this->escape($this->pickOrder->approvedDespDate); ?> <?php if ($this->pickOrder->approvedDespBy != '') { echo '(' . $this->escape($this->pickOrder->approvedDespBy) . ')'; } ?></td>
+            <th>Cancelled</th>
+            <td><?php echo $this->escape($this->pickOrder->orderCancelled); ?></td>
+        </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Sold From</h2>
+        <table class="summary">
+            <tr>
+                <th><label>Company</label></th>
+                <td><?php $l = $this->minder->getProductOwnerList(); echo $this->escape(isset($l[$this->pickOrder->companyId]) ? $l[$this->pickOrder->companyId] : $this->pickOrder->companyId); ?></td>
+                <th><label>Cost Centre</label></th>
+                <td><?php $l = $this->minder->getCostCentreList(); echo $this->escape(isset($l[$this->pickOrder->costCenter]) ? $l[$this->pickOrder->costCenter] : $this->pickOrder->costCenter); ?></td>
+            </tr>
+            <tr>
+                <th><label>Warehouse</label></th>
+                <td><?php $l = $this->minder->getWarehouseList(); echo $this->escape(isset($l[$this->pickOrder->whId]) ? $l[$this->pickOrder->whId] : $this->pickOrder->whId); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Supplied By</h2>
+        <table class="summary">
+            <tr>
+                <th><label>Same as sold from</label></th>
+                <td><?php echo ($this->pickOrder->sSameAsSoldFrom == 'T' ? 'Yes' : 'No'); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Supplied By</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sPersonId); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>First Name</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sFirstName); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Last Name</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sLastName); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><h3>Supplied By Address</h3></th>
+                <td><?php echo $this->escape($this->pickOrder->sAddressLine1); ?><br /><?php $this->escape($this->pickOrder->sAddressLine2); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>City</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sCity); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>State</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sState); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Postcode</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sPostCode); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Country</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sCountry); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th><label>Telephone</label></th>
+                <td><?php echo $this->escape($this->pickOrder->sPhone); ?></td>
+                <th></th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Sold To</h2>
+        <table class="summary">
+            <tr>
+                <th><label>Sold To</lable></th>
+                <td><?php echo $this->escape($this->pickOrder->personId); ?></td>
+                <th><label>Customer Reference</label></th>
+                <td><?php echo $this->escape($this->pickOrder->customerPoWo); ?></td>
+            </tr>
+            <tr>
+                <th><label>Contact</label></th>
+                <td><?php echo $this->escape($this->pickOrder->contactName); ?></td>
+                <th><label>Due Date</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pickDueDate); ?></td>
+            </tr>
+            <tr>
+                <th><h3>Invoice Address</h3></th>
+                <td></td>
+                <th><h3>Shipping Address</h3></th>
+                <td></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td></td>
+                <th>Same as invoice</th>
+                <td><?php echo ($this->pickOrder->pSameAsInvoiceTo == 'T' ? 'Yes' : 'No'); ?></td>
+            </tr>
+            <tr>
+                <th><label>First Name</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pFirstName); ?></td>
+                <th><label>First Name</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dFirstName); ?></td>
+            </tr>
+            <tr>
+                <th><label>Last Name</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pLastName); ?></td>
+                <th><label>Last Name</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dLastName); ?></td>
+            </tr>
+            <tr>
+                <th><label>Address</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pAddressLine1); ?><br /><?php echo $this->escape($this->pickOrder->pAddressLine2); ?></td>
+                <th><label>Address</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dAddressLine1); ?><br /><?php echo $this->escape($this->pickOrder->dAddressLine2); ?></td>
+            </tr>
+            <tr>
+                <th><label>City</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pCity); ?></td>
+                <th><label>City</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dCity); ?></td>
+            </tr>
+            <tr>
+                <th><label>State</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pState); ?></td>
+                <th><label>State</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dState); ?></td>
+            </tr>
+            <tr>
+                <th><label>Postcode</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pPostCode); ?></td>
+                <th><label>Postcode</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dPostCode); ?></td>
+            </tr>
+            <tr>
+                <th><label>Country</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pCountry); ?></td>
+                <th><label>Country</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dCountry); ?></td>
+            </tr>
+            <tr>
+                <th><label>Telephone</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pPhone); ?></td>
+                <th><label>Telephone</label></th>
+                <td><?php echo $this->escape($this->pickOrder->dPhone); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Shipping Information</h2>
+        <table class="summary">
+            <tr>
+                <th><label>Ship Via</label></th>
+                <td><?php $l = $this->minder->getShipViaList(); echo $this->escape(isset($l[$this->pickOrder->shipVia]) ? $l[$this->pickOrder->shipVia] : $this->pickOrder->shipVia); ?></td>
+                <th><label>Other Documents &amp; Inclusions</label></th>
+                <td><?php echo ($this->pickOrder->supplierList == 'T' ? 'Yes' : 'No'); ?></td>
+            </tr>
+            <tr>
+                <th><label>Service</label></th>
+                <td><?php $l = $this->minder->getShipServiceList($this->pickOrder->shipVia); echo $this->escape(isset($l[$this->pickOrder->shipService]) ? $l[$this->pickOrder->shipService] : $this->pickOrder->shipService); ?></td>
+                <th><label>Send Invoice with Goods</label></th>
+                <td><?php echo ($this->pickOrder->invWithGoods == 'T' ? 'Yes' : 'No'); ?></td>
+            </tr>
+            <tr>
+                <th><label>Run #</label></th>
+                <td><?php echo $this->escape($this->pickOrder->deliveryRunNo); ?></td>
+                <th><label>Allow partial pick</label></th>
+                <td><?php echo ($this->pickOrder->partialPickAllowed == 'T' ? 'Yes' : 'No'); ?></td>
+            </tr>
+            <tr>
+                <th><label>Despatch Location</label></th>
+                <td><?php $l = $this->minder->getDespatchLocationList($this->pickOrder->whId); echo $this->escape(isset($l[$this->pickOrder->despatchLocation]) ? $l[$this->pickOrder->despatchLocation] : $this->pickOrder->despatchLocation); ?></td>
+                <th><label>Export Category</label></th>
+                <td><?php $l = $this->minder->getExportCategoryList(); echo $this->escape(isset($l[$this->pickOrder->exportCategory]) ? $l[$this->pickOrder->exportCategory] : $this->pickOrder->exportCategory); ?></td>
+            </tr>
+            <tr>
+                <th><label>Aust 4-State Barcode No</label></th>
+                <td><?php echo $this->escape($this->pickOrder->pAustPost4stateId); ?></td>
+                <th><label>Net Weight</label></th>
+                <td><?php echo $this->escape($this->pickOrder->netWeight); ?></td>
+            </tr>
+            <tr>
+                <th><label>Oversize</label></th>
+                <td><?php echo ($this->pickOrder->overSized == 'T' ? 'Yes' : 'No'); ?></td>
+                <th>Package Base</th>
+                <td><?php $l = $this->minder->getPackageBaseList();  echo $this->escape(isset($l[$this->pickOrder->palletBase]) ? $l[$this->pickOrder->palletBase] : $this->pickOrder->palletBase); ?></td>
+            </tr>
+            <tr>
+                <th>Oversize Reason</th>
+                <td><?php echo $this->escape($this->pickOrder->overSizedReason); ?></td>
+                <th><label></label></th>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Billing Information</h2>
+        <table class="summary">
+            <tr>
+                <th></th>
+                <td></td>
+                <th>Sub Total</th>
+                <td><?php echo $this->escape($this->pickOrder->subTotalAmount); ?></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td></td>
+                <th>Freight</th>
+                <td><?php echo $this->escape($this->pickOrder->freight); ?></td>
+            </tr>
+            <tr>
+                <th>Administration Fee (%)</th>
+                <td><?php echo $this->escape($this->pickOrder->adminFeeRate); ?></td>
+                <th>Administration Fee ($)</th>
+                <td><?php echo $this->escape($this->pickOrder->adminFeeAmount); ?></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td></td>
+                <th>Other Cost 1</th>
+                <td><?php echo $this->escape($this->pickOrder->otherNum1); ?></td>
+            </tr>
+            <tr>
+                <th></th>
+                <td></td>
+                <th>Other Cost 2</th>
+                <td><?php echo $this->escape($this->pickOrder->otherNum2); ?></td>
+            </tr>
+            <tr>
+                <th>Tax (%)</th>
+                <td><?php echo $this->escape($this->pickOrder->taxRate); ?></td>
+                <th>Tax ($)</th>
+                <td><?php echo $this->escape($this->pickOrder->taxAmount); ?></td>
+            </tr>
+            <tr>
+                <th><label>Payment Method</label></th>
+                <td><?php $l = $this->minder->getPaymentMethodList(); echo $this->escape(isset($l[$this->pickOrder->paymentMethod]) ? $l[$this->pickOrder->paymentMethod] : $this->pickOrder->paymentMethod); ?></td>
+                <th>Deposit Received</th>
+                <td><?php echo $this->escape($this->pickOrder->amountPaid); ?></td>
+            </tr>
+            <tr>
+                <th><label>Terms</label></th>
+                <td><?php $l = $this->minder->getPaymentTermsList(); echo $this->escape(isset($l[$this->pickOrder->terms]) ? $l[$this->pickOrder->terms] : $this->pickOrder->terms); ?></td>
+                <th>Amount Due</th>
+                <td><?php echo $this->escape($this->pickOrder->dueAmount); ?></td>
+            </tr>
+        </table>
+    </div>
+    <div class="section">
+        <h2>Notes</h2>
+<?php
+if (isset($this->notes['Instructions'])):
+?>
+        <h3>Instructions</h3>
+        <table class="summary">
+<?php
+if (in_array('External', $this->notes['Instructions'])) {
+?>
+            <tr>
+                <th>External:</th>
+                <td colspan="3"><?php echo $this->escape($this->pickOrder->specialInstructions1); ?></td>
+            </tr>
+<?php
+}
+if (in_array('Internal', $this->notes['Instructions'])) {
+?>
+            <tr>
+                <th>Internal:</th>
+                <td colspan="3"><?php echo $this->escape($this->pickOrder->specialInstructions2); ?></td>
+<?php
+}
+?>
+        </table>
+<?php
+endif;
+if (isset($this->notes['Other Notes'])):
+?>
+        <h3>Other Notes</h3>
+        <table class="summary">
+<?php foreach ($this->notes['Other Notes'] as $v) { $propName = 'other' . $v; ?>
+            <tr>
+                <th><?php echo $v; ?></th>
+                <td colspan="3"><?php echo $this->escape($this->pickOrder->$propName); ?></td>
+            </tr>
+<?php } ?>
+        </table>
+<?php
+endif;
+if (isset($this->notes['Remarks'])):
+?>
+        <h3>Remarks</h3>
+        <table class="summary">
+<?php foreach ($this->notes['Remarks'] as $v) { $propName = 'remarks' . $v; ?>
+            <tr>
+                <th><?php echo $v; ?></th>
+                <td colspan="3"><?php echo $this->escape($this->pickOrder->$propName); ?></td>
+            </tr>
+<?php } ?>
+        </table>
+<?php
+endif;
+if (isset($this->notes['Footer'])):
+?>
+        <h3>Footer</h3>
+        <table class="summary">
+<?php foreach ($this->notes['Footer'] as $v) { $propName = 'footer' . $v; ?>
+            <tr>
+                <th><?php echo $v; ?></th>
+                <td colspan="3"><?php echo $this->escape($this->pickOrder->$propName); ?></td>
+            </tr>
+<?php } ?>
+        </table>
+<?php
+endif;
+?>
+    </div>
+
+    <ul class="toolbar">
+        <li><input type="submit" name="action" value="Lines" /></li>
+        <li><input type="submit" name="action" value="Edit" /></li>
+        <li><input type="submit" name="action" value="Confirm" <?php if (!$this->pickOrder->canConfirm()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Reserve" <?php if (!$this->pickOrder->canReserve()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Approve Pick" <?php if (!$this->pickOrder->canApproveForPicking()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Approve Despatch" <?php if (!$this->pickOrder->canApproveForDespatch()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Hold" <?php if (!$this->pickOrder->canHold()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="UnHold" <?php if (!$this->pickOrder->canUnHold()) echo 'disabled="disabled"'; ?> /></li>
+        <li><input type="submit" name="action" value="Cancel" <?php if (!$this->pickOrder->canCancel()) echo 'disabled="disabled"'; ?> onclick="cancelPickOrder()" /></li>
+    </ul>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function(){
+<?php
+if (isset($this->notes['Instructions'])) {
+?>
+    $('#instructions').tabs();
+<?php
+}
+if (isset($this->notes['Other Notes'])) {
+?>
+    $('#other_notes').tabs();
+<?php
+}
+if (isset($this->notes['Remarks'])) {
+?>
+    $('#remarks').tabs();
+<?php
+}
+if (isset($this->notes['Footer'])) {
+?>
+    $('#footerctrl').tabs();
+<?php
+}
+?>
+    $('#pick_priority').focus();
+});
+
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

@@ -1,0 +1,178 @@
+<!-- change carriers dialog -->
+<div id="change_carriers_dialog" title="Confirm Carrier" class="flora">
+    <form action="<?php echo $this->url(array('action' => 'change-carrier'));?>" method="post">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td>
+                    Select Carrier ID:
+                </td>
+                <td>
+                    <?php echo $this->formSelect('carrier_id', '', array('id' => ''), array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Select Carrier Service:
+                </td>
+                <td>
+                    <?php echo $this->formSelect('service_id', '', array('id' => ''), array()); ?>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- change carriers dialog -->
+<script type="text/javascript">
+    /**
+     * @class Minder.AwaitingChecking.Dlg.ChangeCarrierDialog
+     */
+    minderNamespace('Minder.AwaitingChecking.Dlg.ChangeCarrierDialog', function(){
+        const SUCCESS = 'successful-update';
+
+        this._carriers = [];
+        this._carrierServices = [];
+
+        this.init = function(carriers, carrierServices) {
+            var $dialog = this.getDialogContainer();
+
+            $dialog.dialog(
+                {
+                    buttons: {
+                        CHANGE: function(evt){
+                            evt.preventDefault();
+                            $dialog.find('form').submit();
+                        },
+                        'HTML': true,
+                        CANCEL: function(evt){
+                            evt.preventDefault();
+                            $dialog.dialog('close');
+                        }},
+                    buttonStyle: 'green-button',
+                    insertHtml:  '&nbsp;',
+                    autoOpen  : false,
+                    width     : 400,
+                    height    : 160,
+                    resizable : true,
+                    modal     : false
+                }
+            );
+
+            $dialog.find('[name="carrier_id"]').change($.proxy(this.onCarrierChanged, this));
+
+            this.setCarriers(carriers);
+            this.setCarrierServices(carrierServices);
+
+            $dialog.find('form').submit($.proxy(this.onSubmit, this));
+        };
+
+        this.onSubmit = function(evt) {
+            var $target = $(evt.target);
+
+            evt.preventDefault();
+
+            $.post(
+                $target.attr('action'),
+                $target.serialize(),
+                $.proxy(this.onResponse, this),
+                'json'
+            );
+        };
+
+        this.onResponse = function(response) {
+            var
+                successEvent = $.Event(SUCCESS);
+            showResponseMessages(response);
+
+            if (response.errors && response.errors.length > 0) {
+                return;
+            }
+
+            this.getDialogContainer().trigger(successEvent);
+            this.close();
+        };
+
+        this.addSuccessListener = function(namespace, callback) {
+            var fullName = SUCCESS + '.' + namespace;
+            this.getDialogContainer().unbind(fullName).bind(fullName, callback);
+        };
+
+        this.onCarrierChanged = function(evt) {
+            var selectedCarrierId = this.getSelectedCarrierId();
+            evt.preventDefault();
+            this.fillCarrierServices(this.getCarrierServices([selectedCarrierId]), this.getDefaultCarrierService(selectedCarrierId));
+        };
+
+        this.setCarriers = function(carriers) {
+            var selectedCarrierId = this.getSelectedCarrierId();
+            this._carriers = carriers || [];
+            this.fillCarriers(carriers);
+
+            this.fillCarrierServices(this.getCarrierServices([selectedCarrierId]), this.getDefaultCarrierService(selectedCarrierId));
+        };
+
+        this.fillCarriers = function(carriers) {
+            var
+                $carriers = this.getDialogContainer().find('[name="carrier_id"]'),
+                options = carriers
+                .map(function(carrier){return '<option value="' + carrier.CARRIER_ID + '">' + carrier.CARRIER_ID + '</option>';})
+                .join('');
+
+            $carriers.empty();
+            $(options).appendTo($carriers);
+        };
+
+        this.getSelectedCarrierId = function() {
+            return this.getDialogContainer().find('[name="carrier_id"]').find('option').filter(':selected').val();
+        };
+
+        this.getDefaultCarrierService = function(carrierId) {
+            var carrier = this._carriers.filter(function(carrier){return carrier.CARRIER_ID === carrierId;}).shift();
+
+            return carrier ? carrier.DEFAULT_SERVICE_TYPE : null;
+        };
+
+        this.setCarrierServices = function(carrierServices) {
+            var selectedCarrierId = this.getSelectedCarrierId();
+            this._carrierServices = carrierServices || [];
+            this.fillCarrierServices(this.getCarrierServices([selectedCarrierId]), this.getDefaultCarrierService(selectedCarrierId));
+        };
+
+        this.fillCarrierServices = function(carrierServices, defaultServiceId) {
+            var
+                $carrierServices = this.getDialogContainer().find('[name="service_id"]'),
+                options = carrierServices
+                    .map(function(carrierService){
+                        var selected = (carrierService.RECORD_ID.toString() === defaultServiceId ? 'selected' : '');
+                        return '<option value="' + carrierService.RECORD_ID + '" ' + selected + '>' + carrierService.DESCRIPTION + '</option>';
+                    })
+                    .join('');
+
+            $carrierServices.empty();
+            $(options).appendTo($carrierServices);
+        };
+
+        this.getCarrierServices = function(carrierIds) {
+            carrierIds = carrierIds || [];
+
+            return carrierIds.length < 1 ?
+                this._carrierServices :
+                this._carrierServices.filter(function(carrierService){
+                    return carrierIds.indexOf(carrierService.CARRIER_ID) > -1;
+                });
+        };
+
+        this.show = function() {
+            this.getDialogContainer().dialog('open');
+        };
+
+        this.close = function() {
+            this.getDialogContainer().dialog('close');
+        };
+
+        this.getDialogContainer = function() {
+            return $('#change_carriers_dialog');
+        };
+    });
+
+
+</script>

@@ -1,0 +1,25 @@
+<fieldset style="float:left;" title="ADD_PRODUCT">
+    <legend>Add Product</legend>
+    <table>
+        <tr>
+            <td>
+                <input type="text" name="product_name" value="" id="product_name" style="width: <?php echo $width = $this->showProductPrice ? '250px' : '350px'; ?>;" />
+                <label for="product_qty">Qty:</label>
+                <input type="text" name="product_qty" value="" id="product_qty" style="width:50px;" />
+                <?php if($this->showProductPrice) { ?>
+                <label for="product_price">Default $:</label>
+                <input type="text" name="product_price" value="" id="product_price" style="width:50px;" />
+                <?php } ?>
+            </td>
+        </tr>
+        <tr>
+             <td>
+                <input type="submit" class="mdr-button" name="action" value="ADD PRODUCT" id="product_add" onclick="return false;" />
+                <input type="radio" name="product_options" value="product_code" checked="checked" id="product_code" />
+                <label for="product_options">Product Code</label>
+                <input type="radio" name="product_options" value="product_description" id="product_description" />
+                <label for="product_options">Description</label>
+             </td>
+        </tr>
+    </table>
+</fieldset>

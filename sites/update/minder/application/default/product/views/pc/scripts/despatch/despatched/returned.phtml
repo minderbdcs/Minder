@@ -1,0 +1,101 @@
+<?php if(!$this->isLast) { ?>
+
+    <ul id="error" style="display: none;">
+        <li></li>
+    </ul>
+    
+    <input type="hidden" name="return_required_qty" value="<?php echo $this->returnedQty; ?>" id="return_required_qty" />
+    
+    <input type="hidden" name="result" value="<?php echo $this->result; ?>" id="result" />
+    <input type="hidden" name="message" value="<?php echo $this->message; ?>" id="message" />
+    <b>RETURNED: <span id="ssn_id"><?php echo $this->returnedItem ?><span id="ssn_id"></b>
+    <table>
+        <tr>
+            <th>Returned to Location:</th>
+            <td><?php echo $this->formSelect('location_list', null, null, $this->locationList); ?></td>
+        </tr>
+        <tr>
+            <th>Reason for Return:</th>
+            <td><?php echo $this->formSelect('return_reason', null, null, $this->reasonList); ?></td>
+        </tr>
+        <tr>
+            <th>Quantity Returned:</th>
+            <td><?php echo $this->formText('returned_qty', $this->returnedQty, array('style' => 'width:40px;')); ?></td>
+        </tr>
+    </table>
+    <br />
+    <div id="" style="width: 340px; text-align: left">
+        <input type="button" name="action" class="order-button" value="ACCEPT" onclick="acceptReturn();"  />
+        &nbsp;&nbsp;
+        <input type="button" name="action" class="order-button" value="CANCEL" onclick="cancelReturn();" />
+    </div>
+    <script type="text/javascript">
+    /* <![CDATA[ */
+        
+        function acceptReturn(){
+            var returnRequiredQty   =   parseInt($('#return_required_qty').val());
+            var returnedQty         =   parseInt($('#returned_qty').val());
+            var returnSsnId         =   $('#ssn_id').text();
+            var returnedLocation    =   $('#location_list option:selected').val();
+            var returnReason        =   $('#return_reason option:selected').val();
+            var selectedId          =   new Array();
+            
+            if(returnedQty <= returnRequiredQty){
+                
+                $('#returned_form').load('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'returned'), null, true); ?>', 
+                {
+                    action:             'ACCEPT',
+                    returned_qty:       returnedQty,
+                    returned_location:  returnedLocation,
+                    returned_reason:    returnReason,
+                    returned_ssn_id:    returnSsnId
+                    
+                }, function(){
+                    
+                    var message =   $('#message').val();
+                    var result  =   $('#result').val();
+                    
+                    if(result){
+                        $('#error li').text(message);
+                        $('#error').addClass('messages').show();
+                        
+                        setTimeout('hideMessage()', 10000);
+                            
+                    } else {
+                        $('#error li').text(message);
+                        $('#error').addClass('errors').show();
+                        
+                        setTimeout('hideMessage()', 10000);
+                    }
+                });
+            
+            } else {
+                alert('Quantity Returned must be <= Qty Picked');
+                $('#returned_qty').focus().val('');
+            }
+                 
+        }
+        
+        function cancelReturn(){
+            $.post('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'returned'), null, true); ?>',{
+                action: 'CANCEL'    
+            }, function(){
+                $('#returned_form').hide();    
+            });    
+        }
+        
+        function hideMessage(){
+            $('#error').hide();    
+        }
+    /* ]]> */
+    </script>
+
+<?php } else { ?>
+    
+    <ul id="error" style="display: none;">
+        <li></li>
+    </ul>
+    
+    <input type="hidden" name="result" value="<?php echo $this->result; ?>" id="result" />
+    <input type="hidden" name="message" value="<?php echo $this->message; ?>" id="message" />
+<?php } ?>

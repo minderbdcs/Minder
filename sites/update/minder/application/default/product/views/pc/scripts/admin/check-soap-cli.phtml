@@ -1,0 +1,54 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php echo $this->messenger()->all(); ?>
+<h2>CLI STATUS - <?php echo $this->currentTime; ?></h2>
+<div style="width:50%">
+<form action="" method="post">
+<ul class="toolbar">
+    <li>Current CLI SERVICE: <b><?php echo $this->serviceStatus; ?></b></li>
+    <li><?php echo $this->formSubmit('action', 'RUN CLI SERVICE'); ?></li>
+    <li><?php echo $this->formSubmit('action', 'STOP CLI SERVICE'); ?></li>
+</ul>
+<fieldset>
+    <legend>Status info via DB</legend>
+    <ul class="toolbar">
+        <li>Last Update: <?php echo $this->formLabel('Last update', $this->dbLastUpdate); ?></li>
+    </ul>
+</fieldset>
+<fieldset>
+    <legend>SOAP Transaction status</legend>
+    <ul class="toolbar">
+        <li>Current Status: <?php echo $this->lockStatus; ?></li>
+        <li>Time of last changes : <?php echo $this->lockDate; ?></li>
+        <li><?php echo $this->formSubmit('action', $this->toggleStatus, array()); ?>
+    </ul>
+</fieldset>
+<fieldset>
+    <legend>Default settings:</legend>
+    <p>
+        By default update runs every <?php echo $this->periodUpdate; ?> minute(s)
+    </p>
+    <p>
+        By default commit runs every <?php echo $this->periodCommit; ?> minute(s)
+    </p>
+</fieldset>
+<fieldset>
+    <legend>Status info via Log's:</legend>
+    <ul class="toolbar">
+        <li>Last Update: <?php echo $this->formLabel('Last update', $this->lastUpdate); ?></li>
+    </ul>
+    <ul class="toolbar">
+        <li>Last Commit: <?php echo $this->formLabel('Last commit', $this->lastCommit); ?></li>
+    </ul>
+    <hr/>
+        <p>Search response: <?php echo $this->toImport; ?></p>
+        <p>Imported/updated: <?php echo $this->imported; ?></p>
+            <fieldset>
+                <legend>Total Rejected: <?php echo $this->rejected; ?></legend>
+                    <p>LastModifiedDate less than cache date: <?php echo $this->reason['lastModifiedDate']; ?></p>
+                    <p>Order doesn't have required field: <?php echo $this->reason['no required field']; ?></p>
+                    <p>Order with Status not allowed for import: <?php echo $this->reason['not allowed status']; ?></p>
+            </fieldset>
+</fieldset>
+</form>
+</div>
+<?php echo $this->render('footer.phtml'); ?>

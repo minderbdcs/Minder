@@ -1,0 +1,100 @@
+<?php
+
+if ($this->error) {
+    echo $this->error;
+    return;
+}
+    $totalSelected = ($this->total > 0 && $this->total == $this->totalSelect);
+    $from = count($this->data) > 0 ? $this->navigation['pageselector'] * $this->navigation['show_by'] + 1 : 0;
+    $till = ($from > 0) ? $from + count($this->data) - 1: 0;
+?>
+<div class="mdr-dialog-header">
+<h1><?php echo $this->title; ?></h1>
+   <div style="position: relative; left:10px;">
+       <b>Selected:</b> <span  class="rows_selected" style="font-weight: bold;"><?php echo count($this->conditions); ?></span>
+       <label for="results_per_page">View By:</label>
+       <?php echo $this->formSelect('show_by_loans',
+                        $this->navigation['show_by'],
+                        array('class' => 'show-by', 'id' => ''),
+                       array(5  => 5,
+                           10 => 10,
+                           15 => 15,
+                           20 => 20,
+                           30 => 30,
+                           40 => 40,
+                           50 => 50,
+                           100 => 100)) ?>
+       <label for="page">Page:</label>
+       <?php echo $this->formSelect('pageselector_loans',
+                $this->navigation['pageselector'],
+                array('class' => 'page-no', 'id' => ''),
+                $this->pages); ?>
+   </div>
+</div>
+<div style="overflow: auto; height: 250px;" class="mdr-dialog-content">
+    <table id="lines_loans" class="withborder tablesorter" style="min-width: 650px;">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_rows', 'select_all', array('checked' => $totalSelected, 'class' => 'select_all_rows', 'id' => '')); ?>
+            </th>
+            <?php
+            foreach ($this->headers as $header) {
+                echo '<th>'. $this->escape($header) . '</th>';
+            }
+            ?>
+        </tr>
+        </thead>
+        <tbody>
+
+        <?php   foreach ($this->data as $dataRow) {  ?>
+        <tr id="<?php echo $dataRow['RECORD_ID']; ?>">
+            <th><?php
+                if(in_array($dataRow['RECORD_ID'], $this->conditions)) {
+                    echo $this->formCheckbox($dataRow['RECORD_ID'], $dataRow['RECORD_ID'], array('checked' => 'true')) . '</th>';
+                } else {
+                    echo $this->formCheckbox($dataRow['RECORD_ID'], $dataRow['RECORD_ID']) . '</th>';
+                }
+
+                $tooltip = 'No description';
+                foreach ($this->headers as $key => $val) {
+                    $class = '';
+                    if (strtoupper($key) == 'ACTION') {
+                        $class = (strtoupper($dataRow[$key]) == 'I') ? 'mdr-otc-issued' : 'mdr-otc-returned';
+                    }
+                ?>
+
+                    <td class="<?php echo $class;?>"><?php echo $this->escape($dataRow[$key]) ?></td>
+
+                    <?php } ?>
+
+        </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+</div>
+<div class="mdr-dialog-footer">
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <li id='rec_counter_issues' style="display: inline;">
+            <div id='num_rec_issues'>
+                Total records <?php echo ($this->numRecords) ? $this->numRecords : '0';?>.
+                Show from <?php echo $from;?>
+                to <span id="issues_count" class="float: right;"><?php echo $till;?></span>
+            </div>
+        </li>
+    </ul>
+    <br>
+    <form action="">
+        <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+            <li>
+                <input type="submit" class="order-button" name="report" value="REPORT: CSV"/>
+            </li>
+            <li>
+                <input type="submit" class="order-button" name="report" value="REPORT: XLS"/>
+            </li>
+            <li>
+                <input type="button" class="order-button" name="cancel" value="CANCEL"/>
+            </li>
+        </ul>
+    </form>
+</div>

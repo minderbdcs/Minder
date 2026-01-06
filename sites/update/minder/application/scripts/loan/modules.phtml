@@ -1,0 +1,28 @@
+<?php
+/**
+ * @var Zend_Navigation_Page $page
+ * @var Minder2_Model_Page $minderPage
+ */
+
+    $minderPage = $this->page;
+    if (empty($minderPage))
+        return;
+
+    $menuManager = new Minder2_SysMenu_Manager();
+    $navigation  = $menuManager->getNavigation(Minder2_SysMenu_Manager::MENU_TYPE_TOP, $this->page->menuId);
+
+?>
+
+<?php if ($minderPage->SM_MENU_DISPLAY) {?>
+<ul id="modules">
+<?php } else {?>
+<ul id="modules" class="hidden">
+<?php }?>
+    <?php foreach ($navigation as $page) {
+        $properites = $page->getCustomProperties();
+    ?>
+        <li <?php echo ($page->isActive()) ? 'class="selected"' : '';?>>
+            <a href="<?php echo $this->baseUrl() . $page->getHref();?>?menuId=<?php echo $properites['SM_SUBMENU_ID'];?>"><?php echo $page->getLabel()?></a>
+        </li>
+    <?php }?>
+</ul>

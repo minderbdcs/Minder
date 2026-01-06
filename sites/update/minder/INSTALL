@@ -1,0 +1,68 @@
+Minder
+======
+1. Configure the log directory so that it can be written to by the web server
+
+WHM
+===
+1. Modify your Apache config file to include the following. Note: The alias for /icons/ has been moved under /icons/whm/
+
+<Directory "/var/www/minder">
+    Options Indexes FollowSymLinks
+
+    AllowOverride All
+
+    Order allow,deny
+    Allow from 192.168.61
+    Satisfy Any
+    AuthType Basic
+    AuthName "Restricted Area"
+    AuthUserFile /var/www/passwd
+    AuthGroupFile /var/www/group
+    Require valid-user
+</Directory>
+Alias /minder/ "/var/www/minder/www/"
+Alias /whm/ "/var/www/minder/whm/html/"
+Alias /icons/whm/ "/var/www/minder/whm/icons/"
+Alias /icons/ "/var/www/icons/"
+
+<Location />
+    AuthType Basic
+    AuthName "Restricted Area"
+    AuthUserFile /var/www/passwd
+    AuthGroupFile /var/www/group
+    Require group bdcs
+</Location>
+
+<Location /whm>
+    php_value include_path ".:/var/www/minder/whm/includes:/usr/local/lib/php"
+    Require valid-user
+</Location>
+
+<Location /icons/whm>
+    php_value include_path ".:/var/www/minder/whm/includes:/usr/local/lib/php"
+    Require valid-user
+</Location>
+
+
+WarehouseMinder5
+================
+1. Copy WarehouseMinder5.war to /var/lib/tomcat5/webapps
+2. Restart tomcat
+3. Edit /var/lib/tomcat5/webapps/WarehouseMinder5/WEB-INF/web.xml and change the following settings
+<context-param>
+    <param-name>driverClass</param-name>
+    <param-value>org.firebirdsql.jdbc.FBDriver</param-value>
+</context-param>
+<context-param>
+    <param-name>jdbcURL</param-name>
+    <param-value>jdbc:firebirdsql:192.168.61.164/3050:/data/asset.rf/wh.v39.gdb</param-value>
+</context-param>
+<context-param>
+    <param-name>jdbcUser</param-name>
+    <param-value>SYSDBA</param-value>
+</context-param>
+<context-param>
+    <param-name>jdbcPassword</param-name>
+    <param-value>masterkey</param-value>
+</context-param>
+4. Restart tomcat

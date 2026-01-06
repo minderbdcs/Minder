@@ -1,0 +1,168 @@
+<!-- product label dialog -->
+<div style="display: none;" id="product_label_dialog" title="Print Product Labels" class="flora">
+    <form name="product_label_form" id='product_label_form' action="" method="POST">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td colspan="2">
+                    <input type="radio" name="product_label_type" value="PRODUCT_LABEL" checked="checked" /> Item Barcode &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="product_label_type" value="PRODUCT_INNER" /> Inner Pack &nbsp; &nbsp; &nbsp;
+                    <input type="radio" name="product_label_type" value="PRODUCT_OUTER" /> Outer Pack
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <div class="disabled" style="padding: 0 10px; text-align: center; border: blue 1px solid;">Product Id: <span class="PROD_ID"><?php echo ((isset($this->firstSelectedLine['PROD_ID'])) ? $this->firstSelectedLine['PROD_ID'] : '&nbsp;');?></span></div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <div class="disabled" style="padding: 0 10px; text-align: center; border: blue 1px solid;"><span class="PROD_DESCRIPTION"></span><?php echo ((isset($this->firstSelectedLine['SHORT_DESC'])) ? $this->firstSelectedLine['SHORT_DESC'] : '&nbsp;');?></div>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td colspan="2">
+                    <table width="100%">
+                        <tr>
+                            <td>Qty of Labels</td>
+                            <td><input style="width: 40px;" type="text" name="first_label_qty" value="1" /></td>
+                            <td>Total Printed on Label</td>
+                            <td><input style="width: 40px;" type="text" name="first_label_total" value="1" /></td>
+                        </tr>
+                        <tr>
+                            <td>Qty of Labels</td>
+                            <td><input style="width: 40px;" type="text" name="second_label_qty" value="0" /></td>
+                            <td>Total Printed on Label</td>
+                            <td><input style="width: 40px;" type="text" name="second_label_total" value="0" /></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td align="center">
+                    <button name="PRINT" class="mdr-tool-button">PRINT</button>
+                </td>
+                <td align="center">
+                    <button name="CANCEL" class="mdr-tool-button-cancel">CANCEL</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- product label dialog -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        initProductLabelDialog();
+
+        $('input[value="PRINT PRODUCT"]').click(function(evt){
+            evt.preventDefault();
+            $('#product_label_dialog').dialog("open");
+        });
+
+        var prodIdIdx    = 0;
+        var shortDescIdx = 0;
+        $('#tabPROD_PROFILE thead tr th').each(function(index){
+            if ($(this).attr('abbr') == 'PROD_ID')
+                prodIdIdx = index;
+            if ($(this).attr('abbr') == 'SHORT_DESC')
+                shortDescIdx = index;
+        });
+
+        $('#tabPROD_PROFILE input[type="checkbox"]').attr('onclick', '');
+
+        $('#tabPROD_PROFILE input[type="checkbox"]').unbind('click.crud-form').bind('click.crud-form', function(evt){
+            var elementChecked = $(this).attr('checked');
+            var selectedCount = 0;
+
+            var prodId    = '';
+            var shortDesc = '';
+
+            if ($(this).attr('name') == 'select_all') {
+                selectAll(this);
+            } else {
+                showSelected(this, 'auto');
+            }
+
+            selectedCount = parseInt($('#selected_num').html());
+            selectedCount = (isNaN(selectedCount)) ? 0 : selectedCount;
+
+            if (selectedCount != 1) {
+                $('input[value="PRINT PRODUCT"]').attr('disabled', true).addClass('disabled');
+
+            } else {
+                $('input[value="PRINT PRODUCT"]').removeAttr('disabled').removeClass('disabled');
+
+                $('#tabPROD_PROFILE input[type="checkbox"].line_selector').each(function() {
+                    if ($(this).attr('checked')) {
+                        $(this).parents('#tabPROD_PROFILE tr').find('td a').each(function(index){
+                            if (index == prodIdIdx - 1)
+                                prodId    = $(this).html();
+                            if (index == shortDescIdx - 1)
+                                shortDesc = $(this).html();
+                            });
+                    }
+                });
+            }
+
+            $('#product_label_dialog .PROD_ID').html(prodId);
+            $('#product_label_dialog .PROD_DESCRIPTION').html(shortDesc);
+        });
+    });
+
+    function initProductLabelDialog() {
+        $('#product_label_dialog').dialog(
+            {
+                autoOpen  : false,
+                width     : 360,
+                height    : 255,
+                resizable : false
+            }
+        ).unbind('dialogopen.print-product-crud-form').bind('dialogopen.print-product-crud-form', function(event, ui) {
+            $(this).show();
+            $(this).find('input[name=qty1]').focus();
+        });
+
+        $('#product_label_dialog button[name=CANCEL]').unbind('click.print-product-crud-form').bind('click.print-product-crud-form', function(evt){
+            evt.preventDefault();
+            $('#product_label_dialog').dialog('close');
+        });
+
+        $('#product_label_dialog button[name=PRINT]').unbind('click.print-product-crud-form').bind('click.print-product-crud-form', productLabelDialogPrintOnClick);
+    }
+
+    function destroyProductLabelDialog() {
+        $('#product_label_dialog').dialog('destroy').remove();
+    }
+
+    function productLabelDialogPrintOnClick(evt) {
+        evt.preventDefault();
+        var formId       = "<?php echo $this->formId; ?>";
+        var dataToSubmit = {};
+
+        $.map($('#product_label_form').serializeArray(), function(elementOfArray, indexInArray){
+            if ($('#' + formId + ' input[name=' + elementOfArray.name + ']').length < 1)
+                $('<input type="hidden" name="' + elementOfArray.name + '" />').appendTo('#' + formId);
+
+            $('#' + formId + ' input[name=' + elementOfArray.name + ']').val(elementOfArray.value);
+            dataToSubmit[elementOfArray.name] = elementOfArray.value;
+            return null;
+        });
+
+        if (dataToSubmit.first_label_qty > 100) {
+            if (!confirm('You try to print ' + dataToSubmit.first_label_qty + ' labels. Are you sure?'))
+                return;
+        }
+
+        if (dataToSubmit.second_label_qty > 100) {
+            if (!confirm('You try to print ' + dataToSubmit.second_label_qty + ' labels. Are you sure?'))
+                return;
+        }
+
+        if ($('#' + formId + ' input[name=action][type=hidden]').length < 1)
+            $('<input type="hidden" name="action" />').appendTo('#formId');
+        $('#' + formId + ' input[name=action][type=hidden]').val('PRINT PRODUCT');
+        $('#' + formId).submit();
+    }
+</script>

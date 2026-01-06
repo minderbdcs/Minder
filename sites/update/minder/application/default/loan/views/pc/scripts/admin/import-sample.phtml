@@ -1,0 +1,99 @@
+<?php
+if (true) {
+?>
+
+<table id="fields" class="withborder tablesorter" border="1">
+<thead>
+<tr>
+<?php
+$cnt = count($this->headers);
+foreach ($this->headers as $val) {
+    echo "<th>" . $val . "</th>";
+}
+?>
+</tr>
+</thead>
+<tbody>
+<?php
+$rows = $this->data;
+$numRows = count($this->data);
+
+if ($numRows > 0) {
+    /*
+     * commented until not required.
+    if ($numRows > 15) {
+        $numRows = 15;
+    }
+    */
+    for ($k = 0; $k < $numRows; $k++) {
+        $row = $rows[$k];
+        echo "<tr>";
+        for ($i = 0 ; $i< $cnt; $i++ ) {
+            $val = $row[$i];
+            echo "<td>" . $this->escape($val) . "&nbsp;</td>";
+        }
+        echo "</tr>";
+    }
+} else {
+?>
+<tr></tr>
+<?php
+}
+?>
+
+</tbody>
+</table>
+<ul class="toolbar">
+    <li>
+        <?php echo $this->formSubmit('confirm', 'Confirm Import', array('onclick' => 'return confirmImport();')) ?>
+    </li>
+    <li>
+        <?php echo $this->formSubmit('clear', 'Clear Data', array('onclick' => 'return clearData();')) ?>
+    </li>
+    <li>
+        <?php echo $this->formSubmit('clear', 'Clear All', array('onclick' => 'return clearImport();')) ?>
+    </li>
+</ul>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#fields').tablesorter({headers: {},sortList:[[0,1]], widgets: ['zebra']});
+});
+function confirmImport() {
+    if (confirm('Are you sure you want to import this data to "<?php echo $this->table; ?>"?')) {
+        $.getJSON('<?php echo $this->url(array('controller' => 'admin', 'action' => 'import-clipboard', 'module' => 'default'), null, true) ?>', {'import': true}, function(result) {
+            var answer = eval(result);
+            alert(answer.message);
+        });
+    } else {
+        alert('Not sure');
+    }
+    return false;
+}
+
+function clearData()
+{
+
+    $('#data')[0].value ='';
+    $('#fields').parent().empty();
+    return false;
+}
+
+function clearImport() {
+    $.getJSON('<?php echo $this->url(array('controller'=> 'admin', 'action' => 'import-clipboard', 'module' => 'default')); ?>', {clear: true}, function (result) {
+        var answer = eval(result);
+        alert(answer.message);
+    });
+    $('#data')[0].value = '';
+    $('#table_list')[0].selectedIndex = 0;
+
+    $('#fields').parent().empty();
+//    $('#fields tbody')[0].innerHTML = '';
+//    $('#fields thead')[0].innerHTML = '';
+//    $('#fields').trigger('update');
+    $('#fields').remove();
+    $('#table_list').change();
+}
+</script>
+<?php
+}
+?>

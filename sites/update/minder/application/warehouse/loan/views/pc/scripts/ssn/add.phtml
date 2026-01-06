@@ -1,0 +1,52 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" action="" method="post" enctype="multipart/form-data">
+<?php
+    if (!isset($this->action)) {
+        echo $this->render('/ssn/issnlist.phtml');
+?>
+    <h2>EDIT : <?php echo $this->escape($this->ssnObj->id); ?></h2>
+<?php
+    } else {
+?>
+     <h2><?php echo $this->pageTitle; ?></h2>
+<?php
+    }
+    echo $this->messenger()->all();
+?>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN', array('onclick' => 'return goDelete();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'SAVE & PRINT ALL'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+    </ul>
+
+    <?php
+    switch ($this->formStyle) {
+        case 'simplified':
+            echo $this->render('/ssn/add/simplified.phtml');
+            break;
+        default:
+            echo $this->render('/ssn/add/default.phtml');
+    }
+    ?>
+
+    <ul class="toolbar">
+            <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+            <li><?php echo $this->formSubmit('action', 'SAVE & PRINT ALL'); ?></li>
+            <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+    </ul>
+    <br />
+    <h2>History List</h2>
+    <div id="history_list">
+    
+    </div>
+</form>
+<script type="text/javascript">
+    $(function() {
+        loadHistoryLines();
+    });
+
+    function loadHistoryLines() {
+        $('#history_list').load('<?php echo $this->url(array('action' => 'history', 'controller' => 'ssn', 'module' => 'warehouse')); ?>');
+    }
+</script>
+<?php echo $this->render('footer.phtml');

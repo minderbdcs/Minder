@@ -1,0 +1,486 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'edit-despatched'))?>" method="post">
+    <input type="hidden" name="pick_order_no" value="<?php echo $this->escape($this->order); ?>" />
+    <h1>EDIT ORDER: <?php echo $this->escape($this->order); ?></h1>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return frmSubmit();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', array('onclick' => 'return frmSubmit();'))?></li>
+    </ul>
+        <table class="summary"style="width:99%">
+        <tr>
+            <th>ORDER_NO</th>
+            <td><?php echo $this->formText('order_no', $this->orderData->pickOrder, array()); ?></td>
+            <th>ORDER_TYPE</th>
+            <td><?php echo $this->formText('order_type', $this->orderData->pickOrderType, array()); ?></td>
+        </tr>
+        <tr>
+            <th>PERSON_ID</th>
+            <td><?php echo $this->formText('person_id', $this->orderData->personId, array()); ?></td>
+            <th>CONTACT_NAME</th>
+            <td><?php echo $this->formText('contact_name', $this->orderData->contactName, array()); ?></td>
+        </tr>
+        <tr>
+            <th>CUSTOMER_PO_WO</th>
+            <td><?php echo $this->formText('customer_po_wo', $this->orderData->customerPoWo); ?></td>
+      		<th>COST_CENTER</th>
+            <td><?php echo $this->formText('cost_center', $this->orderData->costCenter); ?></td>
+        </tr>
+        <tr>
+            <th>COMPANY_ID</th>
+            <td><?php echo $this->formText('company_id', $this->orderData->companyId, array()); ?></td>
+            <th>DIVISION_ID</th>
+            <td><?php echo $this->formText('division_id', $this->orderData->divisionId); ?></td>
+        </tr>
+        <tr>
+            <th>PICK_PRIORITY</th>
+            <td><?php echo $this->formText('pick_priority', $this->orderData->pickPriority); ?></td>
+      		<th>DELIVERY_RUN_NO</th>
+            <td><?php echo $this->formText('delivery_run_no', $this->orderData->deliveryRunNo); ?></td>
+        </tr>
+        <tr>
+            <th>PICK_DUE_DATE</th>
+            <td><?php echo $this->formText('pick_due_date', $this->orderData->pickDueDate); ?></td>
+      		<th>SPECIAL_INSTRUCTIONS1</th>
+            <td><?php echo $this->formText('special_instructions1', $this->orderData->specialInstructions1); ?></td>
+        </tr>
+        <tr>
+            <th>SPECIAL_INSTRUCTIONS2</th>
+            <td><?php echo $this->formText('special_instructions2', $this->orderData->specialInstructions2, array()); ?></td>
+            <th>INV_WITH_GOODS</th>
+            <td><?php echo $this->formText('inv_with_goods', $this->orderData->invWithGoods); ?></td>
+        </tr>
+        <tr>
+            <th>SHIP_VIA</th>
+            <td><?php echo $this->formText('ship_via', $this->orderData->shipVia, array()); ?></td>
+            <th>DESPATCH_LOCATION</th>
+            <td><?php echo $this->formText('despatch_location', $this->orderData->despatchLocation); ?></td>
+        </tr>
+        <tr>
+            <th>CREATE_DATE</th>
+            <td><?php echo $this->formText('create_date', $this->orderData->createDate, array()); ?></td>
+            <th>CREATED_BY</th>
+            <td><?php echo $this->formText('create_by', $this->orderData->createdBy); ?></td>
+        </tr>
+        <tr>
+            <th>PICK_STARTED</th>
+            <td><?php echo $this->formText('pick_started', $this->orderData->pickStarted, array()); ?></td>
+            <th>PICK_STATUS</th>
+            <td><?php echo $this->formText('pick_status', $this->orderData->pickStatus); ?></td>
+        </tr>
+        <tr>
+            <th>PARTIAL_PICK_ALLOWED</th>
+            <td><?php echo $this->formText('partial_pick_allowed', $this->orderData->partialPickAllowed, array()); ?></td>
+            <th>SHIP_SERVICE</th>
+            <td><?php echo $this->formText('ship_service', $this->orderData->shipService); ?></td>
+        </tr>
+        <tr>
+            <th>P_PERSON_TYPE</th>
+            <td><?php echo $this->formText('p_person_type', $this->orderData->pPersonType, array()); ?></td>
+            <th>P_FIRST_NAME</th>
+            <td><?php echo $this->formText('p_first_name', $this->orderData->pFirstName); ?></td>
+        </tr>
+        <tr>
+            <th>P_LAST_NAME</th>
+            <td><?php echo $this->formText('p_last_name', $this->orderData->pLastName, array()); ?></td>
+            <th>P_ADDRESS_LINE2</th>
+            <td><?php echo $this->formText('p_address_line2', $this->orderData->pAddressLine2); ?></td>
+        </tr>
+        <tr>
+            <th>P_CITY</th>
+            <td><?php echo $this->formText('p_city', $this->orderData->pCity, array()); ?></td>
+            <th>P_STATE</th>
+            <td><?php echo $this->formText('p_state', $this->orderData->pState); ?></td>
+        </tr>
+        <tr>
+            <th>P_POST_CODE</th>
+            <td><?php echo $this->formText('p_post_code', $this->orderData->pPostCode, array()); ?></td>
+            <th>P_COUNTRY</th>
+            <td><?php echo $this->formText('p_country', $this->orderData->pCountry); ?></td>
+        </tr>
+        <tr>
+            <th>P_PHONE</th>
+            <td><?php echo $this->formText('p_phone', $this->orderData->pPhone, array()); ?></td>
+            <th>TERMS</th>
+            <td><?php echo $this->formText('terms', $this->orderData->terms); ?></td>
+        </tr>
+        <tr>
+            <th>PAYMENT_METHOD</th>
+            <td><?php echo $this->formText('payment_method', $this->orderData->paymentMethod, array()); ?></td>
+            <th>SUB_TOTAL_AMOUNT</th>
+            <td><?php echo $this->formText('sub_total_amount', $this->orderData->subTotalAmount); ?></td>
+        </tr>
+        <tr>
+            <th>FREIGHT</th>
+            <td><?php echo $this->formText('freight', $this->orderData->freight, array()); ?></td>
+            <th>AMOUNT_PAID</th>
+            <td><?php echo $this->formText('amount_paid', $this->orderData->amountPaid); ?></td>
+        </tr>
+        <tr>
+            <th>TAX_RATE</th>
+            <td><?php echo $this->formText('tax_rate', $this->orderData->taxRate, array()); ?></td>
+            <th>ADMIN_FEE_RATE</th>
+            <td><?php echo $this->formText('admin_fee_rate', $this->orderData->adminFeeRate); ?></td>
+        </tr>
+        <tr>
+            <th>P_PERSON_ID</th>
+            <td><?php echo $this->formText('p_person_id', $this->orderData->pPersonId, array()); ?></td>
+            <th>P_SAME_AS_INVOICE_TO</th>
+            <td><?php echo $this->formText('p_same_as_invoice_to', $this->orderData->pSameAsInvoiceTo); ?></td>
+        </tr>
+        <tr>
+            <th>ADMIN_FEE_AMOUNT</th>
+            <td><?php echo $this->formText('admin_fee_amount', $this->orderData->adminFeeAmount, array()); ?></td>
+            <th>TAX_AMOUNT</th>
+            <td><?php echo $this->formText('tax_amount', $this->orderData->taxAmount); ?></td>
+        </tr>
+        <tr>
+            <th>DUE_AMOUNT</th>
+            <td><?php echo $this->formText('due_amount', $this->orderData->dueAmount, array()); ?></td>
+            <th>APPROVED_DATE</th>
+            <td><?php echo $this->formText('approved_date', $this->orderData->approvedDate); ?></td>
+        </tr>
+        <tr>
+            <th>APPROVED_BY</th>
+            <td><?php echo $this->formText('approved_by', $this->orderData->approvedBy, array()); ?></td>
+            <th>LAST_LINE_NO</th>
+            <td><?php echo $this->formText('last_line_no', $this->orderData->lastLineNo); ?></td>
+        </tr>
+        <tr>
+            <th>SUM_STD_AMOUNT</th>
+            <td><?php echo $this->formText('sum_std_amount', $this->orderData->sumStdAmount, array()); ?></td>
+            <th>SUM_SALE_AMOUNT</th>
+            <td><?php echo $this->formText('sum_sale_amount', $this->orderData->sumSaleAmount); ?></td>
+        </tr>
+        <tr>
+            <th>IMPORTED</th>
+            <td><?php echo $this->formText('imported', $this->orderData->imported, array()); ?></td>
+            <th>IMPORT_ERRORS</th>
+            <td><?php echo $this->formText('importe_errors', $this->orderData->importErrors); ?></td>
+        </tr>
+        <tr>
+            <th>APPROVED_DESP_DATE</th>
+            <td><?php echo $this->formText('appproved_desp_date', $this->orderData->approvedDespDate, array()); ?></td>
+            <th>APPROVED_DESP_BY</th>
+            <td><?php echo $this->formText('approved_desp_by', $this->orderData->approvedDespBy); ?></td>
+        </tr>
+        <tr>
+            <th>DEFAULT_SALE_PRICE</th>
+            <td><?php echo $this->formText('default_sale_price', $this->orderData->defaultSalePrice, array()); ?></td>
+            <th>WIP_ORDERING</th>
+            <td><?php echo $this->formText('wip_ordering', $this->orderData->wipOrdering); ?></td>
+        </tr>
+        <tr>
+            <th>PERMANENT_TRANSFER</th>
+            <td><?php echo $this->formText('permanent_transfer', $this->orderData->permanentTransfer, array()); ?></td>
+            <th>RETURN_DATE</th>
+            <td><?php echo $this->formText('return_date', $this->orderData->returnDate); ?></td>
+        </tr>
+        <tr>
+            <th>PRINTED_DATE</th>
+            <td><?php echo $this->formText('printed_date', $this->orderData->printedDate, array()); ?></td>
+            <th>PRINTED_STATUS</th>
+            <td><?php echo $this->formText('printed_status', $this->orderData->printedStatus); ?></td>
+        </tr>
+        <tr>
+            <th>PICK_RETRIEVE_STATUS</th>
+            <td><?php echo $this->formText('pick_retrieve_status', $this->orderData->pickRetrieveStatus, array()); ?></td>
+            <th>P_ADDRESS_LINE1</th>
+            <td><?php echo $this->formText('p_address_line1', $this->orderData->pAddressLine1); ?></td>
+        </tr>
+        <tr>
+            <th>P_TITLE</th>
+            <td><?php echo $this->formText('p_title', $this->orderData->pTitle, array()); ?></td>
+            <th>P_ADDRESS_LINE3</th>
+            <td><?php echo $this->formText('p_address_line3', $this->orderData->pAddressLine3); ?></td>
+        </tr>
+        <tr>
+            <th>P_ADDRESS_LINE4</th>
+            <td><?php echo $this->formText('p_address_line4', $this->orderData->pAddressLine4, array()); ?></td>
+            <th>P_AUST_POST_4STATE_ID</th>
+            <td><?php echo $this->formText('p_aust_post_4state_id', $this->orderData->pAustPost4stateId); ?></td>
+        </tr>
+        <tr>
+            <th>SUPPLIER_LIST</th>
+            <td><?php echo $this->formText('supplier_list', $this->orderData->supplierList, array()); ?></td>
+            <th>SPECIAL_INSTRUCTIONS</th>
+            <td><?php echo $this->formText('special_instructions', $this->orderData->specialInstructions); ?></td>
+        </tr>
+        <tr>
+            <th>WH_ID</th>
+            <td><?php echo $this->formText('wh_id', $this->orderData->whId, array()); ?></td>
+            <th>UPDATE_ID</th>
+            <td><?php echo $this->formText('update_id', $this->orderData->updateId); ?></td>
+        </tr>
+        <tr>
+            <th>ASSEMBLY_STARTED</th>
+            <td><?php echo $this->formText('assembly_started', $this->orderData->assemblyStarted, array()); ?></td>
+            <th>LAST_UPDATE_DATE</th>
+            <td><?php echo $this->formText('last_update_date', $this->orderData->lastUpdateDate); ?></td>
+        </tr>
+        <tr>
+            <th>ORDER_CANCELLED</th>
+            <td><?php echo $this->formText('order_cancelled', $this->orderData->orderCancelled, array()); ?></td>
+            <th>P_ADDRESS_LINE5</th>
+            <td><?php echo $this->formText('p_address_line5', $this->orderData->pAddressLine5); ?></td>
+        </tr>
+        <tr>
+            <th>OTHER1</th>
+            <td><?php echo $this->formText('other1', $this->orderData->other1, array()); ?></td>
+            <th>OTHER2</th>
+            <td><?php echo $this->formText('other2', $this->orderData->other2); ?></td>
+        </tr>
+        <tr>
+            <th>OTHER3</th>
+            <td><?php echo $this->formText('other3', $this->orderData->other3, array()); ?></td>
+            <th>OTHER4</th>
+            <td><?php echo $this->formText('other4', $this->orderData->other4); ?></td>
+        </tr>
+        <tr>
+            <th>OTHER5</th>
+            <td><?php echo $this->formText('other5', $this->orderData->other5, array()); ?></td>
+            <th>OTHER6</th>
+            <td><?php echo $this->formText('other6', $this->orderData->other6); ?></td>
+        </tr>
+        <tr>
+            <th>OTHER7</th>
+            <td><?php echo $this->formText('other7', $this->orderData->other8, array()); ?></td>
+            <th>OTHER8</th>
+            <td><?php echo $this->formText('other8', $this->orderData->other8); ?></td>
+        </tr>
+        <tr>
+            <th>OTHER9</th>
+            <td><?php echo $this->formText('other9', $this->orderData->other9, array()); ?></td>
+            <th>FREIGHT_TAX_AMOUNT</th>
+            <td><?php echo $this->formText('freight_tax_amount', $this->orderData->freightTaxAmount); ?></td>
+        </tr>
+        <tr>
+            <th>NET_WEIGHT</th>
+            <td><?php echo $this->formText('net_weight', $this->orderData->netWeight, array()); ?></td>
+            <th>PALLET_BASE</th>
+            <td><?php echo $this->formText('pallet_base', $this->orderData->palletBase); ?></td>
+        </tr>
+        <tr>
+            <th>OVER_SIZED</th>
+            <td><?php echo $this->formText('over_sized', $this->orderData->overSized, array()); ?></td>
+            <th>LABEL_PRINTED_DATE</th>
+            <td><?php echo $this->formText('label_printed_date', $this->orderData->labelPrintedDate); ?></td>
+        </tr>
+        <tr>
+            <th>OTHER_NUM1</th>
+            <td><?php echo $this->formText('other_num1', $this->orderData->otherNum1, array()); ?></td>
+            <th>OTHER_NUM2</th>
+            <td><?php echo $this->formText('other_num2', $this->orderData->otherNum2); ?></td>
+        </tr>
+        <tr>
+            <th>REMARKS1</th>
+            <td><?php echo $this->formText('remarks1', $this->orderData->remarks1, array()); ?></td>
+            <th>REMARKS2</th>
+            <td><?php echo $this->formText('remarks2', $this->orderData->remarks2); ?></td>
+        </tr>
+        <tr>
+            <th>REMARKS3</th>
+            <td><?php echo $this->formText('remarks3', $this->orderData->remarks3, array()); ?></td>
+            <th>REMARKS4</th>
+            <td><?php echo $this->formText('remarks4', $this->orderData->remarks4); ?></td>
+        </tr>
+        <tr>
+            <th>REMARKS5</th>
+            <td><?php echo $this->formText('remarks5', $this->orderData->remarks5, array()); ?></td>
+            <th>REMARKS6</th>
+            <td><?php echo $this->formText('remarks6', $this->orderData->remarks6); ?></td>
+        </tr>
+        <tr>
+            <th>FOOTER1</th>
+            <td><?php echo $this->formText('footer1', $this->orderData->footer1, array()); ?></td>
+            <th>FOOTER2</th>
+            <td><?php echo $this->formText('footer2', $this->orderData->footer2); ?></td>
+        </tr>
+        <tr>
+            <th>FOOTER3</th>
+            <td><?php echo $this->formText('footer3', $this->orderData->footer3, array()); ?></td>
+            <th>FOOTER4</th>
+            <td><?php echo $this->formText('footer4', $this->orderData->footer4); ?></td>
+        </tr>
+        <tr>
+            <th>FOOTER5</th>
+            <td><?php echo $this->formText('footer5', $this->orderData->footer5, array()); ?></td>
+            <th>OVER_SIZED_REASON</th>
+            <td><?php echo $this->formText('over_sized_reason', $this->orderData->overSizedReason); ?></td>
+        </tr>
+        <tr>
+            <th>ADDRESS_LABEL_DATE</th>
+            <td><?php echo $this->formText('address_label_date', $this->orderData->addressLabelDate, array()); ?></td>
+            <th>PICK_ORDER_STARTED</th>
+            <td><?php echo $this->formText('pick_order_started', $this->orderData->pickOrderStarted); ?></td>
+        </tr>
+        <tr>
+            <th>EXPORT_CATEGORY</th>
+            <td><?php echo $this->formText('export_category', $this->orderData->exportCategory, array()); ?></td>
+            <th>D_FIRST_NAME</th>
+            <td><?php echo $this->formText('d_first_name', $this->orderData->dFirstName); ?></td>
+        </tr>
+        <tr>
+            <th>D_LAST_NAME</th>
+            <td><?php echo $this->formText('d_last_name', $this->orderData->dLastName, array()); ?></td>
+            <th>D_CITY</th>
+            <td><?php echo $this->formText('d_city', $this->orderData->dCity); ?></td>
+        </tr>
+        <tr>
+            <th>D_STATE</th>
+            <td><?php echo $this->formText('d_state', $this->orderData->dState, array()); ?></td>
+            <th>D_POST_CODE</th>
+            <td><?php echo $this->formText('d_post_code', $this->orderData->dPostCode); ?></td>
+        </tr>
+        <tr>
+            <th>D_COUNTRY</th>
+            <td><?php echo $this->formText('d_country', $this->orderData->dCountry, array()); ?></td>
+            <th>D_PHONE</th>
+            <td><?php echo $this->formText('d_phone', $this->orderData->dPhone); ?></td>
+        </tr>
+        <tr>
+            <th>D_ADDRESS_LINE1</th>
+            <td><?php echo $this->formText('d_address_line1', $this->orderData->dAddressLine1, array()); ?></td>
+            <th>D_ADDRESS_LINE2</th>
+            <td><?php echo $this->formText('d_address_line2', $this->orderData->dAddressLine2); ?></td>
+        </tr>
+        <tr>
+            <th>D_ADDRESS_LINE3</th>
+            <td><?php echo $this->formText('d_address_line3', $this->orderData->dAddressLine3, array()); ?></td>
+            <th>D_ADDRESS_LINE4</th>
+            <td><?php echo $this->formText('d_address_line4', $this->orderData->dAddressLine4); ?></td>
+        </tr>
+        <tr>
+            <th>D_ADDRESS_LINE5</th>
+            <td><?php echo $this->formText('d_address_line5', $this->orderData->dAddressLine5, array()); ?></td>
+            <th>D_TITLE</th>
+            <td><?php echo $this->formText('d_title', $this->orderData->dTitle); ?></td>
+        </tr>
+        <tr>
+            <th>SUPPLIER_ID</th>
+            <td><?php echo $this->formText('supplier_id', $this->orderData->supplierId, array()); ?></td>
+            <th>S_PERSON_ID</th>
+            <td><?php echo $this->formText('s_person_id', $this->orderData->sPersonId); ?></td>
+        </tr>
+        <tr>
+            <th>S_PERSON_TYPE</th>
+            <td><?php echo $this->formText('s_person_type', $this->orderData->sPersonType, array()); ?></td>
+            <th>S_FIRST_NAME</th>
+            <td><?php echo $this->formText('s_first_name', $this->orderData->sFirstName); ?></td>
+        </tr>
+        <tr>
+            <th>S_LAST_NAME</th>
+            <td><?php echo $this->formText('s_last_name', $this->orderData->sLastName, array()); ?></td>
+            <th>S_CITY</th>
+            <td><?php echo $this->formText('s_city', $this->orderData->sCity); ?></td>
+        </tr>
+        <tr>
+            <th>S_STATE</th>
+            <td><?php echo $this->formText('s_state', $this->orderData->sState, array()); ?></td>
+            <th>S_POST_CODE</th>
+            <td><?php echo $this->formText('s_post_code', $this->orderData->sPostCode); ?></td>
+        </tr>
+        <tr>
+            <th>S_COUNTRY</th>
+            <td><?php echo $this->formText('s_country', $this->orderData->sCountry, array()); ?></td>
+            <th>S_PHONE</th>
+            <td><?php echo $this->formText('s_phone', $this->orderData->sPhone); ?></td>
+        </tr>
+        <tr>
+            <th>S_ADDRESS_LINE1</th>
+            <td><?php echo $this->formText('s_address_line1', $this->orderData->sAddressLine1, array()); ?></td>
+            <th>S_ADDRESS_LINE2</th>
+            <td><?php echo $this->formText('s_address_line2', $this->orderData->sAddressLine2); ?></td>
+        </tr>
+        <tr>
+            <th>S_ADDRESS_LINE3</th>
+            <td><?php echo $this->formText('s_address_line3', $this->orderData->sAddressLine3, array()); ?></td>
+            <th>S_ADDRESS_LINE4</th>
+            <td><?php echo $this->formText('s_address_line4', $this->orderData->sAddressLine4); ?></td>
+        </tr>
+        <tr>
+            <th>S_ADDRESS_LINE5</th>
+            <td><?php echo $this->formText('s_address_line5', $this->orderData->sAddressLine5, array()); ?></td>
+            <th>S_TITLE</th>
+            <td><?php echo $this->formText('s_title', $this->orderData->sTitle); ?></td>
+        </tr>
+        <tr>
+            <th>S_SAME_AS_SOLD_FROM</th>
+            <td><?php echo $this->formText('s_same_as_sold_from', $this->orderData->sSameAsSoldFrom, array()); ?></td>
+            <th>D_PERSON_ID</th>
+            <td><?php echo $this->formText('d_person_id', $this->orderData->dPersonId); ?></td>
+        </tr>
+        <tr>
+            <th>SO_LEGACY_CONSIGNMENT</th>
+            <td><?php echo $this->formText('so_legacy_consignment', $this->orderData->soLegacyConsignment, array()); ?></td>
+            <th>SO_LEGACY_PROJECT</th>
+            <td><?php echo $this->formText('so_legacy_project', $this->orderData->soLegacyProject); ?></td>
+        </tr>
+        <tr>
+            <th>SO_LEGACY_INTERNAL_ID</th>
+            <td><?php echo $this->formText('so_legacy_internal_id', $this->orderData->soLegacyInternalId, array()); ?></td>
+            <th>SO_LEGACY_LAST_MODIFIED</th>
+            <td><?php echo $this->formText('so_legacy_last_modified', $this->orderData->soLegacyLastModified); ?></td>
+        </tr>
+        <tr>
+            <th>SO_LEGACY_PICK_WH_ID</th>
+            <td><?php echo $this->formText('so_legacy_picl_wh_id', $this->orderData->soLegacyPickWhId, array()); ?></td>
+            <th>SO_LEGACY_PICK_WH_NAME</th>
+            <td><?php echo $this->formText('so_legacy_pick_wh_name', $this->orderData->soLegacyPickWhName); ?></td>
+        </tr>
+        <tr>
+            <th>SO_LEGACY_MEMO</th>
+            <td><?php echo $this->formText('so_legacy_memo', $this->orderData->soLegacyMemo, array()); ?></td>
+            <th>SO_LEGACY_STATUS_ID</th>
+            <td><?php echo $this->formText('so_legacy_status_id', $this->orderData->soLegacyStatusId); ?></td>
+        </tr>
+        <tr>
+            <th>SO_LEGACY_STATUS</th>
+            <td><?php echo $this->formText('so_legacy_status', $this->orderData->soLegacyStatus, array()); ?></td>
+            <th>SHIP_VIA_NAME</th>
+            <td><?php echo $this->formText('ship_via_name', $this->orderData->shipViaName); ?></td>
+        </tr>
+        <tr>
+            <th>SO_LEGACY_CREATE_DATE</th>
+            <td><?php echo $this->formText('so_legacy_create_date', $this->orderData->soLegacyCreateDate, array()); ?></td>
+            <th>PO_MATERIAL_SAFETY_DATA</th>
+            <td><?php echo $this->formText('po_material_safety_data', $this->orderData->poMaterialSafetyData); ?></td>
+        </tr>
+        <tr>
+            <th>DESPATCH_LOCATION</th>
+            <td><?php echo $this->formText('despatch_location', $this->orderData->despatchLocation); ?></td>
+            <th></th>
+            <td></td>
+        </tr>
+        
+    </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE', array('onclick' => 'return frmSubmit();')); ?></li>
+        <li><?php echo $this->formSubmit('action', 'DISCARD', array('onclick' => 'return frmSubmit();'))?></li>
+    </ul>
+    <div id='filter' style="display:none">
+      <input type='text' value='<?php echo $this->startItem; ?>' class='flt' id='flt_start_item' name='flt_start_item'>
+      <input type='text' value='<?php echo $this->showBy; ?>' class='flt' id='flt_show_by' name='flt_show_by'>
+  </div>
+</form>
+<script type="text/javascript">
+var cacheValue = 50;
+$(document).ready(function (){
+
+	$('#pick_due_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#create_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#approved_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#appproved_desp_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#return_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#printed_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#last_update_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#label_printed_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#address_label_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#so_legacy_create_date').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#so_legacy_last_modified').datepicker({dateFormat: 'yy/mm/dd'});
+	$('#pick_started').datepicker({dateFormat: 'yy/mm/dd'});
+    
+});
+
+
+</script>
+<?php echo $this->render('footer.phtml');

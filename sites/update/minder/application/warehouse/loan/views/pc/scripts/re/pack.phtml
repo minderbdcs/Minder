@@ -1,0 +1,360 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array('autocomplete' => 'off', 'style' => 'width:5ex', 'class' => 'validate');
+    $attributesForSelect = array('class' => 'validate');
+    echo $this->messenger()->all();
+?>
+<form name="main" id="main" action="<?php echo $this->url(array('module'     => 'warehouse',
+                                                                'controller' => 're',
+                                                                'action'     => 'pack'))?>" method="post">
+    <div id="tabs">
+        <div style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <table style="width:99%">
+                <tr>
+                    <td>
+                        <b>
+                            <div style="float:left;">
+                                Selected: <span  id="selected_num">0</span>
+                            </div>
+                        </b>
+                    </td>
+                    <td>
+                        <div>
+                            <b>
+                                Total Selected Qty = <span id="total_qty"><?php echo "0"; ?></span>
+                            </b>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="display:inline">
+            Select All Rows on all pages
+            <?php echo $this->formCheckbox('select_complete', '', array()); ?>
+            <label for='show_by'>View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation['show_by'],
+                                         array('onchange' => 'frmSubmit()'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for='page'>Page : </label>
+            <?php echo $this->formSelectStrict('pageselector',
+                                               $this->navigation['pageselector'],
+                                               array('onchange' => 'frmSubmit()'),
+                                               $this->pages); ?>
+        </div>
+        <table id="table" class="withborder tablesorter" style="width:99%; margin-top: 10px;">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           'on',
+                                           array('onclick' => 'selectAll(this)'));?>
+            </th>
+<?php
+    foreach ($this->headers as $header) {
+        echo '<th>'. $this->escape($header) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if (count($this->lines) > 0) {
+        for ($i = 0; $i < count($this->lines); $i++) {
+            $line = $this->lines[$i];
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox($this->escape($line->id),
+                                     $this->escape($line->id),
+                                     array('class' => 'issn_checkbox',
+                                           'checked' => isset($this->conditions[$this->escape($line->id)]),
+                                           'id' => $this->escape($line->id),
+                                           "onclick" => "showSelected(this, 'auto')"));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                    $val = $line->items[$propertyName];
+                    $urlEdit = $this->url(array('module'      => 'warehouse',
+                                                'controller'  => 'issn',
+                                                'action'      => 'edit'),
+                                                '',
+                                                true);
+                    echo '<td><a href="'. $urlEdit .'/edit_issn_ssn_id/'.$line->id.'" >'. $this->escape($val) . '</a></td>'."\n";
+            }
+            echo "</tr>\n";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo '<td/>';
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+        </ul>
+    </div>
+<table>
+    <tr>
+        <td>Re-Pack into Package Type:</td>
+        <td><?php echo $this->formSelect('pack_type', selectFilterValue('pack_type', $this->conditions), $attributesForSelect, $this->packagingTypeList); ?></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>Total Packages:</th>
+        <td colspan="2">
+        <table>
+            <tr>
+                <td>
+                <table>
+                    <tr>
+                        <td><?php echo $this->formText('qty[1]', selectFilterValue('qty[1]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td><b>X</b></td>
+                        <td><?php echo $this->formText('pkg[1]', selectFilterValue('pkg[1]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td>Qty/Package</td>
+                    </tr>
+                </table>
+                </td>
+            </tr>
+        </table>
+        </td>
+        <td>
+        &nbsp;
+        </td>
+        <th>Total Packages:</th>
+        <td colspan="2">
+        <table>
+            <tr>
+                <td>
+                <table>
+                    <tr>
+                        <td><?php echo $this->formText('qty[2]', selectFilterValue('qty[2]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td><b>X</b></td>
+                        <td><?php echo $this->formText('pkg[2]', selectFilterValue('pkg[2]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td>Qty/Package</td>
+                    </tr>
+                </table>
+                </td>
+            </tr>
+        </table>
+        </td>
+    </tr>
+    <tr>
+        <th>Total Packages:</th>
+        <td colspan="2">
+        <table>
+            <tr>
+                <td>
+                <table>
+                    <tr>
+                        <td><?php echo $this->formText('qty[3]', selectFilterValue('qty[3]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td><b>X</b></td>
+                        <td><?php echo $this->formText('pkg[3]', selectFilterValue('pkg[3]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td>Qty/Package</td>
+                    </tr>
+                </table>
+                </td>
+            </tr>
+        </table>
+        </td>
+        <td>
+        &nbsp;
+        </td>
+        <th>Total Packages:</th>
+        <td colspan="2">
+        <table>
+            <tr>
+                <td>
+                <table>
+                    <tr>
+                        <td><?php echo $this->formText('qty[4]', selectFilterValue('qty[4]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td><b>X</b></td>
+                        <td><?php echo $this->formText('pkg[4]', selectFilterValue('pkg[4]', $this->conditions), $attributes); ?>
+                        </td>
+                        <td>Qty/Package</td>
+                    </tr>
+                </table>
+                </td>
+            </tr>
+        </table>
+        </td>
+    </tr>
+    <tr>
+        <td>Reprint ISSN Labels:</td>
+        <td><?php echo $this->formSelect('printer', selectFilterValue('printer', $this->conditions), $attributesForSelect, $this->printerList); ?></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><b>Total Re-Packed:</b></td>
+        <td><?php echo $this->formText('repacked', selectFilterValue('repacked', $this->conditions), array_merge(array('readonly' => 'readonly', 'autocomplete' => 'off', 'style' => 'width:5ex'))); ?></td>
+        <td></td>
+        <td></td>
+    </tr>
+</table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'REPORT: CSV', array('onclick' => 'return frmSubmit();', 'class' => 'mdr-tool-button'))?>
+        </li>
+        <li><?php echo $this->formSubmit('action', 'REPORT: XML', array('onclick' => 'return frmSubmit();', 'class' => 'mdr-tool-button'))?>
+        </li>
+        <li><?php echo $this->formSubmit('action', 'REPORT: XLS', array('onclick' => 'return frmSubmit();', 'class' => 'mdr-tool-button'))?>
+        </li>
+        <li><?php echo $this->formSubmit('action', 'REPORT: TXT', array('onclick' => 'return frmSubmit();', 'class' => 'mdr-tool-button'))?>
+        </li>
+        <li><?php echo $this->formSubmit('action', 'UPDATE', array('onclick' => 'return frmSubmit();', 'class' => 'mdr-tool-button', !$this->repackAllowed ? 'disabled' :'' => !$this->repackAllowed ? 'disabled' :''))?>
+        </li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL', array('onclick' => 'return frmSubmit();', 'class' => 'mdr-tool-button'))?>
+        </li>
+        </ul>
+</form>
+
+<script type="text/javascript">
+<!--
+var cacheValue = 50;
+$(document).ready( function () {
+        $.ajaxSetup({async: false,
+                     complete: onAjaxSuccess,
+                     error: onAjaxError,
+                     beforeSend: onAjaxBeforeSend});
+        $("#table").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+        $("#tabs #select_complete").bind("click", selectWholeTable);
+        $(".validate").change(function(event) {
+            refreshUI(false);
+        });
+        showSelected($("#table #select_all").get(0), "init");
+        $("input[value='UPDATE']").attr("disabled", "disabled").addClass("disabled");
+<?php
+
+foreach ($this->searchFields as $key => $val) {
+$url = $this->url(array('module'     => 'warehouse',
+                        'controller' => 'location',
+                        'action'     => 'lookup'));
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key'}});
+\n
+JSCRIPT;
+}
+?>
+});
+
+function refreshUI(isJsonCheck)
+{
+    var counted = 0;
+    var ready = true;
+
+    $("input.validate").each(function() {
+        if (isNaN(parseInt(this.value))) {
+            this.value = 0;
+        } else if (parseInt(this.value) < 0) {
+            this.value = 0;
+        }
+    });
+
+    counted = parseInt($(document.getElementById("qty-1"))[0].value) * parseInt($(document.getElementById("pkg-1"))[0].value)
+            + parseInt($(document.getElementById("qty-2"))[0].value) * parseInt($(document.getElementById("pkg-2"))[0].value)
+            + parseInt($(document.getElementById("qty-3"))[0].value) * parseInt($(document.getElementById("pkg-3"))[0].value)
+            + parseInt($(document.getElementById("qty-4"))[0].value) * parseInt($(document.getElementById("pkg-4"))[0].value);
+
+    /*counted = parseInt($(document.getElementById("qty[1]"))[0].value) * parseInt($(document.getElementById("pkg[1]"))[0].value)
+            + parseInt($(document.getElementById("qty[2]"))[0].value) * parseInt($(document.getElementById("pkg[2]"))[0].value)
+            + parseInt($(document.getElementById("qty[3]"))[0].value) * parseInt($(document.getElementById("pkg[3]"))[0].value)
+            + parseInt($(document.getElementById("qty[4]"))[0].value) * parseInt($(document.getElementById("pkg[4]"))[0].value);*/
+    if(parseInt($("#total_qty").html()) == 0 && !isJsonCheck ) {
+        showErrors(['Please mark a line']) ;
+        ready = false;    
+    }
+    $("#repacked")[0].value = counted;
+    if (parseInt($("#total_qty").html()) == counted) {
+        $("#repacked").css("background-color", "#00FF00");
+    } else {
+        ready = ready & false;
+        $("#repacked").css("background-color", "#FF0000");
+    }
+    if ($("select#pack_type")[0].value != '') {
+    } else {
+        ready = ready & false;
+    }
+    if (counted == 0) {
+        ready = ready & false;
+    }
+    if (ready) {
+        $("input[value='UPDATE']").removeAttr("disabled").removeClass("disabled");
+    } else {
+        $("input[value='UPDATE']").attr("disabled", "disabled").addClass("disabled");
+    }
+    return true;
+}
+
+function selectWholeTable()
+{
+    var chk = $('table input:checkbox', '#' + $(this).parent().parent()[0].id);
+    var checkOnOff = this.checked;
+    for (i=0; i < chk.length; i++) {
+        chk[i].checked = checkOnOff;
+    }
+    calcOther(this, $($(this).parent().parent()[0]));
+    return true;
+}
+
+function calcOther(element, method)
+{
+    var countEl = 0;
+    if ('auto' == method) {
+        var container_id = '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = element.checked;
+    } else if ('init' == method) {
+        var container_id =  '#' + $(element).parent().parent().parent().parent().parent().get(0).id;
+        var method = 'init';
+    } else {
+        var container_id = '#' + $(method)[0].id;
+        var method = element.checked;
+    }
+    $.getJSON('<?php echo $this->url(array('action' => 'calc', 'controller' => 're', 'module' => 'warehouse')); ?>',
+             { field: 'QTY',
+               inAction: '<?php echo 'pack'; ?>',
+               activeTab: container_id,
+               method: method,
+               id: element.id,
+               value: element.value }, function(json) {
+                   var answer = eval(json);
+                   $("#selected_num", container_id).text(answer.selected_num);
+                   $("#total_qty", container_id).text(answer.total_qty);
+                   //$("#repacked")[0].value = answer.selected_num;
+                   refreshUI(true);
+               });
+}
+
+
+-->
+</script>
+<?php echo $this->render("footer.phtml");

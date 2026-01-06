@@ -1,0 +1,75 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    /**
+    * @var Minder_View_Helper_StandardPage $page
+    */
+    $page = $this->standardPage('Minder.Admin.AuditSscc');
+    echo $page->messages();
+    echo $page->pageTitle();
+
+    if ($page->hasErrors()) {
+        echo $this->render('footer.phtml');
+        return;
+    }
+
+    echo $page->screenContainers();
+?>
+
+<script type="text/javascript">
+
+    minderNamespace('Minder.Admin.AuditSscc', function(){
+
+        $.extend(this, Minder.AbstractPageController);
+
+        this.onLoad = function(searchResults, screenData) {
+            $(document).bind('create-sscc', $.proxy(this.createSscc, this));
+
+            this.initScreenVarianceSearchResults(searchResults, true);
+            this.initSearchForms(searchResults);
+            this.onDataReady(screenData);
+            this.showAll();
+        };
+
+        this.createSscc = function() {
+            var namespaces = this.getRegisteredNamespaces(),
+                dataToSend = this.prepareLoadDataToSend(namespaces),
+                self = this;
+
+            $(document).queue(function () {
+                self.blockNamespaces(namespaces, 'Creating...');
+                $(this).dequeue();
+            });
+
+            $(document).queue(function () {
+                $.post(
+                    '<?php echo $this->url(array('action' => 'create-sscc')); ?>',
+                    dataToSend,
+                    $.proxy(self.onDataReady, self),
+                    'json'
+                );
+            });
+
+            $(document).queue(function () {
+                self.unblockNamespaces(namespaces);
+                $(this).dequeue();
+            });
+        };
+
+<?php echo $page->jsPageControllerServiceMethods();?>
+
+    });
+
+    $(function(){
+        Minder.Admin.AuditSscc.onLoad(
+            <?php echo json_encode($this->searchResults)?>,
+            {sysScreens: <?php echo json_encode($this->sysScreens)?>}
+        );
+    });
+
+    function createSscc() {
+        $(document).trigger('create-sscc');
+    }
+</script>
+
+<?php echo $this->StandardSRTemplate(array(), true); ?>
+<?php echo $this->render('footer.phtml'); ?>

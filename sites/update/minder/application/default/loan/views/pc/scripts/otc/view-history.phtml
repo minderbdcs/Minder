@@ -1,0 +1,184 @@
+<?php
+    $totalSelected = ($this->total > 0 && $this->total == $this->totalSelect);
+    $from = count($this->data) > 0 ? $this->navigation['pageselector'] * $this->navigation['show_by'] + 1 : 0;
+    $till = ($from > 0) ? $from + count($this->data) - 1: 0;
+?>
+
+<?php
+    if(!empty($this->toolError)) {
+        echo '<b>' . $this->toolError . '</b>';
+        return;
+    }
+?>
+<div class="mdr-dialog-header">
+<b><?php echo $this->itemType; ?> No: <?php echo $this->toolInfo; ?></b>
+
+<div style="position: relative; left:10px;">
+    <b>Selected:</b> <span  id="rows_selected" style="font-weight: bold;"><?php echo count($this->conditions); ?></span>
+    <label for="results_per_page">View By:</label>
+    <?php echo $this->formSelect('show_by_tools',
+                                 $this->navigation['show_by'],
+                                 array('onchange' => 'pageParams()'),
+                                 array(5  => 5,
+                                 10 => 10,
+                                 15 => 15,
+                                 20 => 20,
+                                 30 => 30,
+                                 40 => 40,
+                                 50 => 50,
+                                 100 => 100)) ?>
+    <label for="page">Page:</label>
+    <?php echo $this->formSelectStrict('pageselector_tools',
+                                       $this->navigation['pageselector'],
+                                       array('onchange' => 'pageParams();'),
+                                       $this->pages); ?>
+</div>
+</div>
+
+<div style="height: 250px; overflow: auto;" class="mdr-dialog-content">
+    <table id="history_lines" class="withborder tablesorter" style="min-width: 655px">
+        <thead>
+        <tr>
+            <th>
+                <?php echo $this->formCheckbox('select_all_rows', null, array('checked' => $totalSelected, 'onclick' => 'select_all_rows(this)')); ?>
+            </th>
+            <?php
+            foreach ($this->headers as $header) {
+                if ($this->itemType == 'TOOL' && $header == 'Qty')
+                    continue;
+                else
+                    echo '<th>'. $this->escape($header) . '</th>';
+            }
+            ?>
+        </tr>
+        </thead>
+        <tbody>
+
+        <?php foreach ($this->data as $history) {  ?>
+        <tr id="<?php echo $history['ID']; ?>">
+            <th><?php
+                if (in_array($history['ID'], $this->conditions)) {
+                    echo $this->formCheckbox($history['ID'], $history['ID'], array('onclick' => 'selectRow(this)', 'checked' => 'checked')) . '</th>';
+                } else {
+                    echo $this->formCheckbox($history['ID'], $history['ID'], array('onclick' => 'selectRow(this)')) . '</th>';
+                }
+                foreach ($this->headers as $key => $val) { ?>
+                        <?php
+                        if ($key != 'ID') {
+                            if ($this->itemType == 'TOOL' && $key == 'QTY')
+                                continue;
+                            else
+                                echo '<td>'. $this->escape($history[$key]) . '</td>';
+                        } ?>
+                <?php } ?>
+
+        </tr>
+            <?php } ?>
+        <tr class="even" style="display: none;"><td><input type="checkbox" name =""></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="mdr-dialog-footer">
+    <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+        <li id='rec_counter_issues' style="display: inline;">
+            <div id='num_rec_issues'>
+                Total records <?php echo ($this->numRecords) ? $this->numRecords : '0';?>.
+                Show from <?php echo $from;?>
+                to <span id="issues_count" class="float: right;"><?php echo $till;?></span>
+            </div>
+        </li>
+    </ul>
+    <br>
+
+    <form action="/minder/otc/history-export">
+        <ul class="toolbar" style="margin-top: 0; border-top: solid 1px #999;" id="edit_field_buttons">
+                <li>
+                    <input type="submit" class="order-button" name="report" value="REPORT: CSV"/>
+                </li>
+                <li>
+                    <input type="submit" class="order-button" name="report" value="REPORT: XLS"/>
+                </li>
+                <li>
+                    <input type="button" class="order-button" name="report" value="CANCEL" onclick="cancelToolsList(); return false;"/>
+                </li>
+            </ul>
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    function cancelToolsList() {
+        $("#history_dialog").dialog("close");
+    }
+
+    function selectRow(node) {
+        var selected = $(node).attr('checked');
+        var id = $(node).attr('id');
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'history-mark-ajax'))?>',
+            {
+                'id': id,
+                'selected': selected
+            },
+            function (data) {
+                $('#rows_selected').text(data.selectedRows);
+                updateHistorySelectAllRowsCheckbox();
+            }
+        );
+    }
+
+    function select_all_rows(node) {
+        var selected = $(node).attr('checked');
+
+        $.getJSON('<?php echo $this->url(array('action' => 'history-mark-ajax'))?>',
+            {
+                'id': 'select_all',
+                'selected': selected
+            },
+            function (data) {
+                $('#rows_selected').text(data.selectedRows);
+                updateHistorySelectAllRowsCheckbox();
+            }
+        );
+
+        if(selected) {
+            $('#history_lines input[type=checkbox]').attr('checked', 'true');
+        } else {
+            $('#history_lines input[type=checkbox]').removeAttr('checked');
+        }
+    }
+
+    function updateHistorySelectAllRowsCheckbox(data) {
+        var $historyLines = $('#history_lines'),
+            $tbody = $historyLines.find('tbody'),
+            totalRows = $tbody.find('[type="checkbox"]').length,
+            checked = $tbody.find('[checked]').length;
+
+        if (totalRows > 0 && totalRows == checked) {
+            $historyLines.find('[name="select_all_rows"]').attr('checked', true);
+        } else {
+            $historyLines.find('[name="select_all_rows"]').removeAttr('checked');
+        }
+    }
+
+    function pageParams() {
+        var perPage = $("#show_by_tools :selected").val();
+        var page    = $("#pageselector_tools :selected").val();
+        $("#history_dialog").load(
+            '<?php echo $this->url(array('action' => 'view-history'))?>',
+            {
+                show_by: $("#show_by_tools :selected").val(),
+                pageselector: $("#pageselector_tools :selected").val()
+            },
+            function() {
+                resizeDialogContent($('#history_dialog'));
+            }
+        );
+    }
+
+</script>
+
+
+
+

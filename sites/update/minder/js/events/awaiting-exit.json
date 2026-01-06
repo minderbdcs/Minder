@@ -1,0 +1,23 @@
+{
+  "source": "js/events/awaiting-exit.json",
+  "namespace": "Mdr.Pages.AwaitingExit",
+  "exportName": "MessageBus",
+  "events": [
+    {
+      "event" : "change-sent-from-request",
+      "arguments": []
+    },
+    {
+      "event" : "despatched-rows-selection-changed",
+      "arguments": ["sysScreenSelectionState"]
+    },
+    {
+      "event" : "despatched-data-ready",
+      "arguments": ["sysScreenData"]
+    },
+    {
+      "event" : "reload-data-request",
+      "arguments": []
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+/*
+This is the core stype of the whm site
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h1 {
+font-size: 1.1em;
+margin-left: -2%;
+text-align: left;
+}
+h2 {
+font-size: 1.2em;
+margin-left: -20%;
+}
+h3 {
+font-size: 1em;
+line-height: 1.2em;
+text-decoration: blink;
+margin-left: -10%;
+}
+h4 {
+font-size: 1em;
+line-height: 1.2em;
+position: absolute;
+left: 10px;
+top: 5px;
+}
+a:link {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:visited {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:hover {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:active {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+input[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.message[type="text"] {
+color: red ;
+background-color: yellow;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 0.6em;
+}
+input.submit:focus {
+outline: solid red 2px;
+color: solid blue ;
+}
+select.sel1 {
+width: 25%;
+}
+select.sel2 {
+width: 30%;
+}
+select.sel3 {
+width: 40%;
+}
+select:focus {
+outline: 2px #ff7d00 ;
+color: red ;
+}
+select:scrolling {
+display: block;
+width: 55%;
+}
+button {
+display: block;
+color: black ;
+background-color: cyan;
+font-size: 0.95em;
+width: 3.3em;
+height: 20%;
+margin-top: 1%;
+margin-bottom: 1%;
+margin-right: 1%;
+margin-left: 1%;
+}
+#col1 {
+position: absolute;
+left: 4px;
+top: 13.3em;
+}
+#col2 {
+position: absolute;
+left: 150px;
+top: 13.3em;
+}
+#col4 {
+position: absolute;
+left: 9em;
+top: 16em;
+}
+#col3 {
+position: absolute;
+left: 2px;
+top: 5px;
+width: 16.6em;
+}

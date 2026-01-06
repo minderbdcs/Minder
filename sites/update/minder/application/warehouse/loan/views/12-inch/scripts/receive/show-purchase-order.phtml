@@ -1,0 +1,95 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->pageTitle; ?></h2>
+<?php echo $this->messenger()->all() ?>
+<form method="post" action="<?php echo $this->url() ?>/?fmt=12-inch">
+<?php echo $this->formHidden('id', $this->purchaseOrderId) ?>
+<div class="without_border">
+    <?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?>
+</div>
+<table class="summary" style="width:99%;">
+    <tr>
+        <th>PURCHASE_ORDER</th>
+        <td><?php echo $this->escape($this->purchaseOrder->purchaseOrder) ?></td>
+        <th>PERSON_ID</th>
+        <td><?php echo $this->escape($this->purchaseOrder->personId) ?></td>
+    </tr>
+    <tr>
+        <th>REQUISITION_NO</th>
+        <td><?php echo $this->escape($this->purchaseOrder->requisitionNo) ?></td>
+        <th>PO_DATE</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poDate) ?></td>
+    </tr>
+    <tr>
+        <th>PO_REVISION_NO</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poRevisionNo) ?></td>
+        <th>COMPANY_ID</th>
+        <td><?php echo $this->escape($this->purchaseOrder->companyId) ?></td>
+    </tr>
+    <tr>
+        <th>DIVISION_ID</th>
+        <td><?php echo $this->escape($this->purchaseOrder->divisionId) ?></td>
+        <th>PO_STATUS</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poStatus) ?></td>
+    </tr>
+    <tr>
+        <th>COMMENTS</th>
+        <td><?php echo $this->escape($this->purchaseOrder->comments) ?></td>
+        <th>PO_PRINTED</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poPrinted) ?></td>
+    </tr>
+    <tr>
+        <th>USER_ID</th>
+        <td><?php echo $this->escape($this->purchaseOrder->userId) ?></td>
+        <th>ORDER_TYPE</th>
+        <td><?php echo $this->escape($this->purchaseOrder->orderType) ?></td>
+    </tr>
+    <tr>
+        <th>PO_LEGACY_DATE</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poLegacyDate) ?></td>
+        <th>PO_CURRENCY</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poCurrency) ?></td>
+    </tr>
+    <tr>
+        <th>PO_DUE_DATE</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poDueDate) ?></td>
+        <th>PO_LEGACY_INTERNAL_ID</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poLegacyInternalId) ?></td>
+    </tr>
+    <tr>
+        <th>PO_RECEIVE_WH_ID</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poReceiveWhId) ?></td>
+        <th>PO_LEGACY_MEMO</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poLegacyMemo) ?></td>
+    </tr>
+    <tr>
+        <th>PO_LEGACY_STATUS</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poLegacyStatus) ?></td>
+        <th>PO_LEGACY_RECVD_DATE</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poLegacyRecvdDate) ?></td>
+    </tr>
+    <tr>
+        <th>PO_SHIP_TO_ADDRESS1</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poShipToAddress1) ?></td>
+        <th>PO_SHIP_TO_ADDRESS2</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poShipToAddress2) ?></td>
+    </tr>
+    <tr>
+        <th>PO_SHIP_TO_ADDRESS3</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poShipToAddress3) ?></td>
+        <th>PO_SHIP_TO_ADDRESS4</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poShipToAddress4) ?></td>
+    </tr>
+    <tr>
+        <th>PO_SHIP_TO_ADDRESS5</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poShipToAddress5) ?></td>
+        <th>PO_LEGACY_CONSIGNMENT</th>
+        <td><?php echo $this->escape($this->purchaseOrder->poLegacyConsignment) ?></td>
+    </tr>
+</table>
+<div class="without_border">
+    <?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?>
+</div>
+</form>
+
+<?php echo $this->render('footer.phtml'); ?>

@@ -1,0 +1,169 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php if (count($this->errors) > 0) { ?>
+<ul class="errors">
+    <?php foreach ($this->errors as $error) {?>
+        <li><?php echo $error;?> </li>
+    <?php }?>
+</ul>
+<?php } ?>
+
+<?php
+    $resultsForm = $this->getHelper('SysScreenSearchResult');
+    $resultsForm->setTabs($this->tabs);
+    $resultsForm->setFields($this->fields);
+?>
+
+<?php
+    if (!empty($this->searchFields))
+        echo $this->sysScreenSearchForm(array('name' => 'waiting_approval_search_form'), $this->searchFields, $this->actions);
+?>
+
+<div id="ORDERS_LIST_CONTAINER">
+<form name="orders_results" id="orders_results" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="order_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div class="sys-screen-title" title="<?php echo $this->orderSysScreenName;?>">Orders List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by', 
+                                              $this->navigation['show_by'],
+                                              array(),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->orderSelectionNamespace;?>"><?php echo $this->selectedOrdersCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter await_approval" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->orderSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->orderSelectionNamespace), $this->orders, $this->selectedOrders);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->orderSelectionNamespace;?>"></span><?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <li><input type="submit" name="report_format" id="order_report_csv_btn" class="order-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="order_report_xls_btn" class="order-button" value="REPORT: XLS" onclick="return false;" /></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+    
+</div>
+
+<table><tr><td>
+<div id="LINES_LIST_CONTAINER"></div>
+</td></tr></table>
+
+<?php echo $this->render('footer.phtml'); ?>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#ORDERS_LIST_CONTAINER #show_by, #ORDERS_LIST_CONTAINER #pageselector').change(function(){ $('#orders_results').submit(); });
+        
+        $("#order_tabs > ul").tabs();
+
+        $('.await_approval').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('#order_report_csv_btn, #order_report_xls_btn').click(function(evt){
+            evt.preventDefault();
+            location.href = '<?php echo $this->url(
+                array(
+                    'module' => $this->orderReportModule, 
+                    'controller' => $this->orderReportController, 
+                    'action' => $this->orderReportAction, 
+                    'selection_namespace' => $this->orderSelectionNamespace,
+                    'selection_action' => $this->orderSelectionAction,
+                    'selection_controller' => $this->orderSelectionController
+                ),
+                null, 
+                true
+            );?>' + '/report_format/' + escape($(this).val());
+        });
+
+        $('.row_selector.<?php echo $this->orderSelectionNamespace;?>, .select_all_rows.<?php echo $this->orderSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->orderSelectionModule, 'controller' => $this->orderSelectionController, 'action' => $this->orderSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#ORDERS_LIST_CONTAINER',
+                'selectionNamespace'  : '<?php echo $this->orderSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->orderSelectionAction;?>',
+                'selectionController' : '<?php echo $this->orderSelectionController;?>'
+            },
+            {
+                'onSuccess' : getLines
+            }
+        );
+
+        getLines();
+    });
+    
+    function getLines() {
+        
+        var data = {};
+        var showBy = parseInt($('#LINES_LIST_CONTAINER #show_by').val());
+        var pageselector = parseInt($('#LINES_LIST_CONTAINER #pageselector').val());
+        if (!(isNaN(showBy) || showBy === 0)) {
+            data.show_by = showBy;
+        }
+        
+        if (!isNaN(pageselector)) {
+            data.pageselector = pageselector;
+        }
+        
+        $('#LINES_LIST_CONTAINER').hide().load(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-approval', 'action' => 'get-lines'), null, true);?>',
+            data,
+            function() {
+                
+                var result = $.parseJSON($('#LINES_LIST_CONTAINER #JSON').html());
+                
+                if (result.errors && result.errors.length > 0) {
+                    showErrors(result.errors);
+                    return;
+                }
+                
+                $('#LINES_LIST_CONTAINER').show();
+            }
+        );
+    }
+    
+    /* ]]> */
+</script>

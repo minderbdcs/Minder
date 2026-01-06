@@ -1,0 +1,166 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="" method="post">
+    <h1>EDIT GRN: <?php echo $this->escape($this->grnObj->grn); ?></h1>
+
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="SAVE"/></li>
+        <li><input name="action" type="submit" value="DISCARD"/></li>
+    </ul>
+        <table class="summary">
+        <tr>
+            <th><label for='grn'>GRN </label></th>
+            <td><?php echo $this->formNote('grn', $this->grnObj->grn, array()); ?></td>
+            <th><label for='grn_type'>GRN Type</label></th>
+            <td><?php echo $this->formSelectStrict('grn_type', $this->grnObj->grnType, array(), $this->grnTypeList);?></td>
+        </tr>
+        <tr>
+            <th><label for='total_qty_packs'>Total Connote Packs</label></th>
+            <td><?php echo $this->formText('total_qty_packs', $this->grnObj->totalQtyPacks, array()); ?></td>
+            <th><label for='pallet_owner'>Pallet Owner</label></th>
+            <td><?php echo $this->formSelectStrict('pallet_owner', $this->grnObj->palletsYn, array(), $this->palletOwnerList);?></td>
+        </tr>
+        <tr>
+            <th><label for='pack_ean_ssc'>Pack Ean Sscc</label></th>
+            <td><?php echo $this->formText('pack_ean_ssc', $this->grnObj->packEanSscc, array()); ?></td>
+            <th><label for='carrier'>Carrier</label></th>
+            <td><?php echo $this->formSelectStrict('carrier', $this->grnObj->carrier, array(), $this->carrierList);?></td>
+        </tr>
+        <tr>
+            <th><label for='vehicle_id'>Vehicle Id</label></th>
+            <td><?php echo $this->formText('vehicle_id', $this->grnObj->vehicleId, array()); ?></td>
+            <th><label for='awb_consignment_no'>AWB Consignment #</label></th>
+            <td><?php echo $this->formText('awb_consignment_no', $this->grnObj->awbConsignmentNo); ?></td>
+        </tr>
+        <tr>
+            <th><label for='pallet_qty'>Pallet Qty</label></th>
+            <td><?php echo $this->formText('pallet_qty', $this->grnObj->grnPalletQty, array()); ?></td>
+            <th><label for='delivery_docket'>Delivery Docket</label></th>
+            <td><?php echo $this->formText('delivery_docket', $this->grnObj->deliveryDocket); ?></td>
+        </tr>
+        <tr>
+            <th><label for='container_no'>Shipping Container #</label></th>
+            <td><?php echo $this->formText('container_no', $this->grnObj->containerNo); ?></td>
+            <th>GRN Printed</th>
+            <td><?php echo $this->formText('grn_printed', $this->grnObj->grnPrinted, array());?></td>
+        </tr>
+        <tr>
+            <th>User ID</th>
+            <td><?php echo $this->formText('user_id', $this->grnObj->userId, array());?></td>
+            <th>Device ID</th>
+            <td><?php echo $this->formText('device_id', $this->grnObj->deviceId, array());?></td>
+        </tr>
+        <tr>
+            <th>GRN Date</th>
+            <td><?php echo $this->formText('grn_date', $this->grnObj->grnDate); ?></td>
+            <th><label for='order_no'>Order #</label></th>
+            <td><?php echo $this->formText('order_no', $this->grnObj->orderNo, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='order_line_no'>Order Line #</label></th>
+            <td><?php echo $this->formText('order_line_no', $this->grnObj->orderLineNo, array()); ?></td>
+            <th><label for='return_id'>Supplier ID</label></th>
+            <td><?php echo $this->formSelectStrict('return_id', $this->grnObj->returnId, array(), $this->personList);?></td>
+        </tr>
+        <tr>
+            <th><label for='shipped_date'>Shipped Date</label></th>
+            <td><?php echo $this->formText('shipped_date', $this->grnObj->shippedDate); ?></td>
+            <th><label for='receipt_flag'>Receipt Flag</label></th>
+            <td><?php echo $this->formText('receipt_flag', $this->grnObj->receiptFlag, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='last_update'>Last Update</label></th>
+            <td><?php echo $this->formText('last_update', $this->grnObj->lastUpdateDate); ?></td>
+            <th><label for='owner_id'>Owner ID</label></th>
+            <td><?php echo $this->formSelectStrict('owner_id', $this->grnObj->ownerId, array(), $this->companyList);?></td>
+        </tr>
+        <tr>
+            <th>Last Line #</th>
+            <td><?php echo $this->formText('last_line_no', $this->grnObj->lastLineNo, array());?></td>
+            <th>Last Pallet #</th>
+            <td><?php echo $this->formText('last_pallet_no', $this->grnObj->lastPalletNo, array());?></td>
+        </tr>
+        <tr>
+            <th><label for='ship_container_type'>Container Type</label></th>
+            <td><?php echo $this->formSelectStrict('ship_container_type', $this->grnObj->shipContainerType, array(), $this->containerTypeList);?></td>
+            <th><label for='pack_crate_owner'>Hire Crate Owner</label></th>
+            <td><?php echo $this->formSelectStrict('pack_crate_owner', $this->grnObj->packCrateOwner, array(), $this->packOwnerList);?></td>
+        </tr>
+        <tr>
+            <th><label for='pack_crate_type'>Hire Crate Type</th>
+            <td><?php echo $this->formSelectStrict('pack_crate_type', $this->grnObj->packCrateType, array(), $this->packTypeList);?></td>
+            <th><label for='pack_crate_qty'>Hire Crate Qty</label></th>
+            <td><?php echo $this->formText('pack_crate_qty', $this->grnObj->packCrateQty, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='container_type'>Container Type</th>
+            <td><?php echo $this->formText('container_type', $this->grnObj->containerType, array());?></td>
+            <th><label for='shipping_crate_owner'>Shipping Crate Owner</label></th>
+            <td><?php echo $this->formText('shipping_crate_owner', $this->grnObj->shippingCrateOwner, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='shipping_crate_type'>Shipping Crate Type</th>
+            <td><?php echo $this->formText('shipping_crate_type', $this->grnObj->shippingCrateType, array());?></td>
+            <th><label for='shipping_crate_qty'>Shipping Crate Qty</label></th>
+            <td><?php echo $this->formText('shipping_crate_qty', $this->grnObj->shippingCrateQty, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='due_date'>Due Date</th>
+            <td><?php echo $this->formText('due_date', $this->grnObj->grnDueDate, array());?></td>
+            <th><label for='status'>Status</label></th>
+            <td><?php echo $this->formText('status', $this->grnObj->grnStatus, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='freight_forwarder'>Freight Forwarder</th>
+            <td><?php echo $this->formText('freight_forwarder', $this->grnObj->grnFreightForwarder, array());?></td>
+            <th><label for='legacy_internal_id'>Legacy  Internal Id</label></th>
+            <td><?php echo $this->formText('legacy_internal_id', $this->grnObj->grnLegacyInternalId, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='legacy_memo'>Legacy Memo</th>
+            <td><?php echo $this->formText('legacy_memo', $this->grnObj->grnLegacyMemo, array());?></td>
+            <th><label for='wh_id'>Wh Id</label></th>
+            <td><?php echo $this->formText('wh_id', $this->grnObj->whId, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='posting_period'>Posting Period</th>
+            <td><?php echo $this->formText('posting_period', $this->grnObj->grnPostingPeriod, array());?></td>
+            <th><label for='last_lot_no'>Last Lot No</label></th>
+            <td><?php echo $this->formText('last_lot_no', $this->grnObj->lastLotNo, array()); ?></td>
+        </tr>
+        <tr>
+            <th><label for='freight_account_no'>Freight Account No</th>
+            <td><?php echo $this->formText('freight_account_no', $this->grnObj->grnFreightAccountNo, array());?></td>
+            <th></th>
+            <td></td>
+        </tr>
+        <tr>
+            <th>Comments</th>
+            <td colspan=3><?php echo $this->formTextarea('comments', $this->grnObj->comments, array());?></td>
+        </tr>
+    </table>
+
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="SAVE"/></li>
+        <li><input name="action" type="submit" value="DISCARD"/></li>
+    </ul>
+
+</form>
+<script type="text/javascript">
+$(document).ready(function (){
+    $.ajaxSetup({async: false,
+                 complete: onAjaxSuccess,
+                 error: onAjaxError,
+                 beforeSend: onAjaxBeforeSend});
+    
+    $('#grn_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#shipped_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#last_update').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#due_date').datepicker({dateFormat: 'yy-mm-dd'});
+    $('#grn_printed').datepicker({dateFormat: 'yy-mm-dd'});
+    
+    
+    $("#limit_company").get(0).disabled = true;
+    $("#limit_warehouse").get(0).disabled = true;
+});
+</script>
+<?php echo $this->render('footer.phtml');

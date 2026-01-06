@@ -1,0 +1,125 @@
+14/04/08
+	if do Back from addrprodlabel
+	then have a button to go back to addrprodlabel
+	so far just return to print screen for the last picked product/ssn
+	What if do not print labels for more than one product/ssn ???
+
+	unpick status DS and DC as PL
+	
+18/02/08
+	in picking 91884 in order S....64
+	after picking the ssn's and prods. Does not go to addrprodlabel
+11/02/08
+	T want on screen display of qty to return and qty picked of product
+	T Despatch label to include the issn involved	
+	so at start of the product or issn clear the issn's despatch print flag
+	T want x * a + y * b labels where x and y are qty's of labels
+	have qty of issn's from the pick (via pick_item_detail) as z
+	
+	if z >= x + y
+		have enough issn's - just must adjust the qty on the issn
+		as you loop through them with a clear despatch flag
+		(in this print update the despatch flag of the issn)
+	else
+		must create (x + y) - z issn's from one of the issn's involved
+		if there are none then a standalone issn must be created
+	Now have enough issn's 
+	In the looping through the issn's
+	T put pack_id and despatch_id into the issn ?
+	T put issn into the pack_id table
+	Afterwards adjust the qtys of the issn's to match the qty on the label
+	(so the max on the label is the despatched qty)
+
+	deal with ssn's which are not products
+	then go to addrprodlabel for each ssn picked
+========================================================================
+07/01/08
+	!when done a line (product)
+	T if a split happens then no split label
+	T but a label for the remaining stock
+	T then use the screen from the despatch for despatch labels (defaulting the connote)
+	to get the qtys of labels and print all these labels on the printer scanned
+	T allow #PA for the prefix for a label scanned 
+T in addrprodlabel clear the bdcs cookie picksplitssn (after printing)
+T in addrprodlabel at end of screen (use the header screens as in transactionOl.php)
+T in addrprodlabel move the saved files to the printer folder and printer them
+T in transactionOL.php go to addrprodlabel at end of product
+
+24/01/08
+how to unpick 'DS' and 'DC' status lines
+back from addrprodlabel to unpick the line just picked
+the back button from the picks (ie cancel)
+the unpick also cancels DC status items (done that day)
+========================================================================
+in checkfromlocn.php
+	if the issn scanned causes a split
+	then go to screen to ask them to scan the printer
+	which ever printer they scan gets the label
+	if they don't or press back then go back to the getfromlocn screen
+
+In sales order entry - allow the despatch location to be altered
+
+screen to print labels
+	enter or choose order
+	if there are lines not yet picked
+	then only despatch labels
+	otherwise all 3 labels
+
+	despatch labels
+	waste label (1 per line)
+	split label (1 per line)
+	always take all the qty
+
+	how to tie these despatch labels to the despatch of this order
+	(ie before the despatch is created)
+	label is in the pack_id table
+	requires a despatch_id
+
+=====================================================================
+Done
+
+in getfrom locn
+	ssn lines - just scan the issn ssn_id (no location) or qty
+	product
+		scan location 
+		scan individual issn's for product
+			until have scanned enough for the line
+
+	added SSN view in next line
+
+	product
+		only get issn's for the correct wh and company (from order)
+		if orders wh is null ??
+		if orders company is null ??
+	this effects
+		getfromlocn
+		checkfromlocn
+		getfromssn
+		checkfromssn
+
+transaction PKOL use the R B method -  to include the scanned issn - reboot method
+
+confirmto
+	use the to location of the despatch location in the pick_order
+		if null or empty use the current default of control
+
+In reserving - when issn is for more than the from line
+	the added line is for the difference 
+	currently just shifts up the order qty
+	ie force to split on this issn
+
+In PKOL B 
+	if a split required
+	(picked qty < current qty)
+	do a split  - similar to PKOL P
+	allow the new issn's ssn_id as per the grn naming 
+
+getfromlocn
+	checkfromlocn
+		rather than scan locn (for prod)
+		present 1st 5 issn's for product (order by date received)
+
+PKIL - if the despatch location entered is not a despatch locn
+dosn't move to despatch . Just to a temporary location
+in this case I think that the default should be used.
+

@@ -1,0 +1,154 @@
+/*
+This is the core stype of the whm site
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 0.58em;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h1 {
+font-size: 1.1em;
+margin-left: 0%;
+text-align: left;
+}
+h2 {
+font-size: 1.2em;
+margin-left: 0%;
+}
+h3 {
+font-size: 1em;
+text-decoration: blink;
+margin-left: 0%;
+}
+h4 {
+font-size: 1em;
+position: absolute;
+left: 10px;
+top: 5px;
+}
+div {
+display: block;
+margin-top: 1%;
+margin-bottom: 1%;
+margin-right: 1%;
+margin-left: 1%;
+}
+.center {
+text-align: center;
+}
+.center table {
+width: 65%;
+margin-left: auto;
+margin-right: auto;
+text-align: left;
+}
+#DA {
+color: white ;
+background-color: orange;
+}
+#DX {
+color: black ;
+background-color: cyan;
+}
+#OP {
+color: black ;
+background-color: red;
+}
+#CN {
+color: white ;
+background-color: black;
+}
+#DC {
+color: white ;
+background-color: blue;
+}
+#GO   {
+color: green ;
+background-color: white;
+}
+#NF   {
+color: white ;
+background-color: coral;
+}
+#DSGS  {
+color: white ;
+background-color: maroon;
+}
+#labeled {
+color: black ;
+background-color: green;
+}
+#weighed {
+color: black ;
+background-color: orange;
+}
+#picked {
+color: white ;
+background-color: purple;
+}
+#pickedoversized {
+color: black ;
+background-color: yellow;
+}
+#received {
+color: black ;
+background-color: red;
+}
+td.DA {
+color: white ;
+background-color: orange;
+}
+td.DX , td.DI {
+color: black ;
+background-color: cyan;
+}
+td.OP , td.UP {
+color: black ;
+background-color: red;
+}
+td.CN {
+color: white ;
+background-color: black;
+}
+td.DC {
+color: white ;
+background-color: blue;
+}
+td.HD ,td.AS{
+color: white ;
+background-color: grey;
+}
+td.AL, td.Al {
+color: black ;
+background-color: yellow;
+}
+td.DS {
+color: black ;
+background-color: green;
+}
+td.PL , td.Pl {
+color: black ;
+background-color: white;
+}
+td.PG , td.Pg {
+color: black ;
+background-color: white;
+}
+td.GO   {
+color: indigo ;
+background-color: lightgreen;
+}
+td.NF   {
+color: white ;
+background-color: indigo;
+}
+td.AC {
+color: black ;
+background-color: orchid;
+}
+td.CL {
+color: black ;
+background-color: olive;
+}

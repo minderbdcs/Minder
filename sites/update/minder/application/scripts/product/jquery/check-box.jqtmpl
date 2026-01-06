@@ -1,0 +1,1 @@
+<input type="checkbox" name="{{= $item.data.getName()}}" {{if $item.data.getValue()}}checked="checked"{{/if}}/>&nbsp;

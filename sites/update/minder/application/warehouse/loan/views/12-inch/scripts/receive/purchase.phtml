@@ -1,0 +1,208 @@
+<?php echo $this->render('header.phtml') ?>
+<h2><?php echo $this->pageTitle; ?></h2>
+<?php echo $this->messenger()->all() ?>
+<form method="post" id="purchase_order_form" action="<?php echo $this->url() ?>/?fmt=12-inch">
+
+<?php
+switch ($this->type) {
+    case 'PO':
+        echo $this->formLabel('purchase_order', 'PO.No.:');
+        break;
+
+    case 'RA':
+        echo $this->formLabel('purchase_order', 'Return No.:');
+        break;
+
+    case "TR":
+        echo $this->formLabel('purchase_order', 'TR No.:');
+        break;
+
+    case "WO":
+        echo $this->formLabel('purchase_order', 'WO.No.:');
+        break;
+
+    case "LD":
+    case "LP":
+        echo $this->formLabel('purchase_order', 'Load No.:');
+        break;
+}
+?>
+<?php echo $this->formSelect('purchase_order', $this->purchaseOrder, null, array('- Select PURCHASE_ORDER -') + $this->purchaseOrderOpts) ?>
+
+<?php echo $this->formLabel('po_legacy_consignment', 'Inwards Consignment #:') ?>
+<?php echo $this->formSelect('po_legacy_consignment', $this->poLegacyConsignment, null, array('- Select PO_LEGACY_CONSIGNMENT -') + $this->poLegacyConsignmentOpts) ?>
+
+<?php echo $this->formSelect('prod_id', $this->prod_id, null, array('- Select Product -') + $this->prod_idOpts) ?>
+
+<div class="without_border">
+    <?php echo $this->formSubmit('do_action', 'Search', array('class' => 'button')) ?>&nbsp;
+    <?php echo $this->formSubmit('do_action', 'Cancel', array('class' => 'button')) ?>&nbsp;
+    <?php
+        if($this->minder->isAdmin) {
+            echo $this->formSubmit('do_action', "Get Order", array('class' => 'button', "onclick" => 'return newPrompt();'));
+        }
+    ?>
+</div>
+
+
+<div class="with_border">
+    <span style="text-transform: uppercase; font-weight: bold;">Orders List</span>
+    <?php echo $this->formLabel('show_by', 'View by:') ?>
+    <?php echo $this->formSelect('show_by', $this->navigation['show_by'], array('onchange' => 'frmSubmit()'), array(5  => 5, 10 => 10, 15 => 15, 20 => 20, 30 => 30, 40 => 40, 50 => 50, 100 => 100)) ?>
+    <?php echo $this->formLabel('pageselector', 'Page:') ?>
+    <?php echo $this->formSelect('pageselector', $this->navigation['pageselector'], array('onchange' => 'frmSubmit()'), $this->pages); ?>
+</div>
+
+<table id="purchase_orders" class="withborder tablesorter">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="select_all_purchase_orders" onclick="selectAll(this)" /></th>
+<?php foreach ($this->purchaseOrderHeaders as $header) { ?>
+            <th><?php echo $this->escape($header) ?></th>
+<?php } ?>
+        </tr>
+    </thead>
+    <tbody>
+<?php foreach ($this->purchaseOrders as $order) { ?>
+        <tr>
+            <th><?php echo $this->formCheckbox($order['PURCHASE_ORDER'], $order['PURCHASE_ORDER'], array('onclick' => 'showSelected(this)', 'class' => 'purchase_order_selector')) ?></th>
+<?php     foreach ($this->purchaseOrderHeaders as $key => $val) { ?>
+            <td><a href="<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'receive', 'action' => 'show-purchase-order', 'id' => $order['PURCHASE_ORDER']), null, true) ?>/?fmt=12-inch"><?php echo $this->escape($order[$key]) ?></a></td>
+<?php     } ?>
+        </tr>
+<?php } ?>
+<?php if (!count($this->purchaseOrders)) { ?>
+        <tr>
+            <th/>
+<?php     foreach ($this->purchaseOrderHeaders as $k => $v) { ?>
+            <td/>
+<?php     } ?>
+        </tr>
+<?php } ?>
+    </tbody>
+</table>
+        <ul style="list-style-type: none; border: 0; margin: 0; padding: 0; border-top: 1px solid #999999; border-bottom: 1px solid #999999;">
+            <li id='rec_counter' style="display: inline;">
+                <div id='num_rec'>Total
+                    <?php echo $this->numRecords . " records. "; ?>
+                    <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); ?>
+                    <?php echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?>
+                </div>
+            </li>
+        </ul>
+</form>
+
+<div id="dialog" class="flora" title="Get order prompt" style="display: none;">
+    <form id="prompt" name="prompt" method="post" action="">
+    <input type="hidden" name="do_action" value="get_order" />
+    <table class="summary" style="width:99%">
+        <tbody>
+            <tr>
+                <th>
+                    PO Number:
+                </th>
+                <td>
+                    <?php echo $this->formText('po_number', '', array('')); ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    $('#purchase_orders').tablesorter({headers:{0:{sorter:false}}, sortList:[[1,1],[2,0]], widgets: ['zebra']});
+});
+
+function frmSubmit() {
+    $('#purchase_order_form')[0].submit();
+    return true;
+}
+
+function showSelected(target) {
+    $('#select_all_purchase_orders')[0].checked = checkSelected('#purchase_orders', '.purchase_order_selector');
+    $(target.form).append('<input type="hidden" name="purchase_order" value="' + target.value + '" /><input type="hidden" name="state" value="' + target.checked + '" />');
+
+    // Select the first link in the current tr.
+    var link = $(target).parent().next().find('a');
+    if (link.length) {
+        var act = link.get(0).href.replace(/\/show-purchase-order\//, '/order-lines/');
+        document.getElementById('purchase_order_form').action = act;
+        //target.form.action = act;
+    }
+    frmSubmit();
+}
+
+function selectAll(target) {
+}
+
+function checkSelected(tableId, checkBoxesClass) {
+    var checkBoxes = $(tableId).find(checkBoxesClass);
+    return checkBoxes.length == checkBoxes.filter(':checked').length;
+}
+</script>
+
+<script type="text/javascript">
+<!--
+$(document).ready(function() {
+    $('#dialog').dialog({buttons: {GetOrder: sendOrder, Close: closeDialog},
+         width: '70ex',
+         height: '10em',
+         autoOpen: false,
+    
+    }).bind('dialogopen', function(event, ui) {
+        $(this).show();     
+    });
+
+});
+
+function sendOrder()
+{
+    if($('#po_number')[0].value == '') {
+        alert('Please, enter PO number');
+        return false;
+    }
+
+    var data = $('#prompt').serialize();
+
+    $('#dialog').dialog("close");
+
+    $.ajax({url: '<?php echo $this->url(array('action' => 'purchase', 'controller' => 'receive', 'module' => 'warehouse')); ?>',
+           data:  'fmt=12-inch&' + data,
+           beforeSend: onAjaxBeforeSend,
+           complete: onAjaxSuccess,
+           success: function(result) {
+                        var answer = eval('(' + result + ')');
+                        if(answer.status == false) {
+                            alert(answer.message);
+                        //    $('#dialog').dialog("close");
+                            return false;
+                        }
+                         // get url for redirect from server
+                         url = answer.data.url;
+                         window.location = url;
+
+                       // $('#dialog').dialog("close");
+                        },
+           method: 'post'
+           });
+
+    return false;
+}
+
+function newPrompt()
+{
+    document.prompt.reset();
+    $("#dialog").dialog("open");
+    return false;
+}
+
+function closeDialog()
+{
+    $('#dialog').dialog("close");
+    return false;
+}
+//-->
+</script>
+<?php echo $this->render('footer.phtml') ?>

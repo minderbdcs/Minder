@@ -1,0 +1,26 @@
+/**
+* Auto-generated file. Do not edit manually. Modify source instead and use grunt mustache_render task to rebuild.
+*
+* @source "{{{source}}}"
+*/
+{{> export}} = (function(){
+
+    var {{exportName}} = function() {};
+
+    _.extend(
+        {{exportName}}.prototype,
+        Backbone.Events,
+        {
+            {{#enhancedEach events}}
+{{#with data}}
+{{> notify}},
+
+{{> listen}}
+{{/with}}{{^last}},{{/last}}
+
+            {{/enhancedEach}}
+        }
+    );
+
+    return {{exportName}};
+})();

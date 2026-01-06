@@ -1,0 +1,52 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php
+    $attributes = array('autocomplete' => 'off', 'onkeyup' => 'checkKeys(event)');
+    $attributesForSelect = array();
+?>
+    <ul class="toolbar">
+        <li>
+            <table>
+                <tr>
+                    <th class="rightalign"><label for='status'>Master Data Table: </label></th>
+                    <td><?php echo $this->formSelect('masterDataTable', selectFilterValue('masterDataTable', $this->conditions), null, $this->masterDataTableList);?></td>
+                </tr>
+            </table>
+        </li>
+    </ul>
+    
+    <div id="searchList"></div>
+    
+    <br />
+    <br />
+    
+    <div id="replaceList"></div>
+    
+    
+<script type="text/javascript">
+
+$(document).ready(function () {
+
+    $('#masterDataTable').bind('change', function(){
+        
+        var selectedTable   =   $(this).get(0).value;
+        
+        $('#searchList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'search'))?>', {
+            select_table: selectedTable        
+        }, function(){
+            
+        })
+        
+        $('#replaceList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'replace'))?>', {
+            select_table: selectedTable        
+        }, function(){
+            
+        })
+        
+    })    
+    
+       
+});
+
+</script>
+
+<?php echo $this->render('footer.phtml');

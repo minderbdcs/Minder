@@ -1,0 +1,523 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<?php if (count($this->errors) > 0) { ?>
+<ul class="errors">
+    <?php foreach ($this->errors as $error) {?>
+        <li><?php echo $error;?> </li>
+    <?php }?>
+</ul>
+<?php } ?>
+
+<?php if (count($this->warnings) > 0) { ?>
+<ul class="warnings">
+    <?php foreach ($this->warnings as $warning) {?>
+        <li><?php echo $warning;?> </li>
+    <?php }?>
+</ul>
+<?php } ?>
+
+<?php if (count($this->messages) > 0) { ?>
+<ul class="messages">
+    <?php foreach ($this->messages as $message) {?>
+        <li><?php echo $message;?> </li>
+    <?php }?>
+</ul>
+<?php } ?>
+
+<h2 title="<?php echo $this->orderSysScreenName;?>"><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+    /**
+    * @var Minder_View_Helper_SysScreenSearchResult $resultsForm
+    */
+    $resultsForm = $this->resultsForm;
+?>
+
+<?php 
+    echo $this->sysScreenSearchForm(array('name' => 'wip_search_form'), $this->searchFields, $this->actions);
+?>
+
+<div id="ORDERS_LIST_CONTAINER">
+<form name="orders_results" id="orders_results" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="order_tabs" class="ui-tabs-container">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div class="sys-screen-title" title="<?php echo $this->orderSysScreenName;?>">Orders List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by', 
+                                              $this->navigation['show_by'],
+                                              array(),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->orderSelectionNamespace;?>"><?php echo $this->selectedOrdersCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter await_approval" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->orderSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->orderSelectionNamespace), $this->orders, $this->selectedOrders);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->orderSelectionNamespace;?>"></span><?php echo $this->numRecords . " records. "; echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <?php
+                                foreach ($this->orderScreenButtons as $buttonDescription) {
+                                    if (strtoupper($buttonDescription['SSB_TITLE']) == '_GROUP_SEPARATOR') {
+                            ?>
+                        </ul>
+                    </div>
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <?php
+                                    } else {
+                                        echo '<li>' . $this->sysScreenFormButton(array('class' => 'green-button'), $buttonDescription) . '</li>';
+                                    }
+                                }
+                            ?>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+</div>
+
+<!--spacer-->
+<div style="clear: both;height: 20px;"></div>
+<!--spacer-->
+
+<div id="ALLOCATE_LIMITS_CONTAINER"></div>
+
+<!--spacer-->
+<div style="clear: both;height: 20px;"></div>
+<!--spacer-->
+
+<div id="LINES_LIST_CONTAINER"></div>
+
+<div class="flora" id="dialog_cancel" title="Reason for cancelling" style="display: none;">
+    This reason will be applied to all selected orders:<br /><textarea name="reason" id="cancel_reason"></textarea>
+</div>
+
+    <!-- pick mode container start -->
+    <?php $disabled_property = array('READONLY' => '', 'style' => 'background-color: lightgrey;');
+          foreach ($this->pickModes as $pickMode) { ?>
+    
+    <div id="select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>" class="flora" title="Pick Mode" style="display: none;">
+        <form id="select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>" name="prompt" method="post" action="<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking'), null, true);?>">
+        <input type="hidden" class="select_field_id" value="">
+        <input type="hidden" name="SEARCH_FORM_ACTION" value="search">
+        <input type="hidden" class="pick_mode_param_name" name="PICK_MODE_PARAM_NAME" value="">
+        <input type="hidden" class="pick_mode_param_value" name="PICK_MODE_PARAM_VALUE" value="">
+        <input type="hidden" name="action" value="run_pick_mode" >
+        <input type="hidden" name="PICK_PROC" value="<?php echo $pickMode['PROCEDURE_NAME']; ?>" >
+        <input type="hidden" class="one_or_accept" name="one_or_accept" value="" >
+        <table class="summary" style="width:99%">
+            <tbody>
+                <tr>
+                    <td>
+                        Order Type:
+                    </td>
+                    <td>
+                        <?php
+                            $_style = ($pickMode['PICK_PARAM_TYPE']=='F') ? $disabled_property: array();
+                            echo $this->formText('PICK_PARAM_TYPE', '', $_style); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Order Mode:
+                    </td>
+                    <td>
+                        <?php
+                            $_style = ($pickMode['PICK_PARAM_MODE']=='F') ? $disabled_property: array();
+                             echo $this->formText('PICK_PARAM_MODE', $pickMode['DESCRIPTION'], $_style); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Order No:
+                    </td>
+                    <td>
+                        <?php
+                            $_style = ($pickMode['PICK_PARAM_ORDNO']=='F') ? $disabled_property : array(); 
+                            echo $this->formText('PICK_PARAM_ORDNO', '', $_style); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Order Status:
+                    </td>
+                    <td>
+                        <?php
+                            $_style = ($pickMode['PICK_PARAM_STATUS']=='F') ? $disabled_property : array(); 
+                            echo $this->formText('PICK_PARAM_STATUS', '', $_style); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Order Priority:
+                    </td>
+                    <td>
+                        <?php
+                            $_style = ($pickMode['PICK_PARAM_PRIORITY']=='F') ? $disabled_property : array();
+                             echo $this->formText('PICK_PARAM_PRIORITY', '', $_style); ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Input Required ID's:
+                    </td>
+                    <td>
+                        <?php
+                            $_style = ($pickMode['PICK_PARAM_ID']=='F') ? $disabled_property : array();
+                            echo $this->formText('PICK_PARAM_ID', '', $_style); ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        /* <![CDATA[ */ 
+        $(document).ready(function(){
+             $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog({buttons: {
+                     'CANCEL': function(){
+                            var selId = $('.select_field_id').val();
+                            if (selId != '') {
+                                $('#' + selId)[0].selectedIndex=0;
+                            }
+                            $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').dialog('close');
+                        }
+        <?php if ($pickMode['PICK_PARAM_GETALLBTNVISIBLE']=='T') {?>
+                    ,                
+                     'GET ALL': function(){
+                            var selId = $('.select_field_id').val();
+                            $.each($('.one_or_accept'), function() {this.value = 'all'});
+                            if (selId != '') {
+                                $('.pick_mode_param_name').val($('#' + selId).attr('name'));
+                                $('.pick_mode_param_value').val($('#' + selId).val());
+                            }
+                            $('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();            
+                        }
+        <?php } ?>
+        <?php if ($pickMode['PICK_PARAM_ACCEPTBTNVISIBLE']=='T') {?>
+                    ,                
+                     'ACCEPT': function(){
+                            var selId = $('.select_field_id').val();
+                            $.each($('.one_or_accept'), function() {this.value = 'one'});
+                            if (selId != '') {
+                                $('.pick_mode_param_name').val($('#' + selId).attr('name'));
+                                $('.pick_mode_param_value').val($('#' + selId).val());
+                            }
+                             $('#select_mode_form_<?php echo $pickMode['PICK_MODE_NO']; ?>').submit();
+                        }
+        <?php } ?>                
+                },
+                modal:      true,
+                width:      '500px',
+                height:     '250px',       
+                resizable:  false,
+                draggable:  true,
+                position:   'center',
+                autoOpen:   false,
+                close:      function() { 
+                    var selId = $('.select_field_id').val();
+                    if (selId != '') {
+                        $('#' + selId)[0].selectedIndex=0;
+                    }
+                }
+            });
+            
+            $('#select_mode_popup_<?php echo $pickMode['PICK_MODE_NO']; ?>').bind('dialogopen', function(event, ui) {
+                $(this).show();
+            });
+               
+                         
+        });
+        /* ]]> */
+    </script>
+    <?php } ?>
+    
+    <!-- pick mode container end   -->
+
+
+<?php echo $this->render('footer.phtml'); ?>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#ORDERS_LIST_CONTAINER #show_by, #ORDERS_LIST_CONTAINER #pageselector').change(function(){ $('#orders_results').submit(); });
+        
+        $('#dialog_cancel').dialog({buttons: {OK: function(){
+                var reason = $('#cancel_reason')[0].value;
+                if (reason != '') {
+                    $.getJSON(
+                        '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking', 'action' => 'cancel'), null, true); ?>',
+                        {cancel_reason: reason},
+                        function(response) {
+                            if (response.errors && response.errors.length > 0) {
+                                showErrors(response.errors);
+                                return;
+                            }
+
+                            if (response.warnings && response.warnings.length > 0) {
+                                showWarnings(response.warnings);
+                            }
+
+                            if (response.messages && response.messages.length > 0) {
+                                showMessage(response.messages);
+                            }
+                    
+                            if (response.redirect && response.redirect.length > 0) {
+                                location.href = response.redirect;
+                            }
+                            
+                        }
+                    );
+                } else {
+                    showErrors(['Please enter a reason for cancelling.']);
+                }
+                $('#dialog_cancel').dialog('close');
+            }},
+            autoOpen: false,
+        
+        }).bind('dialogopen', function(event, ui) {
+            $(this).show();     
+        });
+        
+        $("#order_tabs > ul").tabs();
+        
+        $('.await_approval').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        
+        $('.row_selector.<?php echo $this->orderSelectionNamespace;?>, .select_all_rows.<?php echo $this->orderSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->orderSelectionModule, 'controller' => $this->orderSelectionController, 'action' => $this->orderSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#ORDERS_LIST_CONTAINER',
+                'selectionNamespace'  : '<?php echo $this->orderSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->orderSelectionAction;?>',
+                'selectionController' : '<?php echo $this->orderSelectionController;?>'
+            },
+            {
+                'onSuccess' : getLines
+            }
+        );
+        
+        getLines();
+        getAllocateLimits();
+    });
+
+    function makeReport(reportFormat, sysScreen) {
+        location.href = '<?php echo $this->url(
+            array(
+                'module' => $this->orderReportModule,
+                'controller' => $this->orderReportController,
+                'action' => $this->orderReportAction,
+                'selection_namespace' => $this->orderSelectionNamespace,
+                'selection_action' => $this->orderSelectionAction,
+                'selection_controller' => $this->orderSelectionController
+            ),
+            null,
+            true
+        );?>' + '/report_format/' + escape(reportFormat);
+    }
+
+    function holdOrders() {
+        $.getJSON(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking', 'action' => 'hold'), null, true); ?>',
+            holdOrdersCallback
+        );
+    }
+
+    function holdOrdersCallback(response) {
+        if (response.errors && response.errors.length > 0) {
+            showErrors(response.errors);
+            return;
+        }
+
+        if (response.warnings && response.warnings.length > 0) {
+            showWarnings(response.warnings);
+        }
+
+        if (response.messages && response.messages.length > 0) {
+            showMessage(response.messages);
+        }
+
+        if (response.redirect && response.redirect.length > 0) {
+            location.href = response.redirect;
+        }
+    }
+
+    function cancelOrders() {
+        $('#dialog_cancel').dialog('open');
+    }
+    
+    function getLines() {
+        
+        var data = {};
+        var showBy = parseInt($('#LINES_LIST_CONTAINER #show_by').val());
+        var pageselector = parseInt($('#LINES_LIST_CONTAINER #pageselector').val());
+        if (!(isNaN(showBy) || showBy === 0)) {
+            data.show_by = showBy;
+        }
+        
+        if (!isNaN(pageselector)) {
+            data.pageselector = pageselector;
+        }
+        
+        $('#LINES_LIST_CONTAINER').hide().load(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking', 'action' => 'get-lines'), null, true);?>',
+            data,
+            function() {
+                var jsonResult = $('#LINES_LIST_CONTAINER #JSON').html();
+                var result = {};
+                if (jsonResult.length > 0)
+                    result = $.parseJSON(jsonResult);
+                
+                if (result.errors && result.errors.length > 0) {
+                    showErrors(result.errors);
+                    return;
+                }
+                
+                if (result.warnings && result.warnings.length > 0) {
+                    showWarnings(result.warnings);
+                }
+                
+                $('#LINES_LIST_CONTAINER').show();
+            }
+        );
+    }
+    
+    function getAllocateLimits() {
+        $('#ALLOCATE_LIMITS_CONTAINER').load(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'allocating-limits'), null, true);?>',
+            {INSTANCE_ID: '<?php echo $this->allocatingLimitInstanceId;?>'}
+        );
+    }
+
+    function allocateOrdersToTrolley() {
+        allocate('orders_to_trolley');
+    }
+
+    function allocateOrdersToDevice() {
+        allocate('orders_to_device');
+    }
+
+    function allocateProductsToTrolley() {
+        allocate('products_to_trolley');
+    }
+
+    function allocateProductsToDevice() {
+        allocate('products_to_device');
+    }
+    
+    function allocate(method) {
+        var dataToSend = {
+            limits_instance_id   : '<?php echo $this->allocatingLimitInstanceId;?>',
+            limits_namespace     : 'default'
+        };
+
+        switch (method) {
+            case '<?php echo Minder_OrderAllocator_Abstract::ORDERS_TO_TROLLEY?>':
+            case '<?php echo Minder_OrderAllocator_Abstract::ORDERS_TO_DEVICE?>':
+                dataToSend.method               = method;
+                dataToSend.selection_namespace  = '<?php echo $this->orderSelectionNamespace;?>';
+                dataToSend.selection_action     = '<?php echo $this->orderSelectionAction;?>';
+                dataToSend.selection_controller = '<?php echo $this->orderSelectionController;?>';
+                break;
+
+            case '<?php echo Minder_OrderAllocator_Abstract::PRODUCTS_TO_TROLLEY?>':
+            case '<?php echo Minder_OrderAllocator_Abstract::PRODUCTS_TO_DEVICE?>':
+                dataToSend.method               = method;
+                dataToSend.selection_namespace  = '<?php echo $this->linesSelectionNamespace;?>';
+                dataToSend.selection_action     = '<?php echo $this->linesSelectionAction;?>';
+                dataToSend.selection_controller = '<?php echo $this->linesSelectionController;?>';
+                break;
+
+            default:
+                return;
+        }
+        
+        $.getJSON(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'service', 'action' => 'allocate'), null, true);?>',
+            dataToSend,
+            function (response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                    return;
+                }
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+                
+                if (response.success) {
+                    location.href = '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking'), null, true); ?>';
+                }
+            }
+        );
+    }
+    
+    function changePriority(mode) {
+
+        $.getJSON(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'waiting-picking', 'action' => 'change-priority'), null, true); ?>',
+            {mode: mode},
+            function(response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                    return;
+                }
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+                
+                if (response.updatedRows) {
+                    for (i in response.updatedRows) {
+                        $('#ORDERS_LIST_CONTAINER .PICK_PRIORITY.ROW-ID-' + i).val(response.updatedRows[i]).html(response.updatedRows[i]);
+                    }
+                }
+            }
+        );
+    }
+
+    /* ]]> */
+</script>

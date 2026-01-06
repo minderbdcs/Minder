@@ -1,0 +1,1 @@
+<input type="checkbox" {{if $item.data.rowSelected()}}checked="checked"{{/if}} class="ROW_ID_{{= $item.data.getRowId()}}" />

@@ -1,0 +1,1 @@
+<span title="{{= $item.data.getTitle()}}">{{= $item.data.getValue()}}</span>

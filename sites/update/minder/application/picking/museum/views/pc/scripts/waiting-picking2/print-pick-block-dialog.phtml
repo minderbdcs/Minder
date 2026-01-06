@@ -1,0 +1,35 @@
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/backbone.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/DialogView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/picking/WaitPicking/PrintPickBlockDialogView.js"></script>
+
+<!-- change carriers dialog -->
+<div id="print-pick-block-dialog" title="Confirm Print Block" class="flora">
+    <form action="<?php echo $this->url(array('action' => 'change-carrier'));?>" method="post">
+        <table align="center" style="margin: 5px 0px;" width="100%">
+            <tr>
+                <td>
+                    Label amount (max: <span class="max-label-amount">0</span>):
+                </td>
+                <td>
+                    <input type="text" name="label-amount" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<!-- change carriers dialog -->
+
+
+<script>
+    $(function(){
+        new PrintPickBlockDialogView({
+            el: '#print-pick-block-dialog',
+            printUrl: '<?php echo $this->url(array('action' => 'print-pick-block')) ?>',
+            height: 120
+        });
+    });
+
+    function printPickBlock() {
+        $('#print-pick-block-dialog').trigger('print-pick-block-request');
+    }
+</script>

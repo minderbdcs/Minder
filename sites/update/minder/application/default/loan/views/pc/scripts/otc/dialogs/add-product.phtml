@@ -1,0 +1,282 @@
+<div id="add_product_dialog" class="flora otc-add-product-dialog" title="Add Product" style="display: none;">
+<form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+<table class="summary" style="width:99%">
+        <tr>
+            <td>
+                Product ID (PROD_ID)
+            </td>
+            <td colspan="3">
+                <?php echo $this->formText('prod_id', '', array()); ?>
+                <?php echo $this->formHidden('prod_id_via', 'K');?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Description
+            </td>
+            <td colspan="3">
+                <?php echo $this->formTextarea('description', '', array('style' => 'width:330px;')); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Product Type
+            </td>
+            <td colspan="3">
+                <?php echo $this->formSelect('product_type', '', array(), $this->productTypes); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Inventory Type I
+            </td>
+            <td colspan="3">
+                <?php echo $this->formSelect('inventory_type', '', array(), $this->ssnTypes); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Unit of Issue:
+            </td>
+            <td colspan="3">
+                <?php echo $this->formSelect('unit_of_issue', '', array(), $this->uoms); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Default Issue Qty:
+            </td>
+            <td>
+                <?php echo $this->formText('issue_qty', '1', array('style' => 'width:40px;')); ?>
+            </td>
+            <td>
+                Load Qty:
+            </td>
+            <td>
+                <?php echo $this->formText('load_qty', '0', array('style' => 'width:40px;')); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Net Weight (Kg):
+            </td>
+            <td colspan="3">
+                <?php echo $this->formText('net_weight', '1.0', array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Requires Materials Safety Data Sheet?
+            </td>
+            <td colspan="3">
+                <label>No
+                    <input type="radio" name="data_sheet" value="N" checked="checked" />
+                </label>
+
+                <label>Yes
+                    <input type="radio" name="data_sheet" value="Y" />
+                </label>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+                OWNER ID:
+            </td>
+            <td colspan="3">
+                <?php echo $this->companySelect('owner_id', ''); ?>
+            </td>
+        </tr>
+</table>
+</form>
+</div>
+
+
+<?php
+/**
+ * @var Zend_View_Helper_FormCheckbox $generateIdCheckbox
+ */
+if (empty($this->prodIdGenerator)) {
+    $generateIdCheckbox = $this->formCheckbox('generateProductId', 0, array('disabled' => 'disabled'));
+} else {
+    $generateIdCheckbox = $this->formCheckbox('generateProductId', 1, array('checked' => 'checked'));
+}
+?>
+<script type="text/javascript">
+    $(function(){
+        // dialog add product
+        $('#add_product_dialog').dialog({
+             buttons: {SAVE: saveProduct, HTML:true, CANCEL: closeProductDialog},
+             width: '830px',
+             height: '580px',
+             autoOpen: false,
+             position: [0, 65],
+             buttonStyle: 'otc-dialog-button',
+             insertHtml:  '\
+                <label for="generateProductId">Generate ID:&nbsp;\
+                <?php echo $generateIdCheckbox;?>\
+                </label><br />\
+                <label for="print_label_product">Print Label:&nbsp;\
+                <input type="checkbox" id="print_label_product" name="print_label_product" value="">\
+                </label>'
+        }).bind('dialogclose', function(event, ui) {
+            $('#barcode').focus();
+            $('#add_product_dialog').removeAttr('active');
+        }).bind('dialogopen', function(event, ui) {
+            var
+                shouldGenerateId = productDialogShouldGenerateId(),
+                $prodID = $('#prod_id');
+
+            enableProdIdInput(!shouldGenerateId);
+            $(this).show();
+            if (shouldGenerateId) {
+                $prodID.val('');
+            } else {
+                $prodID.val(productDialogGetSettings().notFoundProdId);
+            }
+            $prodID.focus();
+            $('#description').val('');
+            $('#load_qty').val(0);
+            $('#add_product_dialog').attr('active', true);
+        });
+
+        $('#generateProductId').click(onGenerateProdIdClick);
+
+        var
+            $prodId = $('#prod_id');
+        $prodId.minderBarcodeInput({'onFocusOut' : false});
+        <?php foreach ($this->giParams as $paramDescription) {?>
+            $prodId.minderBarcodeInputAddDescriptors([<?php echo $paramDescription;?>]);
+        <?php }?>
+
+        $prodId.bind('parse-success', onParseProductSuccess)
+               .bind('parse-error', onParseProductError)
+               .bind('keydown', onAddProductProdIdKeyDown);
+    });
+
+    function onAddProductProdIdKeyDown(evt) {
+        if (evt.keyCode > 47 && evt.keyCode < 91) $('#prod_id_via').val('K');
+    }
+
+    function onParseProductSuccess(evt) {
+        $(evt.target).val('').focus();
+
+        switch (evt.parseResult.paramDesc.param_name) {
+            case 'PROD_13':
+            case 'PRODUCT_CODE':
+            case 'PROD_INTERNAL':
+            case 'PROD_UPC12':
+            case 'ALT_PROD':
+                $('#prod_id_via').val('B');
+                $(evt.target).val(evt.parseResult.paramDesc.param_filtered_value);
+                break;
+            default:
+                switch (evt.parseResult.paramDesc.param_type) {
+                    case 'PROD_ID':
+                        $('#prod_id_via').val('B');
+                        $(evt.target).val(evt.parseResult.paramDesc.param_filtered_value);
+                        break;
+                    default:
+                        showErrors(['Unsupported Data Identifier "' + evt.parseResult.paramDesc.param_name + '"']);
+                }
+        }
+
+        if(typeof console !== 'undefined' && typeof console.debug == 'function') console.debug(evt);
+    }
+
+    function onParseProductError(evt) {
+        $(evt.target).val('').focus();
+        showErrors(['Unsupported Data Identifier "' + evt.parseResult.errorMsg + '"']);
+    }
+
+// add Product
+    function openProductDialog(){
+        $("#add_product_dialog").dialog("open");
+        $('#barcode').focus();
+
+        return false;
+    }
+
+    function closeProductDialog(){
+        $('#add_product_dialog').dialog("close");
+        $('#barcode').focus();
+        return false;
+    }
+
+    function saveProduct(){
+        $.post("/minder/otc/add-product-ajax",
+            {
+                'prod_id':          $("#prod_id").val(),
+                'description':      $("#description").val(),
+                'product_type':     $("#product_type :selected").val(),
+                'inventory_type':   $("#inventory_type :selected").val(),
+                'unit_of_issue':    $("#unit_of_issue :selected").val(),
+                'issue_qty':        $("#issue_qty").val(),
+                'net_weight':       $("#net_weight").val(),
+                'data_sheet':       $("input:checked[type='radio'][name='data_sheet']").val(),
+                'owner_id':         $("#owner_id :selected").val(),
+                'print_label':      !!$("#print_label_product").attr('checked'),
+                'prod_id_via':      $("#prod_id_via").val(),
+                'load_qty':         $("#load_qty").val(),
+                'generate_prod_id': productDialogShouldGenerateId()
+            },
+            function (response) {
+                if (response.messages && response.messages.length > 0)
+                    showMessage(response.messages);
+
+                if (response.warnings && response.warnings.length > 0)
+                    showWarnings(response.warnings);
+
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                    return;
+                }
+
+                $('#add_product_dialog').trigger('product-created', {prodId: response.prodId});
+            },
+            'json'
+        );
+        closeProductDialog();
+        $('#barcode').focus();
+    }
+
+    function onGenerateProdIdClick(evt) {
+        enableProdIdInput(!$(evt.target).attr('checked'));
+    }
+
+    function enableProdIdInput(enable) {
+        enable = (typeof enable == 'undefined') ? true : !!enable;
+
+        if (enable)
+            $('#prod_id').removeAttr('disabled');
+        else
+            $('#prod_id').attr('disabled', 'disabled');
+    }
+
+
+    function addProductDialogOnCreate(callback, namespace) {
+        $('#add_product_dialog').unbind('product-created.' + namespace).bind('product-created.' + namespace, callback);
+    }
+
+    function productDialogShouldGenerateId() {
+        return $('#generateProductId').attr('checked');
+    }
+
+    function productDialogSetNotFoundProdId(prodId) {
+        productDialogGetSettings().notFoundProdId = prodId;
+    }
+
+    function isAddProductDialogActive() {
+        return !!$('#add_product_dialog').attr('active');
+    }
+
+    function productDialogGetSettings() {
+        if (!window.productDialogSettings) {
+            window.productDialogSettings = {
+                notFoundProdId: ''
+            };
+        }
+
+        return window.productDialogSettings;
+    }
+</script>

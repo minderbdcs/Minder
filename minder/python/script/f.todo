@@ -1,0 +1,4 @@
+add limits to the number of event cycles in a db event for print Queue, Send Write
+then use the timeout of kinterbasdb3.3 so that if no labels in 300 seconds then do a loop.
+then with the close use a flush to empty the queue.
+

@@ -1,0 +1,36 @@
+<?php
+/**
+ * @var Minder2_Model_Page $minderPage
+ */
+$minderPage = $this->page;
+if (empty($minderPage))
+    return;
+
+?>
+<ul id="top-nav">
+
+    <?php if ($minderPage->getCurrentUser()->isLogged) {?>
+    <li>Welcome <?php echo $minderPage->getCurrentUser()->getName();?></li>
+    <?php }?>
+    <li class="modules-switcher">
+    <?php if ($minderPage->getCurrentUser()->isLogged) {?>
+        Connected to <?php echo $this->minderVariant('WAREHOUSE*Minder'); ?>
+    <?php } else {?>
+        Not logged in <?php echo $this->minderVariant('WAREHOUSE*Minder'); ?>
+    <?php }?>
+    <?php if ($minderPage->SM_MENU_DISPLAY) {?>
+        <span class="hidden short-module-container">&nbsp;[<?php echo $minderPage->SM_TITLE;?>]</span>
+    <?php } else { ?>
+        <span class="short-module-container">&nbsp;[<?php echo $minderPage->SM_TITLE;?>]</span>
+    <?php } ?>
+    </li>
+
+    <?php if ($minderPage->getCurrentUser()->isLogged) {?>
+    <li>WH:&nbsp;<?php echo $minderPage->getCurrentWarehouse()->WH_ID;?></li>
+    <li>DEV:&nbsp;<?php echo $minderPage->getCurrentDevice()->DEVICE_ID;?></li>
+    <li><a href="<?php echo $this->baseUrl();?>/user/logout">Logout</a></li>
+    <li><a href="<?php echo $this->baseUrl();?>/index/about">About</a></li>
+    <?php } else {?>
+    <li><a href="<?php echo $this->baseUrl();?>/user/login">Login</a></li>
+    <?php }?>
+</ul>

@@ -1,0 +1,12 @@
+user bdcs zxcvbnm,./
+lcd d:\asset.rf\database\backup
+cd /scratch/develop/database
+bin
+prompt
+mput wh*.gz
+mput *.zip
+cd /scratch/develop/transfer
+lcd d:\install\transfer
+mget *.*
+quit
+

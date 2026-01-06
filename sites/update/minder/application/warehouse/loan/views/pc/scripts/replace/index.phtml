@@ -1,0 +1,67 @@
+<?php echo $this->render('header.phtml'); ?>
+<h2><?php echo $this->escape($this->pageTitle); ?></h2>
+<?php
+    $attributes = array('autocomplete' => 'off', 'onkeyup' => 'checkKeys(event)');
+    $attributesForSelect = array();
+?>
+    <ul class="toolbar">
+        <li>
+            <table>
+                <tr>
+                    <th class="rightalign"><label for='status'>Master Data Table: </label></th>
+                    <td><?php echo $this->formSelect('masterDataTable', selectFilterValue('masterDataTable', $this->conditions), null, $this->masterDataTableList);?></td>
+                </tr>
+            </table>
+        </li>
+    </ul>
+    
+    <div id="searchList"></div>
+    
+    <br />
+    <br />
+    
+    <div id="replaceList"></div>
+    
+    
+<script type="text/javascript">
+
+$(document).ready(function () {
+
+    $('#masterDataTable').bind('change', function(){
+        
+        var selectedTable   =   $(this).get(0).value;
+        
+        $('#searchList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'search'))?>', {
+            select_table: selectedTable        
+        }, function(){
+            
+        })
+        
+        $('#replaceList').load('<?php echo $this->url(array('module' => 'warehouse', 'controller' => 'replace', 'action' => 'replace'))?>', {
+            select_table: selectedTable        
+        }, function(){
+            
+        })
+        
+    })    
+    
+       
+});
+function printBorrower() {
+    $.getJSON("/minder/otc/print-borrower-ajax",{},
+        function (response)
+        {
+            if (response.errors && response.errors.length > 0)
+                showErrors(response.errors);
+
+            if (response.warnings && response.warnings.length > 0)
+                showWarnings(response.warnings);
+
+            if (response.messages && response.messages.length > 0)
+                showMessage(response.messages);
+        }
+    );
+}
+</script>
+
+<?php echo $this->render('footer.phtml');

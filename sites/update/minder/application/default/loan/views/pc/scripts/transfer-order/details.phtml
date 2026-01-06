@@ -1,0 +1,130 @@
+<?php //echo $this->render('header.phtml') ?>
+<form id="<?php echo $this->formId; ?>" name="<?php echo $this->tableId; ?>" action="" method="post">
+    <div id="table-wrapper">
+        <div class="section" style="border-top: none; padding: .5em 0;">
+            <label for="show_by">View By : </label>
+            <?php echo $this->formSelect('show_by',
+                                         $this->navigation[$this->tableId]['show_by'],
+                                         array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                         array(  5 => 5,
+                                                10 => 10,
+                                                15 => 15,
+                                                20 => 20,
+                                                30 => 30,
+                                                40 => 40,
+                                                50 => 50,
+                                               100 => 100));?>
+            <label for="page">Page : </label>
+            <?php echo $this->formSelect('pageselector',
+                                               $this->navigation[$this->tableId]['pageselector'],
+                                               array('onchange' => 'frmSubmit("' . $this->formId . '")'),
+                                               $this->pages); ?>
+        </div>
+        <div>Selected: ffff <span id="<?php echo $this->formId ?>selected">0</span></div>
+        <table id="tab<?php echo $this->escape($this->tableId); ?>" class="withborder tablesorter">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select_all_pid" onclick="selectAll(this)" /></th>
+<?php foreach ($this->headers as $key => $header) { ?>
+                    <th abbr="<?php echo $this->escape($key) ?>"><?php echo array_key_exists($key, $this->dataset->getUniqueConstraint()) ? '<b>*' . $this->escape($header) . '</b>' : $this->escape($header) ?></th>
+<?php } ?>
+                </tr>
+            </thead>
+            <tbody>
+<?php if ($this->dataset->count() > 0) { ?>
+<?php     foreach ($this->dataset as $id => $record) { ?>
+                <tr>
+                    <th><?php echo $this->formCheckbox('records[]', $this->escape($record->id), array('class' => 'line_selector', 'onclick' => 'showSelected(this, \'auto\')')); ?></th>
+<?php         foreach($this->headers as $propertyName => $v) {
+                  $val = $record[$propertyName];
+                  $urlEdit = $this->url(array('module'      => 'warehouse',
+                                            'controller'  => 'ssn',
+                                            'action'      => 'edit'),
+                                            '',
+                                            true);
+                  echo '<td><a href="' . $this->dataset->getRowNumberByRecordId($id) . '">' . $this->escape($val) . "</a></td>\n";
+              } ?>
+                </tr>
+<?php     } ?>
+<?php } else { ?>
+                <tr>
+                    <th/>
+<?php     foreach ($this->headers as $propertyName => $v) { ?>
+                        <td/>
+<?php     } ?>
+                </tr>
+<?php } ?>
+            </tbody>
+        </table>
+    </div>
+</form>
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#tab<?php echo $this->escape($this->tableId); ?>').tablesorter({headers: {0: {sorter:false}},sortList:[[1,1]], widgets: ['zebra']});
+});
+</script>
+<?php
+/*
+echo $this->render('header.phtml'); ?>
+<h2><?php echo $this->escape($this->pageTitle); ?></h2>
+
+        <table id="tab<?php echo $this->escape($this->tableId); ?>" class="withborder tablesorter">
+            <thead>
+            <tr>
+            <th>
+            <?php echo $this->formCheckbox('select_all',
+                                           '',
+                                           array('onclick' => 'selectAll(this)')) ;?>
+            </th>
+<?php
+    foreach ($this->headers as $key => $header) {
+        echo '<th abbr="' . $this->escape($key) . '">' . (array_key_exists($key, $this->dataset->getUniqueConstraint()) ? ('<b>*' . $this->escape($header)) . '</b>': ($this->escape($header))) . '</th>';
+    }
+?>
+            </tr>
+            </thead>
+            <tbody>
+<?php
+    if ($this->dataset->count() > 0) {
+        foreach ($this->dataset as $id => $record) {
+            echo '<tr>';
+            echo '<th>';
+            echo $this->formCheckbox('records[]',
+                                     $this->escape($record->id),
+                                     array('class' => 'line_selector',
+                                           'onclick' => 'showSelected(this, \'auto\')'));
+            echo '</th>';
+            foreach($this->headers as $propertyName => $v) {
+                $val = $record[$propertyName];
+
+                $urlEdit = $this->url(array('module'      => 'warehouse',
+                                            'controller'  => 'ssn',
+                                            'action'      => 'edit'),
+                                            '',
+                                            true);
+                echo '<td><a id="' . $this->escape($record->id) . '" href="" onclick="return goEdit(this,' . "'" . $this->escape($record->id) . "','" . $this->dataset->getRowNumberByRecordId($id) . "'" . ');">' .
+                        $this->escape($val) . '&nbsp</a></td>'."\n";
+            }
+            echo "</tr>";
+        }
+    } else {
+        // for tablesorter JavaScript plugin (if no row & cols in table - error occurs).
+        echo "<tr><th/>";
+        foreach($this->headers as $propertyName => $v) {
+            echo "<td/>";
+        }
+        echo "</tr>\n";
+    }
+?>
+            </tbody>
+        </table>
+        <div id="num_rec" style="border-top: 1px solid #999999; border-bottom: 1px solid #999999;">Total
+            <?php echo $this->numRecords . " records. ";?>
+            <?php echo "Show from " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + 1); ?>
+            <?php echo " to " . ($this->navigation[$this->tableId]['show_by'] * $this->navigation[$this->tableId]['pageselector'] + $this->dataset->count());?>
+        </div>
+    </div>
+</form>
+<?php echo $this->render('footer.phtml');
+*/
+?>

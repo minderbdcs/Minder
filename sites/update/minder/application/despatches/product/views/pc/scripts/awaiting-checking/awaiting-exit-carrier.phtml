@@ -1,0 +1,32 @@
+<?php
+echo $this->exitCarrierDialog('EXIT-CARRIER', 'Minder.AwaitingChecking.Dlg.ExitCarrier', $this->exitCarrierResults);
+?>
+
+<script type="text/javascript">
+    minderNamespace('Minder.AwaitingChecking.Dlg.ExitCarrier', function() {
+        $.extend(Minder.AwaitingChecking.Dlg.ExitCarrier, Minder.Dlg.ExitCarrier);
+
+        this.getRowSelectUrl = function() {
+            return '<?php echo $this->url(array('action' => 'select-carrier-exit-row'));?>';
+        };
+    });
+
+    $(function(){
+        Minder.AwaitingChecking.Dlg.ExitCarrier.init(
+            <?php echo json_encode(array($this->exitCarrierResults['namespace'] => $this->exitCarrierResults ));?>,
+            {sysScreens: <?php echo json_encode($this->sysScreens);?>},
+            <?php echo json_encode($this->knownCarriers)?>,
+            $('#EXIT-CARRIER'),
+            '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+            '<?php echo $this->url(array('action' => 'despatch-pack'));?>'
+        );
+        Minder.AwaitingChecking.Dlg.ExitCarrier.setCloseListener('awaiting-checking', function(){
+            $('#barcode').focus();
+        });
+        Minder.AwaitingChecking.Dlg.ExitCarrier.showAll();
+    });
+</script>
+
+<?php echo $this->StandardSRTemplate(array('SRTabHeaders'), true); ?>
+<script id="tabs-headers-tmpl" type="text/x-jquery-tmpl">
+</script>

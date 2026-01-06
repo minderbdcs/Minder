@@ -1,0 +1,715 @@
+<form action="<?php echo $this->url(array('module' => 'default', 'controller' => 'pick-order2', 'action' => 'index'), null, true); ?>" method="post" id="lines_form">
+
+<?php echo $this->formHidden('from', 'lines-action') ?>
+
+<?php
+//show errors, if any, throw JSON response
+$messegesHelper = $this->messenger()->getMessenger();
+if ($messegesHelper->setNamespace('errors')->hasCurrentMessages()) {
+    if (isset($this->counters)) {
+        $this->counters['errors'] = $messegesHelper->getCurrentMessages();
+    } else {
+        $this->counters = array('errors' => $messegesHelper->getCurrentMessages());
+    }
+}
+
+$defaultNumberFormat = Minder2_Environment::getInstance()->getPriceNumberFormat();
+
+$addFromLocation = null;
+foreach ($this->pickItemScreenButtons as $key => $buttonDescription) {
+    if (strtoupper($buttonDescription['SSB_BUTTON_NAME']) == 'ADD_FROM_LOCATION') {
+        $addFromLocation = $buttonDescription;
+        unset($this->pickItemScreenButtons[$key]);
+    }
+}
+?>
+
+<div id="json" style="display: none;"><?php echo json_encode($this->counters); ?></div>
+<div class="json_selected_pick_orders" style="display: none;"><?php echo json_encode($this->selectedPickOrders); ?></div>
+<div class="json_selected_pick_orders_statuses" style="display: none;"><?php echo json_encode($this->ordersStatuses); ?></div>
+
+<?php
+if ($messegesHelper->hasCurrentMessages()) {
+//dont show anything else, cause we hawe errors
+    $messegesHelper->clearCurrentMessages();
+    exit();
+}
+?>
+    <!-- tabs container start -->
+    <div id="line_tabs" class="ui-tabs-container" style="margin-bottom: 5px; ">
+        <ul>
+            <?php $count = 1;
+                  foreach($this->tabList as $key => $value) {?>
+                    <li line_tab_name="<?php echo $key; ?>" line_tab_id="<?php echo $count; ?>"><a href="#line_tab<?php echo $count++; ?>"><span><b><?php echo $value; ?>:</b></span></a></li>
+            <?php }?>
+        </ul>
+        
+        <div class="ui-tabs-panel-header">
+            
+            <ul class="toolbar">
+                <?php
+                    if($addFromLocation) {
+                        echo '<li>' . $this->sysScreenFormButton(array('class' => 'mdr-tool-button'), $addFromLocation) . '</li>';
+                    }
+                ?>
+            </ul>
+            <div style="border-top: solid 1px #999;">
+                <div class="sys-screen-title" title="<?php echo $this->linesSysScreenName;?>">Lines List</div>
+                <div class="paginator-container">
+                    <label for="results_per_page">View By:</label>
+                    <?php echo $this->formSelect('show_by',
+                                                $this->navigation['show_by'],
+                                                array('onchange' => 'this.form.submit()'),
+                                                array(5  => 5,
+                                                      10 => 10,
+                                                      15 => 15,
+                                                      20 => 20,
+                                                      30 => 30,
+                                                      40 => 40,
+                                                      50 => 50,
+                                                      100 => 100)) ?>
+                    <label for="page">Page:</label>
+                    <?php echo $this->formSelectStrict('pageselector',
+                                                       $this->navigation['pageselector'],
+                                                       array('onchange' => 'this.form.submit()'),
+                                                       $this->pages); ?>
+                </div>
+            </div>
+            <ul class="black-top-border" style="clear: both;">
+                <li style="display: inline;">Selected: <span class="lines_selected"><?php echo $this->counters['lines_selected'] ?></span></li>
+            </ul>    
+
+            <!-- Save/cancel order toolbar start -->
+            <ul class="toolbar" style="padding: 0px; margin: 0px;">
+                <li style="font-weight: bold;" class="selected-orders">Selected lines:<li>
+                <li><input type="submit" class="mdr-tool-button selected-orders save-lines" name="action" disabled="disabled" value="Save Lines" /></li>
+                <li><input type="submit" class="mdr-tool-button selected-orders save-orders-lines" name="action" disabled="disabled" value="Save Orders and Lines" /></li>
+                <li><input type="submit" class="mdr-tool-button selected-orders cancel-lines" name="action" disabled="disabled" value="Cancel" /></li>
+            </ul>
+            <!-- Save/cancel order toolbar end -->
+            
+        </div>
+        
+        <?php $count = 1;
+              foreach($this->tabList as $tabKey => $tabValue) { ?>
+                
+                <div id="line_tab<?php echo $count; ?>" style="border-top: none; padding-top: 0px;">
+                    
+                    <!-- orders lines list start -->
+                    <table class="withborder tablesorter lines">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" class="select_all_lines" onclick="selectAllLines(this)" <?php echo ($this->itemSelectionMode == 'one') ? 'disabled="disabled"' : ''; ?>/>
+                                    <input type="radio" class="switch_pick_item_selection" <?php echo ($this->itemSelectionMode == 'one') ? 'checked="checked"' : ''; ?>  selection_mode="<?php echo $this->itemSelectionMode;?>" />
+                                </th>
+                                <?php foreach ($this->headers[$tabKey] as $header) { ?>
+                                        <th><?php echo $this->escape($header); ?></th>
+                                <?php } ?>
+                            </tr>
+                        </thead>
+                        
+                        <tbody>
+                            <?php foreach ($this->pickItems as $pickItem) { ?>
+                                <tr>
+                                    <th><?php echo $this->formCheckbox($pickItem->pickLabelNo, $pickItem->pickLabelNo, array('checked' => array_key_exists($pickItem->pickLabelNo, (array) $this->conditions) ? 'checked' : '', 'class' => 'line-selector', 'onclick' => 'checkLine(this)')) ?></th>
+                                    
+                                    <?php if($this->minder->canEditSalesOrderLine()){ 
+                                            foreach ($this->headers[$tabKey] as $key => $value) {
+                                                if(array_key_exists($key, $this->editInputs[$tabKey])){
+
+                                                    $commonParams = array(
+                                                        'style' => 'width: ' . $this->editInputs[$tabKey][$key]['SSV_SIZE'] . 'px;',
+                                                        'type2' => 'editable',
+                                                        'original_value' => empty($pickItem->items[$key]) ? $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'] : $pickItem->items[$key],
+                                                        'title' => $this->headers[$tabKey][$key]
+                                                    );
+
+                                                    if (!empty($this->editInputs[$tabKey][$key]['SSV_ACTION'])) {
+                                                        $action = $this->editInputs[$tabKey][$key]['SSV_ACTION'];
+                                                        if (!empty($this->ssActions[$action])) {
+                                                            foreach ($this->ssActions[$action] as $ssAction) {
+                                                                $commonParams[$ssAction['SSA_ACTION_TYPE']] = $ssAction['SSA_FUNCTION'];
+                                                            }
+                                                        }
+                                                    }
+
+                                                    if (!empty($this->editInputs[$tabKey][$key]['NUMBER_FORMAT']))
+                                                        $commonParams['data-number-format'] = $this->editInputs[$tabKey][$key]['NUMBER_FORMAT'];
+
+                                                    switch($this->editInputs[$tabKey][$key]['SSV_INPUT_METHOD']) {
+                                                        case 'RO':
+                                                            unset($commonParams['style']);
+                                                      ?>
+                                                            <td>
+                                                                <?php echo $this->htmlA(
+                                                                    $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key,
+                                                                    $this->escape($pickItem->items[$key]),
+                                                                    $commonParams,
+                                                                    $this->url(array('controller' => 'pick-order2', 'action' => 'edit-line', 'pick_order' => $pickItem->pickOrder, 'line_no' => $pickItem->pickOrderLineNo), '', true)
+                                                                );?>
+                                                            </td>
+                                                      <?php
+                                                            break;
+                                                        case 'DD':
+                                                      ?>  
+                                                            <td><?php echo $this->formSelect(
+                                                                $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key  , 
+                                                                empty($pickItem->items[$key]) ? $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'] : $pickItem->items[$key], 
+                                                                $commonParams,
+                                                                $this->editInputs[$tabKey][$key]['DD_VALUES']
+                                                            ); ?></td>
+                                                      <?php break;
+                                                        case '_EXT_DD':
+                                                      ?>
+                                                            <td><?php echo $this->formFilteredDD(
+                                                                $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key  ,
+                                                                empty($pickItem->items[$key]) ? $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'] : $pickItem->items[$key],
+                                                                $commonParams,
+                                                                $this->editInputs[$tabKey][$key]['DD_VALUES']
+                                                            ); ?></td>
+                                                      <?php break;
+                                                        case 'DP':
+                                                      ?>
+                                                            <td><?php echo $this->formText(
+                                                                $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key, 
+                                                                empty($pickItem->items[$key]) ? $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'] : $pickItem->items[$key], 
+                                                                $commonParams
+                                                            ); ?></td>
+                                                            <script type="text/javascript">
+                                                            $("#<?php echo $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo; ?>").datepicker({dateFormat: "yy-mm-dd"});
+                                                            </script>
+                                                      <?php break;
+                                                        case 'IN':
+                                                            if (!empty($this->editInputs[$tabKey][$key]['SSA_ACTION_TYPE']) && !empty($this->editInputs[$tabKey][$key]['SSA_FUNCTION'])) {
+                                                                $commonParams[$this->editInputs[$tabKey][$key]['SSA_ACTION_TYPE']] = $this->editInputs[$tabKey][$key]['SSA_FUNCTION'];
+                                                            }
+                                                      ?>
+                                                            <td><?php echo $this->formText(
+                                                                $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key,
+                                                                empty($pickItem->items[$key]) ? (isset($this->editInputs[$tabKey][$key]['DEFAULT_VALUE']) ? $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'] : '') : $pickItem->items[$key],
+                                                                $commonParams
+                                                            ); ?></td>
+                                                      <?php break;
+                                                      ?>
+                                        <?php       }
+                                                } else {
+                                                    if ($key == 'SALE_PRICE' || $key == 'PICK_ORDER_QTY' || $key == 'DISCOUNT' || $key == 'LINE_TOTAL' || $key == 'PICK_LINE_STATUS') { ?>
+                                                        <td class="<?php echo 'td_' . strtolower($val) ?>"><div class="line-<?php echo $pickItem->pickLabelNo ?>">
+                                                                <a title="<?php echo $this->headers[$key] ?>" class="<?php echo strtolower($key) ?>" href="<?php echo $this->url(array('controller' => 'pick-order2', 'action' => 'edit-line', 'pick_order' => $pickItem->pickOrder, 'line_no' => $pickItem->pickOrderLineNo), '', true) ?>"><?php echo $this->escape($pickItem->items[$key]) ?></a>
+                                                        </div></td>
+                                              <?php } else { ?>
+                                                        <td>
+                                                                <a title="<?php echo $this->headers[$tabKey][$key] ?>" href="<?php echo $this->url(array('controller' => 'pick-order2', 'action' => 'edit-line', 'pick_order' => $pickItem->pickOrder, 'line_no' => $pickItem->pickOrderLineNo), '', true) ?>"><?php echo $this->escape($pickItem->items[$key]) ?></a>
+                                                        </td>
+                                              <?php
+                                                    }
+                                                }
+                                            }
+                                          } else {
+                                              foreach ($this->headers[$tabKey] as $key => $val) {
+                                                    if ($key == 'SALE_PRICE' || $key == 'PICK_ORDER_QTY' || $key == 'DISCOUNT' || $key == 'LINE_TOTAL' || $key == 'PICK_LINE_STATUS') { ?>
+                                                        <td class="<?php echo 'td_' . strtolower($val) ?>"><div class="line-<?php echo $pickItem->pickLabelNo ?>">
+                                                            <?php if ($this->minder->canAdjustSalesOrderLine()) {?>
+                                                                <a title="<?php echo $this->headers[$tabKey][$key] ?>" href="<?php echo $this->url(array('controller' => 'pick-order2', 'action' => 'edit-line', 'pick_order' => $pickItem->pickOrder, 'line_no' => $pickItem->pickOrderLineNo), '', true) ?>" id="<?php echo $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key; ?>"><?php echo $this->escape($pickItem->items[$key]) ?></a>
+                                                            <?php } else {?>
+                                                                <a title="<?php echo $this->headers[$tabKey][$key] ?>" class="<?php echo strtolower($key) ?>" href="" onclick="return false;"><?php echo $this->escape($pickItem->items[$key]) ?></a>
+                                                            <?php }?>
+                                                        </div></td>
+                                              <?php } else { ?>
+                                                        <td>
+                                                            <?php if ($this->minder->canAdjustSalesOrderLine()) {?>
+                                                                <a title="<?php echo $this->headers[$tabKey][$key] ?>" href="<?php echo $this->url(array('controller' => 'pick-order2', 'action' => 'edit-line', 'pick_order' => $pickItem->pickOrder, 'line_no' => $pickItem->pickOrderLineNo), '', true) ?>" id="<?php echo $pickItem->pickOrder . '-' . $pickItem->pickOrderLineNo . '-' . $key; ?>"><?php echo $this->escape($pickItem->items[$key]) ?></a>
+                                                            <?php } else {?>
+                                                                <a title="<?php echo $this->headers[$tabKey][$key] ?>" href="" onclick="return false;"><?php echo $this->escape($pickItem->items[$key]) ?></a>
+                                                            <?php }?>
+                                                        </td>
+                                              <?php
+                                                    }
+                                                  }  
+                                          } ?>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                    <!-- orders lines list end -->
+                    
+                </div>
+        <?php   $count++;
+              } ?>
+              
+              <div>
+                <table class="withborder" id="lines-info">
+                    <tr>
+                        <td colspan="2">Total Order Lines Selected: <span class="lines_selected"><?php echo $this->counters['lines_selected'] ?></span></td>
+                        <td>Total Product Codes Selected: <span id="products_selected"><?php echo $this->counters['products_selected'] ?></span></td>
+                        <td>Total ISSN&acute;s Selected: <span id="issns_selected"><?php echo $this->counters['issns_selected'] ?></span></td>
+                        <td>Total Selected Value: <span class="total_selected price" id="total_selected" data-number-format="<?php echo $defaultNumberFormat;?>"><?php echo $this->counters['total_selected'] ?></span></td>
+                    </tr>
+                    <tr>
+                        <td width="20%">Total <?php echo $this->numRecords . ($this->numRecords > 1 ? ' records' : ' record') ?></td>
+                        <td width="20%">Show from <?php echo ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1) . ' to ' . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                        <td width="20%">Total Product Codes Displayed: <?php echo $this->counters['products_displayed'] ?></td>
+                        <td width="20%">Total ISSN&acute;s Displayed: <?php echo $this->counters['issns_displayed'] ?></td>
+                        <td width="20%">Total Search Value: <span class="total_displayed price" id="total_displayed" data-number-format="<?php echo $defaultNumberFormat;?>"><?php echo $this->counters['total_displayed'] ?></span></td>
+                    </tr>
+                </table>
+                <ul class="toolbar" style="margin-top: 0; border-bottom: solid 1px #999;" id="edit_field_buttons">
+                    <?php foreach($this->reportButtonList as $button){ ?>
+                        <li>
+                            <input type="submit" class="mdr-tool-button" name="report" id="report" value="<?php echo $button['CODE']; ?>" onclick="frmSubmitLines(this); return false;" title="<?php echo $button['DESCRIPTION']; ?>"/>
+                        </li>
+                    <?php } ?>
+                    <?php
+                        foreach ($this->pickItemScreenButtons as $buttonDescription) {
+                            echo '<li>' . $this->sysScreenFormButton(array('class' => 'mdr-tool-button'), $buttonDescription) . '</li>';
+                        }
+                    ?>
+                </ul>
+              </div>
+    </div>
+    <!-- tabs container end   -->
+    
+    <div class="mdr-with-border" style="float: left;">
+        <table>
+            <tr>
+                <?php if ($this->renderAddProduct) { ?>
+                <td>
+                    <?php echo $this->render('pick-order2/add-product-form.phtml');?>
+                </td>
+                <?php }?>
+                <?php if ($this->renderAddNonProduct) { ?>
+                <td>
+                    <?php echo $this->render('pick-order2/add-non-product-form.phtml');?>
+                </td>
+                <?php } ?>
+            </tr>
+        </table>
+    </div>
+<?php /*
+    <div class="flora" id="line_cancel" title="Reason for deleting">
+        This reason will be applied to all selected lines:<br /><textarea name="reason" id="line_cancel_reason"></textarea>
+    </div>
+*/ ?>
+</form>
+
+<?php echo $this->render('pick-order2/confirm-product-no-stock.phtml');?>
+
+<script type="text/javascript">
+ /* <![CDATA[ */ 
+    $(document).ready(function(){
+        $('[data-number-format]').minderNumberFormat();
+
+        $("#line_tabs > ul").tabs();
+        <?php if (count($this->pickItems) > 0) {?>
+            $(".lines").tablesorter({headers: {0: {sorter:false}},sortList:[[1,0]], widgets: ['zebra']});
+        <?php }?>
+        
+        $('.select_all_lines').each(function(){
+            $(this)[0].checked =   checkSelectedLines('.lines', '.line-selector');   
+        });
+        
+        $('.switch_pick_item_selection').unbind('.minder-row-selector').bind('click.minder-row-selector', function(evt) {
+//            evt.preventDefault();
+            
+            var currentSelectionMode    = $(this).attr('selection_mode');
+            var selectionSwitchers      = $('.switch_pick_item_selection');
+            var selectAllRowsSelectors  = $('.select_all_lines');
+            
+            if (currentSelectionMode == 'all') {
+                selectionSwitchers.attr('checked', 'checked');
+                selectionSwitchers.attr('selection_mode', 'one');
+                selectAllRowsSelectors.attr('disabled', 'disabled');
+            } else {
+                selectionSwitchers.removeAttr('checked');
+                selectionSwitchers.attr('selection_mode', 'all');
+                selectAllRowsSelectors.removeAttr('disabled', 'disabled');
+            }
+        });
+        
+        $('.td_sale_price').click(function(e) {
+            var td = $(this);
+            var st = (td.parent('tr').find('.pick_line_status').text()).toUpperCase();
+            if (!<?php echo $this->minder->isAdmin ? 1 : 0 ?> && (st == 'UC' || st == 'OP' || st == 'CF' || st == 'UP')) {
+                return;
+            }
+            if (td.find('input').length) {
+                td.find('input')[0].focus();
+                return false;
+            }
+            var a = td.find('a').css('display', 'none');
+            var parentDiv = a.parent();
+            var lineId = parentDiv.attr('class').replace(/^line-/i, '');
+            parentDiv.append('<input type="text" style="width: 10ex;" name="sale_price[' + lineId + ']" value="' + a.text() + '" onkeyup="updateTotalValues(this)" />');
+            $('#save_changes').removeAttr('disabled').removeClass('disabled');
+            td.find('input')[0].focus();
+            return false;
+        });
+
+        $('.td_pick_order_qty').click(function(e) {
+            var td = $(this);
+            var st = (td.parent('tr').find('.pick_line_status').text()).toUpperCase();
+            if (!<?php echo $this->minder->isAdmin ? 1 : 0 ?> && (st == 'UC' || st == 'OP' || st == 'CF' || st == 'UP')) {
+                return;
+            }
+            if (td.find('input').length) {
+                td.find('input')[0].focus();
+                return false;
+            }
+            var a = td.find('a').css('display', 'none');
+            var parentDiv = a.parent();
+            var lineId = parentDiv.attr('class').replace(/^line-/i, '');
+            parentDiv.append('<input type="text" style="width: 10ex;" name="pick_order_qty[' + lineId + ']" value="' + a.text() + '" onkeyup="updateTotalValues(this)" />');
+            $('#save_changes').removeAttr('disabled').removeClass('disabled');
+            td.find('input')[0].focus();
+            return false;
+        });
+
+        $('.td_discount').click(function(e) {
+            var td = $(this);
+            var st = (td.parent('tr').find('.pick_line_status').text()).toUpperCase();
+            if (!<?php echo $this->minder->isAdmin ? 1 : 0 ?> && (st == 'UC' || st == 'OP' || st == 'CF' || st == 'UP')) {
+                return;
+            }
+            if (td.find('input').length) {
+                td.find('input')[0].focus();
+                return false;
+            }
+            var a = td.find('a').css('display', 'none');
+            var parentDiv = a.parent();
+            var lineId = parentDiv.attr('class').replace(/^line-/i, '');
+            parentDiv.append('<input type="text" style="width: 10ex;" name="discount[' + lineId + ']" value="' + a.text() + '" onkeyup="updateTotalValues(this)" />');
+            $('#save_changes').removeAttr('disabled').removeClass('disabled');
+            td.find('input')[0].focus();
+            return false;
+        });
+
+//        cloneTableTotals();
+
+    });
+    
+    
+    function frmSubmitLines(inp) {
+        inp.form.action += '/lines';
+        lowerVal = inp.value.toLowerCase();
+        $(inp.form).append('<input type="hidden" name="action1" value="' + lowerVal + '" />')[0].submit();
+        return false;
+    }
+    
+    function cloneTableTotals() {
+        if (!$('#total_selected_clone').length) {
+            var totalSelected = totalDisplayed = 0;
+            $('.lines').find('tr').each(function() {
+                var tr = $(this);
+                var total = getFloat(tr.find('.line_total').minderNumberFormat('remove').text().minderNumberFormat());
+                totalDisplayed += total;
+                if (tr.find('input[type=checkbox]:checked').length) {
+                    totalSelected += total;
+                }
+            });
+
+            var selected = getFloat($('#total_selected').minderNumberFormat('remove').text().minderNumberFormat());
+            var displayed = getFloat($('#total_displayed').minderNumberFormat('remove').text().minderNumberFormat());
+
+            var clone = $('#total_selected').clone().text(selected - totalSelected).minderNumberFormat().attr({id: 'total_selected_clone', style: 'display: none'}).removeClass();
+            $('#total_selected').after(clone);
+            clone = $('#total_displayed').clone().text(displayed - totalDisplayed).minderNumberFormat().attr({id: 'total_displayed_clone', style: 'display: none'}).removeClass();
+            $('#total_displayed').after(clone);
+        }
+    }
+    function getFloat(value) {
+        var tmp = parseFloat(value);
+        if (isNaN(tmp)) {
+            tmp = 0;
+        }
+        return tmp;
+    }
+
+    function updateTotalValues(inp) {
+        updateRowTotal(inp);
+        updateTableTotals();
+    }
+    function updateRowTotal(item) {
+        var tr = $(item).parents('tr');
+
+        if (tr.find('.sale_price').parent('div').find('input').length) {
+            var salePrice = tr.find('.sale_price').parent('div').find('input').val();
+        } else {
+            var salePrice = tr.find('.sale_price').text();
+        }
+        salePrice = parseFloat(salePrice);
+        if (isNaN(salePrice)) {
+            salePrice = 0;
+        }
+
+        if ($('.td_pick_order_qty', tr).find('input').length) {
+            var pickOrderQty = parseInt($('.td_pick_order_qty', tr).find('input').val());
+            if (isNaN(pickOrderQty)) {
+                pickOrderQty = 0;
+            }
+            var tmp = parseInt($('.td_pick_order_qty', tr).find('.pick_order_qty').text());
+            if (isNaN(tmp)) {
+                tmp = 0;
+            }
+            if (pickOrderQty > tmp) {
+                $('.td_pick_order_qty', tr).find('input').val(tmp);
+            }
+        } else {
+            var pickOrderQty = parseInt($('.td_pick_order_qty', tr).find('.pick_order_qty').text());
+            if (isNaN(pickOrderQty)) {
+                pickOrderQty = 0;
+            }
+        }
+
+        if (tr.find('.discount').parent('div').find('input').length) {
+            var discount = tr.find('.discount').parent('div').find('input').val();
+        } else {
+            var discount = tr.find('.discount').text();
+        }
+        discount = parseFloat(discount);
+        if (isNaN(discount)) {
+            discount = 0;
+        }
+
+        var total = salePrice * pickOrderQty * (1 - discount / 100);
+        tr.find('.line_total').text(total.toFixed(2));
+    }
+    function updateTableTotals() {
+        var selected = getFloat($('#total_selected_clone').minderNumberFormat('remove').text().minderNumberFormat());
+        var displayed = getFloat($('#total_displayed_clone').minderNumberFormat('remove').text().minderNumberFormat());
+        $('.lines').find('tr').each(function() {
+            var tr = $(this);
+            var total = getFloat(tr.find('.line_total').minderNumberFormat('remove').text().minderNumberFormat());
+            if (tr.find('input[type=checkbox]:checked').length) {
+                selected += total;
+            }
+            displayed += total;
+        });
+        $('.total_selected').minderNumberFormat('remove').text(selected).minderNumberFormat();
+        $('.total_displayed').minderNumberFormat('remove').text(displayed).minderNumberFormat();
+    }
+    
+    function checkLinesCallback(response) {
+        $('.line-selector').each(function(){
+            var lineId = $(this).val();
+            if ((response.selected_lines[lineId]) && (response.selected_lines[lineId] == lineId)) {
+                $(this).attr('checked');
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+    }
+    
+    function checkLine(chkbox) {
+        
+        var lineId        = $(chkbox).attr('id');
+        var lineCond      = $(chkbox).attr('checked');
+        var selectionMode = $('.switch_pick_item_selection').attr('selection_mode');
+        
+        $('input[value=' + lineId + ']').attr('checked', lineCond);
+        
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'pick-order2', 'module' => 'default')); ?>', 
+            {method: chkbox.checked, id: chkbox.value, selection_mode: selectionMode}, 
+            function(json) {
+                $('.lines_selected').text(json.lines_selected);
+                $('#issns_selected').text(json.issns_selected);
+                $('#products_selected').text(json.products_selected);
+                $('.total_selected').minderNumberFormat('remove').text(json.total_selected).minderNumberFormat();
+                //updateTableTotals();
+                checkLinesCallback(json);
+                $('.select_all_lines').each(function(){
+                    $(this)[0].checked =   checkSelectedLines('.lines', '.line-selector');   
+                })
+            }
+        );
+    }
+    function selectAllLines(target) {
+        
+        var lineId      =   $(target).attr('id');
+        var lineCond    =   $(target).attr('checked');
+        var selectionMode = $('.switch_pick_item_selection').attr('selection_mode');
+        
+        $('.select_all_lines').attr('checked', lineCond);
+        
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'pick-order2', 'module' => 'default')); ?>', 
+            {method: target.checked, id: 'select_all', selection_mode: selectionMode}, 
+            function(json) {
+                $('.line-selector').attr('checked', target.checked);
+                $('.lines_selected').text(json.lines_selected);
+                $('#issns_selected').text(json.issns_selected);
+                $('#products_selected').text(json.products_selected);
+                $('#total_selected').minderNumberFormat('remove').text(json.total_selected).minderNumberFormat();
+                checkLinesCallback(json);
+
+                //updateTableTotals();
+            }
+        );
+    }
+    function unselectAllLines() {
+        
+        var selectionMode = $('.switch_pick_item_selection').attr('selection_mode');
+        $('.select_all_lines').attr('checked', false);
+
+        $.getJSON(
+            '<?php echo $this->url(array('action' => 'calc-lines', 'controller' => 'pick-order2', 'module' => 'default')); ?>',
+            {method: false, id: 'select_all', selection_mode: selectionMode}, 
+            function(json) {
+                $('.line-selector').attr('checked', false);
+                $('.lines_selected').text(json.lines_selected);
+                $('#issns_selected').text(json.issns_selected);
+                $('#products_selected').text(json.products_selected);
+                $('#total_selected').minderNumberFormat('remove').text(json.total_selected).minderNumberFormat();
+                checkLinesCallback(json);
+
+                updateTableTotals();
+            }
+        );
+    }
+    function checkSelectedLines(tableId, checkBoxesClass) {
+        var checkBoxes = $(tableId).find(checkBoxesClass);
+        return checkBoxes.length == checkBoxes.filter(':checked').length;
+    }
+
+ function getSelectedLinesAmount() {
+     var
+         result = parseInt($('.lines_selected').html());
+     return isNaN(result) ? 0 : result;
+ }
+
+ function deleteLines() {
+     var
+         selectedNum = getSelectedLinesAmount();
+
+     if (selectedNum < 1) {
+         return;
+     }
+
+     if (confirm('You try to delete ' + selectedNum + ' lines. Proceed?')) {
+         $('#lines_form').append('<input type="hidden" name="action1" value="delete line">');
+         $("#lines_form").attr('action', '<?php echo $this->url(array('module' => 'default', 'controller' => 'pick-order2', 'action' => 'lines'), null, true); ?>');
+         $("#lines_form").submit();
+     }
+ }
+
+ function cancelLinesChanges() {
+     $('#lines-list').load('<?php echo $this->url(array('action' => 'lines', 'controller' => 'pick-order2', 'module' => 'default')); ?>', {method: 'init', id: 'select_all'}, showLinesAndShowSelected);
+ }
+
+ function addFromLocation() {
+     addFromLocationShow();
+ }
+
+ //---------------------- JS function from SYS_SCREEN_ACTION ------------------------//
+    
+    <?php 
+        foreach ($this->ssActions as $ssActions) {
+            foreach ($ssActions as $ssAction) {
+                if(!empty($ssAction['SSA_ACTION'])){
+                    echo htmlspecialchars_decode($ssAction['SSA_ACTION']);
+                }
+            }
+        }
+    ?>
+    
+    //---------------------- JS function from SYS_SCREEN_ACTION ------------------------//
+
+    function onAddProductClick(evt) {
+        evt.preventDefault();
+
+        var productQty      = $('#product_qty').val();
+
+        if(productQty == ""){
+            alert('Please enter Product Qty.');
+            $('#product_qty').focus();
+            return false;
+        }
+
+        addPickItem(
+            $('#product_name').val(),
+            $('input:radio[name=product_options][checked]').val(),
+            productQty,
+            $('#product_price').val(),
+            '<?php echo Minder_AddPickItemRoutine_ItemProvider_ProdProfile::PROVIDER_NAME; ?>'
+        );
+
+        return false;
+    }
+
+    function onAddNonProductClick(evt) {
+        evt.preventDefault();
+
+        var nonProductQty       = $('#non_product_qty').val();
+
+        if(nonProductQty == ""){
+            alert('Please enter Non-Product Qty.');
+            $('#non_product_qty').focus();
+            return false;
+        }
+
+        addPickItem(
+            $('#non_product_name').val(),
+            $('input:radio[name=non_product_options][checked]').val(),
+            nonProductQty,
+            $('#non_product_price').val(),
+            '<?php echo Minder_AddPickItemRoutine_ItemProvider_Issn::PROVIDER_NAME; ?>'
+        );
+
+        return false;
+    }
+
+    function addPickItem(itemName, nameType, requestedQty, defaultPrice,  providerName) {
+        $.post(
+            '<?php echo $this->url(array('action' => 'add-product'))?>',
+            {
+                'requiredQty'  : requestedQty,
+                'productName'  : itemName,
+                'nameType'     : nameType,
+                'defaultPrice' : defaultPrice,
+                'providerName' : providerName
+
+            },
+            addPickItemCallback,
+            'json'
+        );
+    }
+
+    function addPickItemCallback(response) {
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.location) {
+            location.href = response.location;
+        }
+
+        if (response.confirmNoStock) {
+            confirmAddPickItemWithNoStock(response.prodId, response.stockLeft, response.requiredAmount, response.providerName);
+        }
+    }
+
+    function confirmAddPickItemWithNoStock(prodId, availableStock, requiredAmount, providerName) {
+        var confirmDialog = $('#confirm_product_no_stock_dialog');
+        confirmDialog.find('.prod-id').html(prodId);
+        confirmDialog.find('.available').html(availableStock);
+        confirmDialog.find('.required').html(requiredAmount);
+        confirmDialog.find('#PICK_ITEM_PROVIDER_NAME').val(providerName);
+
+        confirmDialog.dialog('open');
+
+    }
+
+    $(document).ready(function(){
+        // bind validate events on ADD butons
+        $('#product_add').bind('click', onAddProductClick);
+        $('#non_product_add').bind('click', onAddNonProductClick);
+    });
+ /* ]]> */ 
+
+</script>

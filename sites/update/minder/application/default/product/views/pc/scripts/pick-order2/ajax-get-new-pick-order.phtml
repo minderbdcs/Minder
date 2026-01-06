@@ -1,0 +1,153 @@
+<?php
+    
+    $count = 1;
+    foreach($this->tabList as $tabKey => $tabValue) {
+        
+        foreach ($this->pickOrders as $order) {
+            echo '<tr class="order_tab' . $count . ' new-order-line">';
+            echo '<th></th>';
+            
+            if($this->minder->canCreateSalesOrder()){
+                foreach ($this->headers[$tabKey] as $key => $value) {
+                    
+                    $propertyName   =   transformToObjectProp($key);
+                    
+                    if(!empty($propertyName)) {
+                        if(array_key_exists($key, $this->editInputs[$tabKey])){
+                            
+                            $commonParams = array(
+                                                'style' => 'width: ' . $this->editInputs[$tabKey][$key]['SSV_SIZE'] . 'px;', 
+                                                'type2' => 'editable', 
+                                                'id' => $key,
+                                                'ssv_name' => $this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                'pick_order' => '',
+                                                'ssv_class' => $this->editInputs[$tabKey][$key]['SSV_TABLE'] . '_' . $this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                'class' => $this->editInputs[$tabKey][$key]['SSV_TABLE'] . '_' . $this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                'record_id' => $this->editInputs[$tabKey][$key]['RECORD_ID'],
+                                                'line_status' => 'new',
+                                                'renew_url' => $this->url(array('action' => 'ajax-get-new-order', 'controller' => 'pick-order2')), 
+                                                'fastfill_url' => $this->url(array('action' => 'ajax-call-fast-fill', 'controller' => 'user', 'module' => 'default')), 
+//                                                $this->editInputs[$tabKey][$key]['SSA_ACTION_TYPE'] => $this->editInputs[$tabKey][$key]['SSA_FUNCTION']
+                            );
+                            
+                            if (!empty($this->editInputs[$tabKey][$key]['NUMBER_FORMAT']))
+                                $commonParams['data-number-format'] = $this->editInputs[$tabKey][$key]['NUMBER_FORMAT'];
+
+                            if (!empty($this->editInputs[$tabKey][$key]['SSV_ACTION'])) {
+                                $action = $this->editInputs[$tabKey][$key]['SSV_ACTION'];
+                                if (!empty($this->ssActions[$action])) {
+                                    foreach ($this->ssActions[$action] as $ssAction) {
+                                        $commonParams[$ssAction['SSA_ACTION_TYPE']] = $ssAction['SSA_FUNCTION'];
+                                    }
+                                }
+                            }
+
+                            switch($this->editInputs[$tabKey][$key]['SSV_INPUT_METHOD']){
+                                case 'RO':
+                                    $commonParams['type2'] = 'readonly';
+                                    echo '<td>' . $this->htmlSpan($this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                                    empty($this->editInputs[$tabKey][$key]['DEFAULT_VALUE']) ? $order->$propertyName : $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'],
+                                                                    $commonParams
+                                    ) . '</td>';
+                                    break;
+                                case 'DD':
+                                    $commonParams['type2'] = 'editable';
+                                    echo '<td>' . $this->formSelect($this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                                    empty($this->editInputs[$tabKey][$key]['DEFAULT_VALUE']) ? $order->$propertyName : $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'], 
+                                                                    $commonParams, 
+                                                                    $this->editInputs[$tabKey][$key]['DD_VALUES']
+                                    ) . '</td>';
+                                    break;
+                                case '_EXT_DD':
+                                    $commonParams['type2'] = 'editable';
+                                    echo '<td>' . $this->formFilteredDD($this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                                    empty($this->editInputs[$tabKey][$key]['DEFAULT_VALUE']) ? $order->$propertyName : $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'],
+                                                                    $commonParams,
+                                                                    $this->editInputs[$tabKey][$key]['DD_VALUES']
+                                    ) . '</td>';
+                                    break;
+                                case 'DP':
+                                    $commonParams['type2'] = 'editable';
+                                    $commonParams['id'] = $key . '-new';
+                                    echo '<td>' . $this->formText($this->editInputs[$tabKey][$key]['SSV_NAME'], 
+                                                                    $order->$propertyName, 
+                                                                    $commonParams
+                                    ) . '</td>';
+                                    echo '<script type="text/javascript"> ';
+                                    echo '$("input[id=' . $key . '-new]").datepicker({dateFormat: "yy-mm-dd"});';
+                                    echo '</script> ';
+                                    break;
+                                case 'IN':
+                                    $commonParams['type2'] = 'editable';
+                                    echo '<td>' . $this->formText($this->editInputs[$tabKey][$key]['SSV_NAME'],
+                                                                  empty($order->$propertyName) ? $this->editInputs[$tabKey][$key]['DEFAULT_VALUE'] : $order->$propertyName, 
+                                                                  $commonParams
+                                    ) . '</td>';
+                                    break;
+                            }
+                        } else {
+                            echo '<td>' . $this->escape($order->$propertyName) . '</td>';
+                        }
+                    } else {
+                        echo '<td></td>';
+                    }
+                }     
+           } else {
+               foreach ($this->headers[$tabKey] as $key => $value) {
+                    $propertyName   =   transformToObjectProp($key);
+
+                    if ($key == 'PICK_STATUS') {
+                        if (array_key_exists($order->$propertyName, $this->pickStatusDescription)) {
+                            $tooltip = $this->pickStatusDescription[$order->$propertyName];
+                        } else {
+                            $tooltip = 'No description';
+                        }
+                        echo '<td style="width: ' . $this->editInputs[$tabKey][$key]['SSV_SIZE'] . 'px;"><a title="' . $tooltip . ' href="' . $this->url(array('controller' => 'pick-order2', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">' . $this->escape($order->$propertyName) . '</a></td>';
+                    } else {
+                        echo '<td style="width: ' . $this->editInputs[$tabKey][$key]['SSV_SIZE'] . 'px;"><a href="' . $this->url(array('controller' => 'pick-order2', 'action' => 'edit', 'pick_order' => $pickOrder), '', true) . '">' . $this->escape($order->$propertyName) . '</a></td>';
+                    }
+               }
+           }
+           
+           echo "</tr>\n";
+        }
+        
+        $count++;
+    }
+
+
+?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+    $(function(){
+     $('.new-order-line [data-number-format]').minderNumberFormat();
+        $('.new-order-line').find('input, select').filter('[oninit]').each(function(){
+            var
+                scope = this,
+                $this = $(this),
+                callback = function(){
+                    eval($this.attr('oninit'));
+                };
+            if ($this.attr('oninit') !== '') {
+                setTimeout(function(){callback.call(scope);}, 0);
+            }
+        });
+    });
+
+    //---------------------- JS function from SYS_SCREEN_ACTION ------------------------//
+
+    <?php 
+        foreach($this->editInputs as $key => $values){
+            foreach($values as $value) {
+                if(!empty($value['SSA_ACTION'])){
+                    echo htmlspecialchars_decode($value['SSA_ACTION']);
+                }
+            }
+        }
+    ?>
+    
+    //---------------------- JS function from SYS_SCREEN_ACTION ------------------------//
+ /* ]]> */ 
+</script>

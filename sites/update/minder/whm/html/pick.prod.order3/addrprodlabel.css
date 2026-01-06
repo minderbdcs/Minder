@@ -1,0 +1,33 @@
+body {
+    font-family: sans serif;
+    font-size: 13px;
+    line-height: 1.25em;
+}
+input, select {
+    font-size: 100%;
+}
+input[type="image"] {
+    width: 90px;
+    height: 45px;
+}
+input.smallbutton {
+    width: 58px;
+    height: 45px;
+}
+#type {
+    font-weight: bold;
+}
+#action {
+}
+#order_no {
+    width: 12ex;
+}
+#grn_no, #prt_qty, #recvd, #um_description, #toreturn {
+    width: 5ex;
+}
+#line_no, #hire_qty, #packaging_crate_qty, #pkgs, #qty1, #qty2, #qty3, #qty4 {
+    width: 5ex;
+}
+#owned_by, #shipping_container, #docket_no {
+    width: 30ex;
+}

@@ -1,0 +1,39 @@
+<?php
+    foreach ($this->pickOrders as $order) {
+        echo '<tr id="new-order-line">';
+        echo '<th></th>';
+        
+        if($this->minder->isAdmin || $this->minder->isAdjustPickOrder){
+            foreach ($this->headers as $key => $value) {
+                
+                $propertyName   =   transformToObjectProp($key);
+                
+                if(array_key_exists($key, $this->editInputs)){
+                    switch($this->editInputs[$key]['SSV_INPUT_METHOD']){
+                        case 'RO':
+                            echo '<td>' . $this->escape($order->$propertyName) . '</td>';
+                            break;
+                        case 'DD':
+                            echo '<td>' . $this->formSelect($key  , $order->$propertyName, array('style' => 'width: 150px;', 'type2' => 'editable'), $this->editInputs[$key]['DD_VALUES']) . '</td>';
+                            break;
+                        case 'DP':
+                            echo '<td>' . $this->formText($key, $order->$propertyName, array('style' => 'width: 120px;', 'type2' => 'editable')) . '</td>';
+                            echo '<script type="text/javascript"> ';
+                            echo '$("#' . $key . '").datepicker({dateFormat: "yy-mm-dd"});';
+                            echo '</script> ';
+                            break;
+                        case 'IN':
+                            echo '<td>' . $this->formText($key, $order->$propertyName, array('style' => 'width: 120px;', 'type2' => 'editable')) . '</td>';
+                            break;
+                    }
+                } else {
+                    echo '<td>' . $this->escape($order->$propertyName) . '</td>';
+                }
+            }     
+       }
+       
+       echo "</tr>\n";
+    }
+
+
+?>

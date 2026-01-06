@@ -1,0 +1,69 @@
+<form id="allocate_limits_form_<?php echo $this->escape($this->instanceId); ?>" action="<?php echo $this->url(array('module' => 'picking', 'controller' => 'allocating-limits'), null, true)?>" method="POST">
+<?php echo $this->formHidden('INSTANCE_ID', $this->instanceId);?>
+
+    <div class="ui-tabs-panel" style="float: left;" title="<?php echo $this->screenName;?>">
+        <table>
+            <?php foreach ($this->tabs as $tabDesc) {?>
+                <tr>
+                    <th><?php echo $this->formLabel($tabDesc['SST_TAB_NAME'], $tabDesc['SST_TITLE']);?></th>
+                    <?php foreach ($this->fields as $fieldDesc) {?>
+                        <?php if (empty($fieldDesc['SSV_TAB']) || $fieldDesc['SSV_TAB'] == $tabDesc['SST_TAB_NAME']) {?>
+                            <th><?php echo $this->formLabel($fieldDesc['SSV_ALIAS'], $fieldDesc['SSV_TITLE']);?></th>
+                            <td><?php echo $this->sysScreenFormElement(array(), $fieldDesc, $this->actions); ?></td>
+                        <?php }?>
+                    <?php }?>
+                </tr>
+            <?php }?>
+        </table>
+    </div>
+</form>
+
+<script type="text/javascript">
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        
+        <?php if ($this->deviceIdIsReadonly) {?>
+        $('#allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> #DEVICE_ID').attr('disabled', true).val('<?php echo $this->minder->deviceId;?>');
+        <?php }?>
+        
+        $('#allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> input, #allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> select').change(setLimits);
+        
+        setLimits(null);
+    });
+    
+    function setLimits(evt) {
+        var data = {};
+        $('#allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> input, #allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> select').each(function() {
+            var name = $(this).attr('name');
+            data[name] = $(this).val();
+        });
+        
+        
+        $.getJSON(
+            '<?php echo $this->url(array('module' => 'picking', 'controller' => 'allocating-limits', 'action' => 'set-limits'), null, true)?>',
+            data,
+            function(response) {
+                if (response.errors && response.errors.length > 0) {
+                    showErrors(response.errors);
+                    return;
+                }
+                if (response.messages && response.messages.length > 0) {
+                    showMessage(response.messages);
+                }
+                if (response.warnings && response.warnings.length > 0) {
+                    showWarnings(response.warnings);
+                }
+                
+                var fields = ['USER_ID', 'DEVICE_ID', 'TROLLEY_ID', 'MAX_ORDERS', 'MAX_PRODUCTS', 'MAX_PICK_ITEMS'];
+                
+                for (i in fields) {
+                    if (response[fields[i]]) {
+                        $("#allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> #" + fields[i]).val(response[fields[i]]);
+                    } else {
+                        $("#allocate_limits_form_<?php echo $this->escape($this->instanceId); ?> #" + fields[i]).val('');
+                    }
+                }
+            }
+        )
+    }
+</script>

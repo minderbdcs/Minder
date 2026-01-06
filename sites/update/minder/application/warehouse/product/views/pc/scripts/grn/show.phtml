@@ -1,0 +1,171 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <h1>GRN: <?php echo $this->escape($this->grnObj->grn); ?></h1>
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="EDIT"></li>
+        <li><input name="action" type="submit" value="RETURN"></li>
+    </ul>
+        
+        <table class="summary">
+        <tr>
+            <th>GRN</th>
+            <td><?php echo $this->escape($this->grnObj->grn);?></td>
+            <th>GRN Type</th>
+            <td><?php echo $this->escape($this->grnObj->grnType);?></td>
+        </tr>
+        <tr>
+            <th>Total Connote Packs</th>
+            <td><?php echo $this->escape($this->grnObj->totalQtyPacks);?></td>
+            <th>Pallet Owner</th>
+            <td><?php echo $this->escape($this->grnObj->palletsYn);?></td>
+        </tr>
+        <tr>
+            <th>Pack Ean Sscc</th>
+            <td><?php echo $this->escape($this->grnObj->packEanSscc);?></td>
+            <th>Carrier</th>
+            <td><?php echo $this->escape($this->grnObj->carrier);?></td>
+        </tr>
+        <tr>
+            <th>Vehicle Id</th>
+            <td><?php echo $this->escape($this->grnObj->vehicleId);?></td>
+            <th>AWB Consignment #</th>
+            <td><?php echo $this->escape($this->grnObj->awbConsignmentNo);?></td>
+        </tr>
+        <tr>
+            <th>Pallet Qty</th>
+            <td><?php echo $this->escape($this->grnObj->grnPalletQty);?></td>
+            <th>Delivery Docket</th>
+            <td><?php echo $this->escape($this->grnObj->deliveryDocket);?></td>
+        </tr>
+        <tr>
+            <th>Shipping Container #</th>
+            <td><?php echo $this->escape($this->grnObj->containerNo);?></td>
+            <th>Comments</th>
+            <td><?php echo $this->escape($this->grnObj->comments);?></td>
+        </tr>
+        <tr>
+            <th>GRN Printed</th>
+            <td><?php echo $this->escape($this->grnObj->grnPrinted);?></td>
+            <th>User ID</th>
+            <td><?php echo $this->escape($this->grnObj->userId);?></td>
+        </tr>
+        <tr>
+            <th>Device ID</th>
+            <td><?php echo $this->escape($this->grnObj->deviceId);?></td>
+            <th>GRN Date</th>
+            <td><?php echo $this->escape($this->grnObj->grnDate);?></td>
+        </tr>
+        <tr>
+            <th>Order #</th>
+            <td><?php echo $this->escape($this->grnObj->orderNo);?></td>
+            <th>Order Line #</th>
+            <td><?php echo $this->escape($this->grnObj->orderLineNo);?></td>
+        </tr>
+        <tr>
+            <th>Supplier ID</th>
+            <td><?php echo $this->escape($this->grnObj->returnId);?></td>
+            <th>Shipped Date</th>
+            <td><?php echo $this->escape($this->grnObj->shippedDate);?></td>
+        </tr>
+        <tr>
+            <th>Receipt Flag</th>
+            <td><?php echo $this->escape($this->grnObj->receiptFlag);?></td>
+            <th>Last Update</th>
+            <td><?php echo $this->escape($this->grnObj->lastUpdateDate);?></td>
+        </tr>
+        <tr>
+            <th>Owner ID</th>
+            <td><?php echo $this->escape($this->grnObj->ownerId);?></td>
+            <th>Last Line #</th>
+            <td><?php echo $this->escape($this->grnObj->lastLineNo);?></td>
+        </tr>
+        <tr>
+            <th>Last Pallet #</th>
+            <td><?php echo $this->escape($this->grnObj->lastPalletNo);?></td>
+            <th>Container Type</th>
+            <td><?php echo $this->escape($this->grnObj->shipContainerType);?></td>
+        </tr>
+        <tr>
+            <th>Hire Crate Owner</th>
+            <td><?php echo $this->escape($this->grnObj->packCrateOwner);?></td>
+            <th>Hire Create Type</th>
+            <td><?php echo $this->escape($this->grnObj->packCrateType);?></td>
+        </tr>
+        <tr>
+            <th>Hire Crate Qty</th>
+            <td><?php echo $this->escape($this->grnObj->packCrateQty);?></td>
+            <th>Container Type</th>
+            <td><?php echo $this->escape($this->grnObj->containerType);?></td>
+        </tr>
+        <tr>
+            <th>Shipping Crate Owner</th>
+            <td><?php echo $this->escape($this->grnObj->shippingCrateOwner);?></td>
+            <th>Shipping Crate Type</th>
+            <td><?php echo $this->escape($this->grnObj->shippingCrateType);?></td>
+        </tr>
+        <tr>
+            <th>Shipping Crate Qty</th>
+            <td><?php echo $this->escape($this->grnObj->shippingCrateQty);?></td>
+            <th>Due Date</th>
+            <td><?php echo $this->escape($this->grnObj->grnDueDate);?></td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td><?php echo $this->escape($this->grnObj->grnStatus);?></td>
+            <th>Freight Forwarder</th>
+            <td><?php echo $this->escape($this->grnObj->grnFreightForwarder);?></td>
+        </tr>
+        <tr>
+            <th>Legacy  Internal Id</th>
+            <td><?php echo $this->escape($this->grnObj->grnLegacyInternalId);?></td>
+            <th>Legacy Memo</th>
+            <td><?php echo $this->escape($this->grnObj->grnLegacyMemo);?></td>
+        </tr>
+        <tr>
+            <th>Wh Id</th>
+            <td><?php echo $this->escape($this->grnObj->whId);?></td>
+            <th>Posting Period</th>
+            <td><?php echo $this->escape($this->grnObj->grnPostingPeriod);?></td>
+        </tr>
+        <tr>
+            <th>Last Lot No</th>
+            <td><?php echo $this->escape($this->grnObj->lastLotNo);?></td>
+            <th>Freight Account No</th>
+            <td><?php echo $this->escape($this->grnObj->grnFreightAccountNo);?></td>
+        </tr>
+        <tr>
+            <th>Vessel Name</th>
+            <td><?php echo $this->escape($this->grnObj->vesselName);?></td>
+            <th>Voyage No</th>
+            <td><?php echo $this->escape($this->grnObj->voyageNo);?></td>
+        </tr>
+        <tr>
+            <th>Other1</th>
+            <td><?php echo $this->escape($this->grnObj->other1);?></td>
+            <th>Other2</th>
+            <td><?php echo $this->escape($this->grnObj->other2);?></td>
+        </tr>
+        <tr>
+            <th>Other3</th>
+            <td><?php echo $this->escape($this->grnObj->other3);?></td>
+            <th>GRN Status</th>
+            <td><?php echo $this->escape($this->grnObj->grnStatus);?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="EDIT"></li>
+        <li><input name="action" type="submit" value="RETURN"></li>
+    </ul>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function () {
+    $.ajaxSetup({async: false,
+                 complete: onAjaxSuccess,
+                 error: onAjaxError,
+                 beforeSend: onAjaxBeforeSend});
+    $("#limit_company").get(0).disabled = true;
+    $("#limit_warehouse").get(0).disabled = true;
+});
+</script>
+<?php echo $this->render('footer.phtml');

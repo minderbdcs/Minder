@@ -1,0 +1,10 @@
+<?php
+if (is_array($this->data) && count($this->data) > 0) {
+    $fp = fopen("php://temp/", 'r+');
+    foreach ($this->data as $row) {
+        fputcsv($fp, $row, ',');
+    }
+    rewind($fp);
+    echo stream_get_contents($fp);
+    fclose($fp);
+}

@@ -1,0 +1,28 @@
+<?php
+echo $this->exitCarrierDialog('EXIT-CARRIER', 'Minder.AwaitingExit.Dlg.ExitCarrier', $this->exitCarrierResults);
+?>
+
+<script type="text/javascript">
+    minderNamespace('Minder.AwaitingExit.Dlg.ExitCarrier', function() {
+        $.extend(Minder.AwaitingExit.Dlg.ExitCarrier, Minder.Dlg.ExitCarrier);
+
+        this.getRowSelectUrl = function() {
+            return '<?php echo $this->url(array('action' => 'select-carrier-exit-row'));?>';
+        };
+    });
+
+    $(function(){
+        Minder.AwaitingExit.Dlg.ExitCarrier.init(
+            <?php echo json_encode(array($this->exitCarrierResults['namespace'] => $this->exitCarrierResults ));?>,
+            {sysScreens: <?php echo json_encode($this->sysScreens);?>},
+            <?php echo json_encode($this->knownCarriers)?>,
+            $('#EXIT-CARRIER'),
+            '<?php echo $this->url(array('action' => 'get-exit-carrier-dataset'));?>',
+            '<?php echo $this->url(array('action' => 'despatch-pack'));?>'
+        );
+        Minder.AwaitingExit.Dlg.ExitCarrier.setCloseListener('awaiting-checking', function(){
+            $('#barcode').focus();
+        });
+        Minder.AwaitingExit.Dlg.ExitCarrier.showAll();
+    });
+</script>

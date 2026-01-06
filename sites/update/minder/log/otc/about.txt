@@ -1,0 +1,2 @@
+this is OTC screen log directory.
+this file is required, as svn does not create empty folders on commit.

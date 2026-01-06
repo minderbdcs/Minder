@@ -1,0 +1,13 @@
+<?php
+
+$result =         array(
+    'errors'     => $this->errors,
+    'warnings'   => $this->warnings,
+    'messages'   => $this->messages,
+    'sysScreens' => $this->sysScreens,
+    'tabDescr'   => (isset($this->contentsJsSearchResults)) ? $this->contentsJsSearchResults : array()
+);
+echo json_encode($result);
+
+?>
+ 

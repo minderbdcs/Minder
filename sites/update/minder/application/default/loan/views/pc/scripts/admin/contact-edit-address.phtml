@@ -1,0 +1,109 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="" method="post">
+    <h2>ADDRESS : <?php echo $this->escape($this->addressObj->id); ?></h2>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+    </ul>
+    <table class="summary">
+        <tr>
+            <th>RECORD ID:</th>
+            <td><?php echo $this->formNote('record_id', $this->addressObj->items['RECORD_ID'], array()); ?>
+            <?php echo $this->formHidden('record_id', $this->addressObj->items['RECORD_ID'], array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>PERSON ID:</th>
+            <td><?php echo $this->formText('person_id', $this->addressObj->items['PERSON_ID'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Address Type:</th>
+            <td><?php echo $this->formSelectStrict('addr_type', $this->addressObj->items['ADDR_TYPE'], array(), $this->addressTypeList);?></td>
+        </tr>
+        <tr>
+            <th>Company ID:</th>
+            <td><?php echo $this->formSelectStrict('company_id', $this->addressObj->items['COMPANY_ID'], array(), $this->companyIdList);?></td>
+        </tr>
+        <tr>
+            <th>Address Line 1:</th>
+            <td><?php echo $this->formText('addr_line1', $this->addressObj->items['ADDR_LINE1'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Address Line2:</th>
+            <td><?php echo $this->formText('addr_line2', $this->addressObj->items['ADDR_LINE2'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Suburb:</th>
+            <td><?php echo $this->formText('addr_suburb', $this->addressObj->items['ADDR_SUBURB'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>City:</th>
+            <td><?php echo $this->formText('addr_city', $this->addressObj->items['ADDR_CITY'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>State:</th>
+            <td><?php echo $this->formText('addr_state', $this->addressObj->items['ADDR_STATE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Post Code:</th>
+            <td><?php echo $this->formText('addr_post_code', $this->addressObj->items['ADDR_POST_CODE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Country:</th>
+            <td><?php echo $this->formText('addr_country', $this->addressObj->items['ADDR_COUNTRY'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Australia Post 4 State ID:</th>
+            <td><?php echo $this->formText('addr_post_4state_id', $this->addressObj->items['ADDR_POST_4STATE_ID'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Mobile No:</th>
+            <td><?php echo $this->formText('addr_mobile_no', $this->addressObj->items['ADDR_MOBILE_NO'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Telephone No:</th>
+            <td><?php echo $this->formText('addr_phone_no', $this->addressObj->items['ADDR_PHONE_NO'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Faxsimile No:</th>
+            <td><?php echo $this->formText('addr_fax_no', $this->addressObj->items['ADDR_FAX_NO'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Email:</th>
+            <td><?php echo $this->formText('addr_email', $this->addressObj->items['ADDR_EMAIL'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Title:</th>
+            <td><?php echo $this->formText('addr_title', $this->addressObj->items['ADDR_TITLE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>First Name:</th>
+            <td><?php echo $this->formText('addr_first_name', $this->addressObj->items['ADDR_FIRST_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Last Name:</th>
+            <td><?php echo $this->formText('addr_last_name', $this->addressObj->items['ADDR_LAST_NAME'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Address Status:</th>
+            <td><?php echo $this->formSelectStrict('addr_status', $this->addressObj->items['ADDR_STATUS'], array(), $this->addressStatusList);?></td>
+        </tr>
+        <tr>
+            <th>Created Date:</th>
+            <td><?php echo $this->formText('addr_created_date', $this->addressObj->items['ADDR_CREATED_DATE'], array()); ?></td>
+        </tr>
+        <tr>
+            <th>Create By:</th>
+            <td><?php echo $this->formText('addr_created_by', $this->addressObj->items['ADDR_CREATED_BY'], array()); ?></td>
+        </tr>
+    </table>
+    <ul class="toolbar">
+        <li><?php echo $this->formSubmit('action', 'SAVE & RETURN'); ?></li>
+        <li><?php echo $this->formSubmit('action', 'CANCEL CHANGES'); ?></li>
+    </ul>
+</form>
+<script type="text/javascript">
+$(document).ready(function(){
+});
+</script>
+<?php echo $this->render('footer.phtml');

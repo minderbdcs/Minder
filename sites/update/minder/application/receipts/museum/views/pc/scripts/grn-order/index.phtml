@@ -1,0 +1,256 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2 title="<?php echo $this->orderSsName;?>"><?php echo $this->pageTitle; ?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<div id="search_form_container">
+    <?php echo $this->sysScreenSearchForm2($this->searchFormSsName, array('search_fields' => $this->searchFields));?>
+</div>
+
+<div id="grn-order-container"></div>
+
+<?php
+    echo $this->StandardSRTemplate(array('SRDefaultButtons'));
+?>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('#grn-order-container').minderSearchResult(response.sysScreens['<?php echo $this->orderNamespace;?>']);
+
+        $(document).dequeue();
+    }
+
+    function tabContainerOnSelectRow(evt) {
+        var paginator = {};
+        switch (evt.namespace) {
+            case '<?php echo $this->orderNamespace;?>':
+                paginator = $('#grn-order-container').minderSearchGetPaginatorState();
+                break;
+            default:
+                throw 'Unknown namespace "' + evt.namespace + '"';
+        }
+
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens[evt.namespace]  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        $(document).queue(function() {
+            $('#grn-order-container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                tabContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#grn-order-container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnSelectRowCallback(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $('.selected-container.' + response.namespace).html(response.selectedRowsTotal);
+
+        var rowsOnPage = $('.data-set.' + response.namespace + ':first tr').length;
+        var totalRows  = parseInt($('.total-container.' + response.namespace).html());
+        totalRows = isNaN(totalRows) ? 0 : totalRows;
+
+        if (rowsOnPage == response.selectedRowsOnPage) {
+            $('.select_all_rows.' + response.namespace).attr('checked', true);
+        } else {
+            $('.select_all_rows.' + response.namespace).removeAttr('checked');
+        }
+
+        if (totalRows == response.selectedRowsTotal) {
+            $('.select_complete.' + response.namespace).attr('checked', true);
+        } else {
+            $('.select_complete.' + response.namespace).removeAttr('checked');
+        }
+
+        $('.row_selector.' + response.namespace).each(function(){
+            var $_this = $(this);
+            var thisRowId = $_this.attr('row_id');
+
+            if (response.selectedRows[thisRowId]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+            }
+        });
+
+        $(document).dequeue();
+    }
+
+    function loadData() {
+        var dataToSend = {
+            'sysScreens' : {}
+        };
+
+        dataToSend.sysScreens['<?php echo $this->orderNamespace?>'] = {
+            'paginator' : $('#grn-order-container').minderSearchGetPaginatorState()
+        };
+
+        $(document).queue(function() {
+            $('#grn-order-container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#grn-order-container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function tabContainerOnPageChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnShowByChanged(evt) {
+        loadData();
+    }
+
+    function tabContainerOnPreSort(evt) {
+    }
+
+    function tabContainerOnSort(evt) {
+        loadData();
+    }
+
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+        dataToSend.action = 'search';
+
+        $('#barcode').val('').parent().block();
+        $('#search_form_container').block();
+        $(document).queue(function() {
+            $('#grn-order-container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#grn-order-container > div, #search_form_container').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function printGrnOrderLabel() {
+        $(document).queue(function() {
+            $('#grn-order-container > div').block($('<?php echo $this->SysScreenWaitPrompt('Printing Labels...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'print-label'));?>',
+                {},
+                onPrintResponse,
+                'json'
+            );
+        }).queue(function() {
+            $('#grn-order-container > div').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+
+    function onPrintResponse(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+
+        $(document).dequeue();
+    }
+
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+
+    function makeReport(format, sysScreen) {
+        var nameSpace = '';
+        switch (sysScreen) {
+            case '<?php echo $this->orderSsName;?>' :
+                nameSpace = '<?php echo $this->orderNamespace?>';
+                break;
+            default:
+                throw new Exception('Unknown Sys Screen: "' + sysScreen + '"');
+        }
+
+        location.href = '<?php echo $this->url(array('action' => 'report'));?>/report_format/' + escape(format) + '/namespace/' + escape(nameSpace);
+    }
+
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){
+        $('#grn-order-container').minderSearchResult(<?php echo json_encode($this->orderJsSearchResults);?>);
+        $('#grn-order-container').minderSearchResult({autosorter:true, customSort:true});
+        $('#grn-order-container').minderSearchResult(<?php echo json_encode($this->orderJsSearchResultsDataset);?>);
+
+        $('#grn-order-container')
+            .bind('select-row', tabContainerOnSelectRow)
+            .bind('page-changed', tabContainerOnPageChanged)
+            .bind('show-by-changed', tabContainerOnShowByChanged)
+            .bind('pre-sort', tabContainerOnPreSort)
+            .bind('sort', tabContainerOnSort);
+
+        $(document).bind('do-search', documentOnDoSearch);
+        $('#search_form_container .SEARCH_RESULTS_FORM_search_btn').bind('click', searchBtnOnClick);
+    });
+
+
+/* ]]> */
+</script>
+
+
+<script type="text/x-jquery-tmpl" id="buttons-tmpl">
+    <div style="clear: both; padding-left: 10px;">
+        {{if $item.data.buttons.length > 0}}
+            <ul class="toolbar">
+                {{each $item.data.buttons}}
+                    <li><button onclick="return false;" class="green-button SCREEN_BUTTON_{{= $value.RECORD_ID}}" name="{{= $value.SSB_BUTTON_NAME}}">{{= $value.SSB_TITLE}}</button></li>
+                {{/each}}
+            </ul>
+        {{/if}}
+    </div>
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

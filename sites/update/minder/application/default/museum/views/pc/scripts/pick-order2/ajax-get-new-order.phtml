@@ -1,0 +1,44 @@
+<?php
+    
+    foreach ($this->pickOrders as $order) {
+        echo '<tr id="new-order-line">';
+        echo '<th></th>';
+        
+        if($this->minder->isAdmin || $this->minder->isAdjustPickOrder){
+            foreach ($this->headers as $key => $value) {
+                
+                $propertyName   =   transformToObjectProp($key);
+                
+                if(!empty($propertyName)) {
+                    if(array_key_exists($key, $this->editInputs)){
+                        switch($this->editInputs[$key]['SSV_INPUT_METHOD']){
+                            case 'RO':
+                                echo '<td>' . $this->escape($order->$propertyName) . '</td>';
+                                break;
+                            case 'DD':
+                                echo '<td>' . $this->formSelect($this->editInputs[$tabKey][$key]['SSV_NAME'], $order->$propertyName, array('style' => 'width: ' . $this->editInputs[$key]['SSV_SIZE'] . 'px;', 'type2' => 'editable'), $this->editInputs[$key]['DD_VALUES']) . '</td>';
+                                break;
+                            case 'DP':
+                                echo '<td>' . $this->formText($key . '-new', $order->$propertyName, array('style' => 'width: ' . $this->editInputs[$key]['SSV_SIZE'] . 'px;', 'type2' => 'editable', 'id' => $key)) . '</td>';
+                                echo '<script type="text/javascript"> ';
+                                echo '$("input[name=' . $key . '-new]").datepicker({dateFormat: "yy-mm-dd"});';
+                                echo '</script> ';
+                                break;
+                            case 'IN':
+                                echo '<td>' . $this->formText($key, $order->$propertyName, array('style' => 'width: ' . $this->editInputs[$key]['SSV_SIZE'] . 'px;', 'type2' => 'editable')) . '</td>';
+                                break;
+                        }
+                    } else {
+                        echo '<td>' . $this->escape($order->$propertyName) . '</td>';
+                    }
+                } else {
+                    echo '<td></td>';
+                }
+            }     
+       }
+       
+       echo "</tr>\n";
+    }
+
+
+?>

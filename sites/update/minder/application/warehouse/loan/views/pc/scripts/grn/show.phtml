@@ -1,0 +1,42 @@
+<?php echo $this->render('header.phtml'); ?>
+<form name="main" id="main" action="<?php echo $this->url(); ?>" method="post">
+    <h1>GRN: <?php echo $this->escape($this->grnObj->grn); ?></h1>
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="EDIT"></li>
+        <li><input name="action" type="submit" value="RETURN"></li>
+    </ul>
+        
+    <table class="summary">
+        <tr>
+        <?php 
+              $counter = 0;
+              foreach($this->grnObj->items as $key => $value) { 
+                if($counter >= 2) { $counter = 0; echo '</tr><tr>'; }
+        ?>
+                    <th><?php echo $key; ?></th>
+                    <td><?php echo $value; ?></td>
+     
+        <?php 
+                $counter++;
+              }
+        ?>
+        </tr>    
+    </table>
+    
+    <ul class="toolbar">
+        <li><input name="action" type="submit" value="EDIT"></li>
+        <li><input name="action" type="submit" value="RETURN"></li>
+    </ul>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function () {
+    $.ajaxSetup({async: false,
+                 complete: onAjaxSuccess,
+                 error: onAjaxError,
+                 beforeSend: onAjaxBeforeSend});
+    $("#limit_company").get(0).disabled = true;
+    $("#limit_warehouse").get(0).disabled = true;
+});
+</script>
+<?php echo $this->render('footer.phtml');

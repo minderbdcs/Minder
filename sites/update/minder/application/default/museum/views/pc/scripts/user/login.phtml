@@ -1,0 +1,20 @@
+<?php echo $this->render('header.phtml'); ?>
+<?php echo $this->messenger()->all() ?> 
+
+<h1>Login</h1>
+<form action="<?php echo $this->url(); ?>" method="post">
+    <?php //echo $this->formSelect('dsn', $this->currentDsn, array(), $this->dsnList); ?>
+    <label>User Id <?php echo $this->formText('userId', $this->userId, array('autocomplete' => 'off')); ?></label>
+    <label>Password <?php echo $this->formPassword('password', '', array('autocomplete' => 'off')); ?></label>
+    <?php echo $this->formSubmit('action', 'Login', array('class' => 'mdr-tool-button')); ?>
+    <?php echo $this->formHidden('key', $this->key); ?>
+</form>
+<p style="margin-top: 10px"><a href="<?php echo $this->url(array('action' => 'logout-all', 'controller' => 'user', 'module' => 'default'), '', true); ?>">Logout all users</a></p>
+<script>
+<!--
+$(document).ready(function(){
+     $("#userId").focus();
+});
+//-->
+</script>
+<?php echo $this->render('footer.phtml'); ?>

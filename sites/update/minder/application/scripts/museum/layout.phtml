@@ -1,0 +1,64 @@
+<?php
+/**
+ * @var Minder2_Model_Page $minderPage
+ */
+$minderPage = $this->page;
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <?php
+        /**
+         * @var Zend_View $this
+         */
+    ?>
+    <?php echo $this->headTitle('Minder', 'PREPEND')->setSeparator(' | ');?>
+    <?php echo $this->headLink()->appendStylesheet($this->baseUrl() . '/style/pc.css')->appendStylesheet($this->baseUrl() . '/scripts/ui/themes/flora/flora.all.css');?>
+    <?php echo $this->headMeta();?>
+    <?php echo $this->headScript()->prependFile($this->baseUrl() . '/scripts/warehouse.js')->prependFile($this->baseUrl() . '/scripts/ui/jquery-1.3.2.min.js');?>
+    <?php echo $this->headStyle();?>
+</head>
+<body>
+    <div id="header">
+        <?php echo $this->render('status-bar.phtml');?>
+        <img id="minder-logo" src="<?php echo $this->baseUrl();?>/icons/MDR_30x29.jpg">
+        <span style="float: right; margin-top: 3px;">
+            <label for="barcode">Input:</label> <input type="text" onkeypress="globalSearch(event);" id="barcode" name="barcode" /><br>
+            <select style="margin-top: 3px; margin-left: 36px; display: none;" id="data_id_menu"></select>
+            <span style="margin-top: 3px; margin-left: 36px; color: red;" id="globalSearchMessage">&nbsp;</span>
+        </span>
+        <img height="40" id="logo" src="<?php echo $this->baseUrl();?>/user/logo">
+
+        <?php echo $this->render('modules.phtml');?>
+    </div>
+
+    <div style="float: left;">
+        <a onclick="" href="#" class="shortcutsSwitcher">X</a>
+    </div>
+
+    <?php if ($minderPage->isLeftPannelVisible) {?>
+        <div style="display: block;" id="left">
+    <?php } else {?>
+        <div style="display: none;" id="left">
+    <?php } ?>
+        <?php echo $this->render('left-menu.phtml');?>
+        <?php echo $this->render('limits.phtml');?>
+    </div>
+
+    <?php if ($minderPage->isLeftPannelVisible) {?>
+        <div id="page" style="margin-left: 190px;">
+    <?php } else {?>
+        <div id="page" style="margin-left: 10px;">
+    <?php } ?>
+        <?php echo $this->layout()->content; ?>
+    </div>
+
+    <?php
+        echo $this->messages();
+        echo $this->autoloadScript();
+        echo $this->jQueryTemplate();
+
+        echo $this->render('page-footer.phtml');
+    ?>
+</body>
+</html>

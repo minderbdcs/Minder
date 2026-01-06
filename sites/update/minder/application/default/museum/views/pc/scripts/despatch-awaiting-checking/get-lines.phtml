@@ -1,0 +1,271 @@
+<div id="json" style="display: none;"><?php echo json_encode(array('messages' => $this->messages, 'errors' => $this->errors)); ?></div>
+  
+<?php
+    $resultsForm = $this->getHelper('sysScreenSearchResult');
+    $resultsForm->setTabs($this->tabList);
+    $resultsForm->setFields($this->fieldList);
+?>
+ <form name="lines_list" id="lines_list" action="<?php echo $this->url(); ?>" method="post">
+    <!-- tabs container start -->
+    <div id="lines_tabs" class="ui-tabs-container" style="">
+        <?php echo $resultsForm->renderTabsList(array()); ?>
+
+         <div style="padding-left: 10px; padding-top: 10px; padding-right: 10px; border-top:1px solid #519E2D; border-left:1px solid #519E2D; border-right:1px solid #519E2D;">
+             <div class="sys-screen-title" title="<?php echo $this->linesSysScreenName;?>">Lines List</div>
+             <div class="paginator-container">
+                 <label for="results_per_page">View By:</label>
+                 <?php echo $this->formSelect('show_by',
+                                              $this->navigation['show_by'],
+                                              array(),
+                                              array(5  => 5,
+                                                    10 => 10,
+                                                    15 => 15,
+                                                    20 => 20,
+                                                    30 => 30,
+                                                    40 => 40,
+                                                    50 => 50,
+                                                    100 => 100)) ?>
+                 <label for="page">Page:</label>
+                 <?php echo $this->formSelectStrict('pageselector',
+                                                    $this->navigation['pageselector'],
+                                                    array(),
+                                                    $this->pages); ?>
+             </div>
+             
+             <ul class="black-top-border" style="clear: both;">
+                 <li style="display: inline;">Selected: <span id="orders_selected" class="selected_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->selectedLinesCount;?></span></li>
+             </ul>
+         </div>
+
+         <?php foreach ($resultsForm->getTabs() as $tabId => $tabCaption) {?>
+            <?php echo $resultsForm->renderTab($tabId, array(), false);?>
+                <!-- tab content starts -->
+                    <table class="withborder tablesorter order_lines" style="margin-bottom: 0;" tab_id="tab_<?php echo $this->escape($tabId);?>">
+                        <thead>
+                            <?php echo $resultsForm->renderHeaders($tabId, array('selection_namespace' => $this->linesSelectionNamespace, 'switch_selection_mode' => $this->selectMode));?>
+                            <?php echo $resultsForm->renderRows($tabId, array('selection_namespace' => $this->linesSelectionNamespace), $this->linesDataSet, $this->selectedLines);?>
+                        </thead>
+                    </table>
+
+                    <!-- orders info start -->
+                    <table class="withborder" width="100%">
+                        <tr>
+                            <td>Ready For Despatch Rows Total: <span class="total_ready_for_desp_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->readyToDespTotal;?></span></td>
+                            <td>Ready For Despatch Rows Selected: <span class="selected_ready_for_desp_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->readyToDespSelected;?></span></td>
+                        </tr>
+                        <tr>
+                            <td>Total <span class="total_count <?php echo $this->linesSelectionNamespace;?>"><?php echo $this->numRecords;?></span> records. <?php echo "Show from " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + 1); echo " to " . ($this->navigation['show_by'] * $this->navigation['pageselector'] + $this->maxno); ?></td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </table>
+                    <!-- orders info end -->
+
+                    <div style="clear: both; padding-left: 10px;">
+                        <ul class="toolbar">
+                            <li><input type="submit" id="connote_btn" class="order-button" value="CONNOTE" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="report_csv_btn" class="order-button" value="REPORT: CSV" onclick="return false;" /></li>
+                            <li><input type="submit" name="report_format" id="report_xls_btn" class="order-button" value="REPORT: XLS" onclick="return false;" /></li>
+                            <li><input type="submit" class="order-button" value="CANCEL DESPATCH" disabled="disabled" onclick="return false;" /></li>
+                        </ul>
+                    </div>
+                <!-- tab content ends -->
+            </div>    
+         <?php }?>
+     </div>
+     <!-- tabs container end -->
+</form>
+
+<script type="text/javascript">
+    /* <![CDATA[ */
+
+    //--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#CONNOTE_SCREEN_CONTAINER').data({errors: [], warnings: []});
+        $('#barcode').focus();
+        $("#lines_tabs > ul").tabs();
+        
+        $('.order_lines').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        $('#report_csv_btn, #report_xls_btn').click(printLinesAction);
+        
+        $('#connote_btn').click(function() {getConnoteScreen();});
+        
+        $('.row_selector.<?php echo $this->linesSelectionNamespace;?>, .select_all_rows.<?php echo $this->linesSelectionNamespace;?>').minderRowSelector(
+            '<?php echo $this->url(array('module' => $this->linesSelectionModule, 'controller' => $this->linesSelectionController, 'action' => $this->linesSelectionAction), null, true);?>',
+            {
+                'scopeSelector'       : '#lines_tabs',
+                'selectionNamespace'  : '<?php echo $this->linesSelectionNamespace?>',
+                'selectionAction'     : '<?php echo $this->linesSelectionAction;?>',
+                'selectionController' : '<?php echo $this->linesSelectionController;?>'
+            },
+            {
+                'beforeLoad' : function() {
+                    $('#CONNOTE_SCREEN_CONTAINER').data({errors: [], warnings: []});
+                    return true;
+                },
+                'onError'    : function(response) {
+                    if (response.errors && response.errors.length > 0) {
+                        $('#CONNOTE_SCREEN_CONTAINER').data('errors',  response.errors);
+                        $('#CONNOTE_SCREEN_CONTAINER').html('');
+
+                        showErrors(response.errors);
+                        return;
+                    }
+                    
+                },
+                'onSuccess'  : function(response) {
+                    if (response.warnings && response.warnings.length > 0) {
+                        $('#CONNOTE_SCREEN_CONTAINER').data('warnings',  response.warnings);
+                        $('#CONNOTE_SCREEN_CONTAINER').html('');
+                        showWarnings(response.warnings);
+                    }
+
+                    if (response.readyForDespSelected) {
+                        $('.selected_ready_for_desp_count.' + response.selectionNamespace).html(response.readyForDespSelected);
+                    } else {
+                        $('.selected_ready_for_desp_count.' + response.selectionNamespace).html('0');
+                        showWarnings(['No lines selected for despatch.']);
+                        $('#CONNOTE_SCREEN_CONTAINER').html('');
+                        showConnote = false;
+                    }
+                    
+                    
+                }
+            }
+        );
+        
+        updateSelectionState('<?php echo $this->linesSelectionNamespace?>');
+        
+    });
+    
+    function updateSelectionState(namespace) {
+        var totalRowsOnPage    = 0;
+        var rowsSelectedOnPage = 0;
+        var totalRows          = parseInt($('.total_count.' + namespace).html());
+        var totalRowsSelected  = parseInt($('.selected_count.' + namespace).html());
+        
+        $('.row_selector.' + namespace).each(function() {
+            totalRowsOnPage++;
+            if ($(this).attr('checked') === true) {
+                rowsSelectedOnPage++;
+            }
+        });
+        
+        $('.select_all_rows.' + namespace).each(function (){
+            if (totalRowsOnPage == rowsSelectedOnPage) {
+                $(this).attr('checked', true);
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+        
+        $('.select_complete.' + namespace).each(function (){
+            if (totalRows == totalRowsSelected) {
+                $(this).attr('checked', true);
+            } else {
+                $(this).removeAttr('checked');
+            }
+        });
+    }
+    
+    function getConnoteScreen() {
+        if (typeof(destroyConnote) == 'function') {
+            destroyConnote();
+        }
+        
+        var errors    = $('#CONNOTE_SCREEN_CONTAINER').data('errors');
+        var warnings  = $('#CONNOTE_SCREEN_CONTAINER').data('warnings');
+        
+        if (errors && errors.length > 0) {
+            showErrors(errors);
+            $('#CONNOTE_SCREEN_CONTAINER').html();
+            return;
+        }
+        
+        if (warnings && warnings.length > 0) {
+            showWarnings(warnings);
+            $('#CONNOTE_SCREEN_CONTAINER').html();
+            return;
+        }
+        
+        var readyForDespSelected = parseInt($('.selected_ready_for_desp_count.<?php echo $this->linesSelectionNamespace?>').html());
+        readyForDespSelected = (isNaN(readyForDespSelected)) ? 0 : readyForDespSelected;
+        
+        if (readyForDespSelected < 1) {
+            showWarnings(['No lines selected for despatch.']);
+            $('#CONNOTE_SCREEN_CONTAINER').html();
+            return;
+        }
+        
+        $('#CONNOTE_SCREEN_CONTAINER').load(
+            '<?php echo $this->url(array('action' => 'index', 'controller' => 'connote'), null, true);?>',
+            {
+                callback: {
+                    on_success: {
+                        action: 'index',
+                        controller: 'despatch-awaiting-checking',
+                        module: 'default'
+                    },
+                    on_resume: {
+                        action: 'index',
+                        controller: 'despatch-awaiting-checking',
+                        module: 'default'
+                    }
+                                        
+                },
+                selection_info: {
+                    model_name: 'PICKORDER',
+                    namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                    action: 'select-row',
+                    controller: 'despatch-awaiting-checking',
+                    module: 'default'
+                },
+                order_selection_namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                order_selection_action: 'select-row',
+                order_selection_controller: 'despatch-awaiting-checking',
+                order_selection_field: 'PICK_ORDER',
+                lines_selection_namespace: '<?php echo $this->linesSelectionNamespace;?>',
+                lines_selection_action: 'select-row',
+                lines_selection_controller: 'despatch-awaiting-checking',
+                lines_selection_field: 'PICK_LABEL_NO'
+            },
+            function () {
+//                $('#barcode').focus();
+                $('#CONNOTE_SCREEN_CONTAINER').unbind('.awaiting_checking_connote').bind('cancel.awaiting_checking_connote', function(){
+                    $('#CONNOTE_SCREEN_CONTAINER').html('');
+                });
+            }
+        );
+    }
+    
+    function beforeConnoteAccept() {
+        var totalRows    = parseInt($('.total_count.<?php echo $this->linesSelectionNamespace?>').html());
+        var selectedRows = parseInt($('.selected_count.<?php echo $this->linesSelectionNamespace?>').html());
+        totalRows        = (isNaN(totalRows))? 0 : totalRows;
+        selectedRows     = (isNaN(selectedRows))? 0 : selectedRows;
+
+        if ( selectedRows < totalRows) {
+            if (confirm('Not all available rows selected for despatch! Proceed anyway?')) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    function printLinesAction() {
+        var linesForm = $('#lines_list');
+        $('#REPORT_FORMAT').remove();
+        linesForm.prepend('<input type="hidden" id="REPORT_FORMAT" name="report_format" value="' + $(this).val() + '" />');
+        var oldAction = linesForm.attr('action');
+        linesForm.attr('action', '<?php echo $this->url(
+                                    array(
+                                        'action' => 'print', 
+                                        'controller' => 'despatch-awaiting-checking', 
+                                        'selection_namespace' => $this->linesSelectionNamespace), 
+                                    null, true);?>').submit();
+        linesForm.attr('action', oldAction);
+    }
+    
+    /* ]]> */
+</script>

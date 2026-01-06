@@ -1,0 +1,50 @@
+<?php echo $this->render('header.phtml');
+    $attributes = array('autocomplete' => 'off', 'onkeyup' => 'checkKeys(event)', 'style' => 'width: 15ex;');
+
+?>
+
+<h2><?php echo $this->pageTitle; ?></h2>
+<?php echo $this->messenger()->all(); ?>
+<div id="ssns-container">
+</div>
+<div id="locations-container">
+</div>
+<div id="issns-container">
+</div>
+<div id="count-location-container">
+</div>
+<div id="count-issn-container">
+</div>
+<div id="count-container">
+</div>
+<div id="edit-variance-container">
+</div>
+<script type="text/javascript">
+<!--
+$().ready(function () {
+/*
+    $('#count-container').load('<?php echo $this->url(array('action' => 'load-count'));?>',
+                    function () {
+                    });
+*/
+    $('#ssns-container').load('<?php echo $this->url(array('action' => 'load-ssns')) . '?table=ssns';?>',
+                    function () {
+                    });
+});
+
+function frmClear()
+{
+    $('input:text').each(function() {
+        this.value = '';
+        });
+    $('form select').each(function() {
+        if (this.id != 'show_by' && this.id != 'pageselector') {
+            this.selectedIndex = 0;
+        }
+        });
+    return false;
+}
+
+//-->
+</script>
+<?php echo $this->render('footer.phtml');

@@ -1,0 +1,147 @@
+/*
+This is the core stype of the whm site
+*/
+body {
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 6pt;
+}
+h1, h2, h3, h4, h5, h6 {
+font-weight: bold;
+}
+h1 {
+font-size: 1.1em;
+margin-left: -2%;
+text-align: left;
+}
+h2 {
+font-size: 1.2em;
+margin-left: -20%;
+}
+h3 {
+font-size: 12pt;
+line-height: 14pt;
+text-decoration: blink;
+margin-left: -10%;
+}
+h4 {
+font-size: 12pt;
+line-height: 14pt;
+position: absolute;
+left: 10px;
+top: 5px;
+}
+a:link {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:visited {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:hover {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+a:active {
+color: red;
+background-color: blue;
+text-decoration: none;
+}
+input[type="text"] {
+color: blue ;
+background-color: cyan ;
+}
+input.message[type="text"] {
+color: red ;
+background-color: yellow;
+font-family: Verdana, Helvetica,  Arial, sans-serif;
+font-size: 8pt;
+}
+input.submit:focus {
+outline: solid red 2px;
+color: solid blue ;
+}
+select.sel1 {
+width: 20%;
+}
+select.sel2 {
+width: 35%;
+}
+select.sel3 {
+width: 78%;
+}
+select.sel5 {
+width: 55%;
+}
+select.sel6 {
+width: 60%;
+}
+select:focus {
+outline: 2px #ff7d00 ;
+color: red ;
+}
+select:scrolling {
+display: block;
+width: 55%;
+}
+button {
+display: block;
+color: black ;
+background-color: cyan;
+font-size: 11pt;
+width: 28pt;
+height: 20%;
+margin-top: 1%;
+margin-bottom: 1%;
+margin-right: 1%;
+margin-left: 1%;
+}
+#col1 {
+position: absolute;
+left: 4px;
+top: 160pt;
+}
+#col2 {
+position: absolute;
+left: 130px;
+top: 160pt;
+}
+#col4 {
+position: absolute;
+left: 68px;
+top: 168pt;
+}
+#col3 {
+position: absolute;
+left: 2px;
+top: 5px;
+width: 200pt;
+}
+#col5 {
+position: absolute;
+left: 105px;
+top: 28pt;
+}
+#col6 {
+position: absolute;
+left: 85pt;
+top: 70pt;
+}
+#col7 {
+position: absolute;
+left: 2pt;
+top: 78pt;
+}
+#col9 {
+position: absolute;
+left: 4px;
+top: 100pt;
+}
+#col10 {
+position: absolute;
+left: 130px;
+top: 100pt;
+}

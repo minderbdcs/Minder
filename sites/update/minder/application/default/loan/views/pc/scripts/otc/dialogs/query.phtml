@@ -1,0 +1,426 @@
+<div id="query_dialog" class="flora otc-query-dialog" title="Query" style="display: none;"
+     xmlns="http://www.w3.org/1999/html">
+    <form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+        <table class="summary">
+            <tr>
+                <td>
+                    Query:
+                </td>
+                <td colspan="2">
+                    <?php echo $this->formText('query', '', array()); ?>
+                </td>
+                <td>
+                    <label>Match Case <input type="radio" name="matchCase" value="true"></label>
+                    &nbsp;<label>Ignore Case <input type="radio" name="matchCase"  value="false" checked></label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Search for:
+                </td>
+                <td colspan="3">
+                    <?php echo $this->formSelect('exact_query', '', array(), array()); ?>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label>Loaned to <input type="radio" name="isLoaned" value="true" checked="checked"></label>
+                </td>
+                <td>
+                    <label>Not loaned <input type="radio" name="isLoaned" value="false"></label>
+                </td>
+                <td>
+                    Warehouse
+                </td>
+                <td>
+                    <?php echo $this->WarehouseLimitSelect('warehouseLimit', array('id' => '', "class" => 'warehouse-limit')); ?>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <div class="query-results hidden"></div>
+</div>
+
+<script type="text/javascript">
+    minderNamespace('Otc.Dlg.Query', function() {
+        const ROW_CLICK                 = 'row-click';
+        const TYPE_DESCRIPTION          = '<?php echo Minder_OtcSearchRequest::TYPE_DESCRIPTION?>';
+        const TYPE_TOOL                 = '<?php echo Minder_OtcSearchRequest::TYPE_TOOL?>';
+        const TYPE_LOCATION             = '<?php echo Minder_OtcSearchRequest::TYPE_LOCATION?>';
+        const TYPE_BORROWER             = '<?php echo Minder_OtcSearchRequest::TYPE_BORROWER?>';
+        const TYPE_PRODUCT              = '<?php echo Minder_OtcSearchRequest::TYPE_PRODUCT?>';
+        const TYPE_BORROWER_PARTIAL     = '<?php echo Minder_OtcSearchRequest::TYPE_BORROWER_PARTIAL?>';
+        const TYPE_COST_CENTER          = '<?php echo Minder_OtcSearchRequest::TYPE_COST_CENTER?>';
+        const TYPE_LEGACY_TOOL_CODE     = '<?php echo Minder_OtcSearchRequest::TYPE_LEGACY_TOOL_CODE?>';
+        const TYPE_TOOL_SERIAL_NUMBER   = '<?php echo Minder_OtcSearchRequest::TYPE_TOOL_SERIAL_NUMBER?>';
+
+        var FastQuery = function(enabled, type, term) {
+            this.enabled = !!enabled;
+            this.type = type;
+            this.term = term;
+        };
+
+        var FakeParameter = function(value, name, type) {
+            this.param_name = name;
+            this.param_type = type;
+            this.param_filtered_value = value;
+        };
+
+        var
+            paramTypeMap = {
+                'COST_CENTER_CODE'  : TYPE_COST_CENTER,
+                'COST_CENTRE_CODE'  : TYPE_COST_CENTER,
+                'PROD_EAN8'         : TYPE_PRODUCT,
+                'PROD_INTERNAL'     : TYPE_PRODUCT,
+                'PRODUCT_CODE'      : TYPE_PRODUCT,
+                'PROD_13'           : TYPE_PRODUCT,
+                'PROD_UPC12'        : TYPE_PRODUCT,
+                'BADGE_CODE'        : TYPE_BORROWER,
+                'LOCATION'          : TYPE_LOCATION,
+                'BARCODE'           : TYPE_TOOL,
+                'ALTBARCODE'        : TYPE_LEGACY_TOOL_CODE,
+                'ALT_BARCODE'       : TYPE_LEGACY_TOOL_CODE
+            },
+            _fastQuery = new FastQuery();
+
+        paramTypeMap[TYPE_BORROWER_PARTIAL] = TYPE_BORROWER_PARTIAL;
+        paramTypeMap[TYPE_TOOL_SERIAL_NUMBER] = TYPE_TOOL_SERIAL_NUMBER;
+
+        this.onLoad =  function() {
+            var
+                $queryInput = this.getQueryInput(),
+                $exactQuery = this.getExactQueryInput(),
+                $dialog = this.getDialog(),
+                width = $dialog.css('width'),
+                height = $dialog.css('height');
+
+            $dialog.css('width', 'auto');
+            $dialog.css('height', 'auto');
+            // dialog add borrower
+            $dialog.dialog({
+                buttons: {CLOSE: $.proxy(this.close, this)},
+                width: width,
+                height: height,
+                autoOpen: false,
+                position: [0, 65],
+                resizable : true,
+                buttonStyle: 'otc-dialog-button'
+            })
+            .bind('dialogopen', $.proxy(this.onOpen, this))
+            .parents('.ui-resizable').bind('resizestop', $.proxy(this.onResizeStop, this));
+            $dialog.parents('.ui-dialog').find('.ui-dialog-buttonpane').find('button:first').attr('data-barcode', 'CLOSE');
+
+            this.getQueryInput().minderBarcodeInput();
+
+            $queryInput.minderBarcodeInput();
+            <?php foreach ($this->giParams as $paramDescription) {?>
+            $queryInput.minderBarcodeInputAddDescriptors([<?php echo $paramDescription;?>]);
+            <?php }?>
+            $queryInput.bind('parse-success', $.proxy(this.onBarcode, this)).bind('parse-error', $.proxy(this.onBarcode, this));
+            $exactQuery.change($.proxy(this.onExactQueryChange, this));
+            $dialog.find(".warehouse-limit").change($.proxy(this.onWarehouseLimitChange, this));
+            $dialog.find('[name="isLoaned"]').change($.proxy(this.onWarehouseLimitChange, this));
+            $dialog.find('[name="matchCase"]').change($.proxy(this.onWarehouseLimitChange, this));
+
+            $dialog.delegate('[name="show_by"]', 'change', $.proxy(this.onShowByChange, this));
+            $dialog.delegate('[name="pageselector"]', 'change', $.proxy(this.onPageSelectorChange, this));
+            $dialog.delegate('.row_selector', 'click', $.proxy(this.onRowSelectorClick, this));
+            $dialog.delegate('.select_all', 'click', $.proxy(this.onSelectAllClick, this));
+            $dialog.delegate('.report_csv', 'click', $.proxy(this.onReportCsvClick, this));
+            $dialog.delegate('.report_xls', 'click', $.proxy(this.onReportXlsClick, this));
+            $dialog.delegate('[data-field-name]', 'click', $.proxy(this.onRowClick, this));
+        };
+
+        this.onWarehouseLimitChange = function() {
+            var searchRequest = this.createSearchRequest();
+
+            if (searchRequest.param) {
+                this.search(searchRequest);
+            }
+        };
+
+        this.onResizeStop = function() {
+            this.resizeDialogContent();
+        };
+
+        this.onOpen =  function() {
+            var
+                $dialog = this.getDialog(),
+                $query = this.getQueryInput(),
+                $queryResults = $dialog.find('.query-results');
+
+            _fastQuery = new FastQuery();
+            $query.val('');
+            this.getExactQueryInput().empty();
+            $queryResults.hide().empty();
+            $dialog.show();
+            $query.focus();
+        };
+
+        this.guessParamType = function(paramDescription) {
+            return paramTypeMap[paramDescription.param_name.toUpperCase()] || TYPE_DESCRIPTION;
+        };
+
+        this.getExactSearchParam = function() {
+            var $selectedQuery = this.getExactQueryInput().find('option:selected'),
+                result = ($selectedQuery.length > 0) ? JSON.parse(decodeURIComponent($selectedQuery.val())) : null;
+
+            if (result) {
+                result.param_type = result.param_type || this.guessParamType(result);
+            }
+
+            return result;
+        };
+
+        this.onExactQueryChange =  function(evt) {
+            var exactSearchParam = this.getExactSearchParam();
+
+            if (exactSearchParam) {
+                this.search(this.createSearchRequest());
+            }
+        };
+
+        this.isLoaned = function() {
+            return this.getDialog().find('[name="isLoaned"]').filter('[checked]').val() == 'true';
+        };
+
+        this.getWarehouse = function() {
+            return this.getDialog().find('[name="warehouseLimit"]').find('option:selected').val();
+        };
+
+        this.matchCase = function() {
+            return this.getDialog().find('[name="matchCase"]').filter('[checked]').val() == 'true';
+        };
+
+        this.createSearchRequest = function() {
+            return {
+                param: this.getExactSearchParam(),
+                isLoaned: this.isLoaned(),
+                warehouse: this.getWarehouse(),
+                matchCase: this.matchCase()
+            };
+        };
+
+        this._fakeParameterFactory = function(values, parameterName, parameterType) {
+            return values.map(function(value) {return new FakeParameter(value, parameterName, parameterType);});
+        };
+
+        this._doQuery = function(params, evt) {
+            var makeOption = $.proxy(this.makeOption, this);
+            var options = [];
+            var $exactQuery = this.getExactQueryInput();
+            var borrowerParam = _.where(params, {param_name: 'BORROWER'}).shift();
+            var tempParametersValues = _.pluck(params, 'param_filtered_value');
+
+            tempParametersValues.push(evt.parseResult.paramDesc.param_input_value);
+            tempParametersValues = _.unique(tempParametersValues);
+
+            params.sort(function(a, b){return a.param_filtered_value.length - b.param_filtered_value.length});
+
+            this.getExactQueryInput().empty();
+            options.push.apply(options, params.map(makeOption));
+            options.push.apply(options, this._fakeParameterFactory(tempParametersValues, TYPE_DESCRIPTION).map(makeOption));
+            options.push.apply(options, this._fakeParameterFactory(tempParametersValues, TYPE_TOOL_SERIAL_NUMBER).map(makeOption));
+
+            if (!borrowerParam) {
+                options.push(this.makeOption(new FakeParameter(evt.parseResult.paramDesc.param_input_value, TYPE_BORROWER_PARTIAL, TYPE_BORROWER_PARTIAL)));
+            }
+
+            $exactQuery.empty();
+            $exactQuery.append($(options.join('')));
+            this.search(this.createSearchRequest());
+        };
+
+        this._addBorrowerParams = function(params) {
+            var result = [],
+                self = this;
+
+            params.forEach(function(paramDescription){
+                var paramType = paramDescription.param_type || self.guessParamType(paramDescription);
+
+                if (paramType == TYPE_LOCATION && paramDescription.param_filtered_value.slice(0, 2).toUpperCase() == 'XB') {
+                    result.push(new FakeParameter(paramDescription.param_filtered_value.slice(2), TYPE_BORROWER, TYPE_BORROWER));
+                }
+            });
+
+            result.push.apply(result, params);
+            return result;
+        };
+
+        this.onBarcode =  function(evt) {
+            var $queryInput = this.getQueryInput();
+            var recognizedParams = $queryInput.minderGetAllValidParams(evt.parseResult.paramDesc.param_raw_value);
+            var screenButtonParam = _.where(recognizedParams, {'param_name': 'SCREEN_BUTTON'}).shift();
+            var button;
+            var params = this._addBorrowerParams(_.filter(recognizedParams, function(paramDescription){
+                return paramDescription.param_name.toUpperCase() != 'SCREEN_BUTTON'
+            }));
+            var self = this;
+            var fastQueryParams = params.filter(function(paramDescription){
+                var queryType = paramDescription.param_type || self.guessParamType(paramDescription);
+
+                return (queryType == _fastQuery.type) && (paramDescription.param_filtered_value == _fastQuery.term);
+            });
+            $queryInput. val('');
+
+            if (screenButtonParam) {
+                button = this.getDialogContainer().find('[data-barcode="' + screenButtonParam.param_filtered_value + '"]');
+            }
+
+            if (button && (button.length > 0)) {
+                 button.click();
+            } else {
+                if (_fastQuery.enabled && fastQueryParams.length > 0) {
+                    this.close();
+                } else {
+                    _fastQuery = new FastQuery();
+                    this._doQuery(params, evt);
+                }
+            }
+
+        };
+
+        this.onShowByChange =  function(evt) {
+            Otc.Dlg.Query.Result.setShowBy($(evt.target).val());
+        };
+
+        this.onPageSelectorChange =  function(evt) {
+            Otc.Dlg.Query.Result.gotoPage($(evt.target).val());
+        };
+
+        this.onRowSelectorClick =  function(evt) {
+            var
+                $target = $(evt.target);
+            Otc.Dlg.Query.Result.selectRow($target.val(), $target.attr('checked'));
+        };
+
+        this.onSelectAllClick =  function(evt) {
+            Otc.Dlg.Query.Result.selectAll($(evt.target).attr('checked'));
+        };
+
+        this.onReportCsvClick =  function(evt) {
+            Otc.Dlg.Query.Result.report('REPORT: CSV');
+        };
+
+        this.onReportXlsClick =  function(evt) {
+            Otc.Dlg.Query.Result.report('REPORT: XLS');
+        };
+
+        this.onRowClick =  function(evt) {
+            var result = {}, rowClickEvent = $.Event(ROW_CLICK);
+            $(evt.target).parents('tr').find('[data-field-name]').each(function(){
+                var $this = $(this);
+                result[$this.attr('data-field-name')] = $this.text();
+            });
+
+            rowClickEvent.rowData   = result;
+            rowClickEvent.queryData = JSON.parse(decodeURIComponent(this.getExactQueryInput().find('option:selected').val()));
+            this.getDialog().trigger(rowClickEvent);
+        };
+
+        this.addRowClickListener = function(callback, namespace) {
+            var fullEventName = ROW_CLICK + '.' + namespace;
+            this.getDialog().unbind(fullEventName).bind(fullEventName, callback);
+        };
+
+        this.makeOption =  function(param) {
+            var
+                label = param.param_name + ': ' + param.param_filtered_value,
+                value = encodeURIComponent(JSON.stringify(param));
+
+            return '<option label="' + label + '" value="' + value + '">' + label + '</option>';
+        };
+
+        this.search =  function(searchRequest) {
+            var
+                self = this;
+
+            this.getDialog().find('.query-results').hide();
+
+            this.getDialog().find('.query-results').load(
+                '<?php echo $this->url(array('controller' => 'otc-query',  'action' => 'search'))?>',
+                searchRequest,
+                function(){
+                    Otc.Dlg.Query.Result.container = self.getDialog().find('.query-results');
+                    Otc.Dlg.Query.Result.addContentChangedListener('otc-query-dialog', $.proxy(self.onResultContentChanged, self));
+                    Otc.Dlg.Query.Result.updateSelectAllState();
+                    Otc.Dlg.Query.Result.container.show();
+                    self.resizeDialogContent();
+                }
+            );
+        };
+
+        this.onResultContentChanged = function() {
+            this.resizeDialogContent();
+        };
+
+        this.close =  function() {
+            this.getDialog().dialog('close');
+        };
+
+        this.open =  function() {
+            this.getDialog().dialog('open');
+        };
+
+        this._fastQuery = function(queryType, term) {
+            this.open();
+            _fastQuery = new FastQuery(true, queryType, term);
+
+            this.getExactQueryInput().append($(this.makeOption(new FakeParameter(term, queryType, queryType))));
+            this.search(this.createSearchRequest());
+        };
+
+        this.fastQueryBorrower = function(borrowerId) {
+            this._fastQuery(TYPE_BORROWER, borrowerId);
+        };
+
+        this.fastQueryLocation = function(location) {
+            this._fastQuery(TYPE_LOCATION, location);
+        };
+
+        this.fastQueryCostCenter = function(costCenter) {
+            this._fastQuery(TYPE_COST_CENTER, costCenter);
+        };
+
+        this.fastQueryTool = function(toolId) {
+            this._fastQuery(TYPE_TOOL, toolId);
+        };
+
+        this.fastQueryAltBarcode = function(legacyCode) {
+            this._fastQuery(TYPE_LEGACY_TOOL_CODE, legacyCode);
+        };
+
+        this.getDialog =  function() {
+            return $('#query_dialog');
+        };
+
+        this.getDialogContainer = function() {
+            return this.getDialog().parents('.ui-dialog');
+        };
+
+        this.getQueryInput =  function() {
+            return $('#query');
+        };
+
+        this.getExactQueryInput =  function() {
+            return $('#exact_query');
+        };
+
+        this.setCloseListener = function(listener, namespace) {
+            this.getDialog().unbind('dialogclose.' + namespace).bind('dialogclose.' + namespace, listener);
+        };
+
+        this.resizeDialogContent = function() {
+            var footerHeight = Math.ceil(parseFloat(this.getDialog().find('.mdr-dialog-footer').css('height')) || 0),
+                headerHeight = Math.ceil(parseFloat(this.getDialog().find('.mdr-dialog-header').css('height')) || 0),
+                dialogHeight = Math.ceil(parseFloat(this.getDialog().parents('.ui-resizable').css('height')) || 0);
+
+            this.getDialog().find('.mdr-dialog-content').css('height', dialogHeight - footerHeight - headerHeight - 240 + 'px');
+        }
+    });
+
+    $(function() {
+        Otc.Dlg.Query.onLoad();
+    });
+</script>

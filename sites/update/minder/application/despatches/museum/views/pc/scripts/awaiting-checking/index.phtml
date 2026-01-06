@@ -1,0 +1,1253 @@
+<?php
+/**
+ * @var Minder_View_Helper_ScreenPrompt $screenPrompt
+ */
+$screenPrompt = $this->screenPrompt();
+?>
+<?php echo $this->render('header.phtml'); ?>
+
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/SelectionMixin.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/EmbedMessagesAwareMixin.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/PageMessageBus.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/OrderStatistics.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/OrdersView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/LinesView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/EdiLinesView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ConnoteView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/BarcodeView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/SearchFormView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ProductCheckStrategyGeneral.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ProductCheckStrategySerialNumber.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ProductCheckStrategyNotPickedYet.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ProductCheckStrategyNotFound.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/CheckStrategyNone.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/CheckStrategyNonEdi.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/CheckStrategyEdiAll.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/CheckStrategyEdiOne.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ConfirmCarrierDialogView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ConfirmDespatchDialogView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ProductNotFoundDialogView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ConfirmDataIdentifierDialogView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/SearchOrderByProdIdDialogView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/ScreenButtonController.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/PromptView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/NonEdiCheckStatisticsView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/EdiCheckStatisticsView.js"></script>
+<script type="text/javascript" src="<?php echo $this->baseUrl; ?>scripts/AwaitingChecking/PageView.js"></script>
+
+<div style="display: table; width: 100%">
+    <div style="display: table-cell">
+        <h2 class="page-title">
+            <?php echo $this->escape($this->pageTitle)?>
+            <span class="hidden sscc-info">= SSCC: <span class="sscc-label-no"></span> [<span class="total-items-to-scan"></span>]</span>
+            <span class="hidden product-info">PRODUCT: <span class="prod-id"></span> [<span class="items-to-scan"></span>]</span>
+        </h2>
+    </div>
+    <div class="screen-prompt order-check-prompt" style="display: table-cell; text-align: right"></div>
+</div>
+
+<table>
+<tr>
+<td>
+<?php
+    echo $this->searchForm;
+?>
+</td>
+</tr>
+<tr><td>
+<div id="ORDERS_LIST_CONTAINER">
+<?php echo $this->render('awaiting-checking/orders.phtml'); ?>
+</div>
+</td></tr>
+<tr><td>
+<div id="LINES_LIST_CONTAINER"></div>
+</td></tr>
+<tr><td>
+<div id="EDI_LINES_LIST_CONTAINER">
+<?php echo $this->standardPage()->searchResultsContainer($this->orderCheckEdiSearchResults);?>
+
+    <script type="text/javascript">
+    </script>
+</div>
+</td></tr>
+<tr><td>
+<div id="SSCC_PACK_DIMENSIONS_CONTAINER" class="hidden">
+    <?php echo $this->render('awaiting-checking/sscc-pack-details.phtml'); ?>
+</div>
+</td></tr>
+<tr><td>
+<div id="CONNOTE_SCREEN_CONTAINER"></div>
+</td></tr>
+</table>
+
+<?php echo $this->render('awaiting-checking/confirm-carrier-dialog.phtml'); ?>
+<?php echo $this->render('awaiting-checking/confirm-despatch-dialog.phtml'); ?>
+<?php echo $this->render('awaiting-checking/prod-id-not-found-dialog.phtml'); ?>
+<?php echo $this->render('awaiting-checking/search-order-by-product-dialog.phtml'); ?>
+<?php echo $this->render('awaiting-checking/awaiting-exit-carrier.phtml'); ?>
+<?php echo $this->render('awaiting-checking/change-carrier-dialog.phtml'); ?>
+<?php echo $this->render('awaiting-checking/repack-dialog.phtml'); ?>
+<?php echo $this->render('awaiting-checking/confirm-data-identifier-dialog.phtml'); ?>
+
+<script type="text/javascript">
+    var
+        shouldCheckEachLine = false,
+        canBeChecked = false,
+        checkLineDetails = [],
+        packSscc = [],
+        lastCheckedProdId = null,
+        lastCheckedSscc = null,
+        skipLabelPrinting = false,
+        isEdiOrder = false,
+        searchLog = [];
+
+    $(document).ready(function(){
+//        var ediLines = $.extend({}, Minder.AbstractPageController);
+//        ediLines.initScreenVarianceSearchResults(<?php //echo json_encode(array($this->orderCheckEdiSearchResults['namespace'] => $this->orderCheckEdiSearchResults));?>//, true);
+//        ediLines.onDataReady({sysScreens: <?php //echo json_encode($this->orderCheckEdiScreenData);?>//});
+//        ediLines.showAll();
+
+        new PageView({
+            getRetailUnitUrl: '<?php echo $this->url(array('action' => 'get-retail-unit'));?>',
+            storeCheckStatusUrl: '<?php echo $this->url(array('action' => 'store-check-line-details', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>',
+            isSysAdmin: <?php echo json_encode($this->minder->isSysAdmin()); ?>,
+            printNextSsccUrl: '<?php echo $this->url(array('action' => 'print-next-sscc-label'));?>',
+            printAllSsccUrl: '<?php echo $this->url(array('action' => 'print-all-sscc-labels'));?>',
+            ediOne: {
+                acceptUrl: '<?php echo $this->url(array('action' => 'accept-edi-one'));?>',
+                storeStatusUrl: '<?php echo $this->url(array('action' => 'store-edi-one-status'));?>'
+            },
+            ediAll: {
+                acceptUrl: '<?php echo $this->url(array('module' => 'despatches', 'controller' => 'awaiting-checking', 'action' => 'accept'), null, false);?>',
+            },
+            nonEdi: {
+                acceptUrl: '<?php echo $this->url(array('module' => 'despatches', 'controller' => 'awaiting-checking', 'action' => 'accept'), null, false);?>'
+            },
+            noChecking: {
+                acceptUrl: '<?php echo $this->url(array('module' => 'despatches', 'controller' => 'awaiting-checking', 'action' => 'accept'), null, false);?>',
+            },
+            ediLines: {
+                searchResults: <?php echo json_encode(array($this->orderCheckEdiSearchResults['namespace'] => $this->orderCheckEdiSearchResults));?>,
+                data: {sysScreens: <?php echo json_encode($this->orderCheckEdiScreenData);?>},
+                startSsccCheckUrl: '<?php echo $this->url(array('action' => 'start-sscc-check'));?>',
+                cancelSsccCheckUrl: '<?php echo $this->url(array('action' => 'cancel-sscc-check'));?>',
+                acceptUrl: '<?php echo $this->url(array('action' => 'accept-sscc-one'));?>',
+                loadUrl: '<?php echo $this->url(array('action' => 'get-order-check-lines-data'));?>',
+                selectRowUrl: '<?php echo $this->url(array('action' => 'select-carrier-exit-row'));?>'
+            },
+            searchOrderByProdIdDialog: {
+                searchUrl: '<?php echo $this->url(array('action' => 'search-order-by-product', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>'
+            },
+            confirmCarrierDialog: {
+                carriersList: <?php echo json_encode($this->deviceCarriersList);?>
+            },
+            order: {
+                loadUrl: '<?php echo $this->url(array('action' => 'index', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>',
+                reportUrl: '<?php echo $this->url(
+                                    array(
+                                        'action' => $this->reportAction,
+                                        'controller' => $this->reportController,
+                                        'module' => $this->reportModule,
+                                        'selection_namespace' => $this->orderSelectionNamespace,
+                                        'selection_action' => $this->orderSelectionAction,
+                                        'selection_controller' => $this->orderSelectionController
+                                    ),
+                                    null, true);?>',
+                selection: {
+                    'url'        : '<?php echo $this->url(array('module' => $this->orderSelectionModule, 'controller' => $this->orderSelectionController, 'action' => $this->orderSelectionAction), null, true);?>',
+                    'namespace'  : '<?php echo $this->orderSelectionNamespace?>',
+                    'action'     : '<?php echo $this->orderSelectionAction;?>',
+                    'controller' : '<?php echo $this->orderSelectionController;?>'
+                }
+            },
+            lines: {
+                loadUrl: '<?php echo $this->url(array('action' => 'get-lines', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>',
+                printSsccLabelsUrl: '<?php echo $this->url(array('action' => 'print-sscc-label')); ?>',
+                reportUrl: '<?php echo $this->url(
+                                    array(
+                                        'action' => $this->reportAction,
+                                        'controller' => $this->reportController,
+                                        'module' => $this->reportModule,
+                                        'selection_namespace' => $this->linesSelectionNamespace,
+                                        'selection_action' => $this->linesSelectionAction,
+                                        'selection_controller' => $this->linesSelectionController
+                                    ),
+                                    null, true);?>',
+                selection: {
+                    'url'        : '<?php echo $this->url(array('module' => $this->linesSelectionModule, 'controller' => $this->linesSelectionController, 'action' => $this->linesSelectionAction), null, true);?>',
+                    'namespace'  : '<?php echo $this->linesSelectionNamespace?>',
+                    'action'     : '<?php echo $this->linesSelectionAction;?>',
+                    'controller' : '<?php echo $this->linesSelectionController;?>'
+                }
+            },
+            connote: {
+                loadUrl: '<?php echo $this->url(array('action' => 'get-connote', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>',
+                isSysAdmin: <?php echo json_encode($this->minder->isSysAdmin()); ?>,
+                dimensionUoms: <?php echo json_encode($this->packDimensions()->getUoms())?>,
+                loadData: {
+                    callback: {
+                        on_success: {
+                            action: 'index',
+                            controller: 'despatch-awaiting-checking',
+                            module: 'default'
+                        },
+                        on_resume: {
+                            action: 'index',
+                            controller: 'despatch-awaiting-checking',
+                            module: 'default'
+                        }
+
+                    },
+                    selection_info: {
+                        model_name: 'PICKORDER',
+                        namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                        action: 'select-row',
+                        controller: 'despatch-awaiting-checking',
+                        module: 'default'
+                    },
+                    order_selection_namespace: '<?php echo $this->orderSelectionNamespace;?>',
+                    order_selection_action: 'select-row',
+                    order_selection_controller: 'despatch-awaiting-checking',
+                    order_selection_field: 'PICK_ORDER',
+                    lines_selection_namespace: '<?php echo $this->linesSelectionNamespace;?>',
+                    lines_selection_action: 'select-row',
+                    lines_selection_controller: 'despatch-awaiting-checking',
+                    lines_selection_field: 'PICK_LABEL_NO'
+                }
+            }
+        });
+
+        var
+            $barcode = $('#barcode');
+
+        $('.order-check-prompt').minderScreenPrompts(<?php echo json_encode($screenPrompt->getOrderCheckPrompts());?>);
+//        showPrompt('1');
+
+        $barcode.minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->screenButtonsParam;?>]});
+        $barcode.minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->carrierIdParam;?>]});
+        $barcode.minderBarcodeInput({'barcodeDescriptors' : [<?php echo $this->ssccParam;?>]});
+
+//        Minder.Despatches.AwaitingChecking.SsccPackDetails.onSsccLabelAccept('main-form', function(evt){
+//            packSscc = evt.packSscc;
+//            validatePackSsccData(isEdiOrder, checkLineDetails, packSscc);
+//
+//            resetSsccCheckStatistics();
+//            lastCheckedSscc = null;
+//            var uncheckedSscc = getNextCheckAbleSscc();
+//            showPrompt(3, [{'placeholder': '%nextSscc%', 'value': uncheckedSscc.PS_OUT_SSCC}]);
+//
+//            if (getUncheckedAmount() < 1) {
+//                Minder.Despatches.AwaitingChecking.SsccPackDetails.stop();
+//                if (typeof getConnoteScreen == 'function') {
+//                    getConnoteScreen(evt.ssccTotals, evt.ssccData);
+//                }
+//            }
+//        });
+//
+//        Minder.Despatches.AwaitingChecking.SsccPackDetails.onSsccLabelCancelAccept('main-form', function(evt){
+//            var uncheckedSscc = getNextCheckAbleSscc();
+//            showPrompt(3, [{'placeholder': '%nextSscc%', 'value': uncheckedSscc.PS_OUT_SSCC}]);
+//            resetSsccCheckStatistics();
+//            lastCheckedSscc = null;
+//        });
+
+//        Minder.Dlg.RePackSscc.onRepack('main-form', function(evt){
+//            packSscc = evt.ssccMap;
+//            checkLineDetails = evt.checkDetails;
+//            Minder.Despatches.AwaitingChecking.SsccPackDetails.reset();
+//            Minder.Despatches.AwaitingChecking.SsccPackDetails.fillChecked(getAcceptedSsccDimensions(packSscc));
+//            Minder.Despatches.AwaitingChecking.SsccPackDetails.start();
+//            var uncheckedSscc = getNextCheckAbleSscc();
+//            showPrompt(3, [{'placeholder': '%nextSscc%', 'value': uncheckedSscc.PS_OUT_SSCC}]);
+//            resetSsccCheckStatistics();
+//            resetCheckStatistics();
+//            lastCheckedSscc = null;
+//            lastCheckedProdId = null;
+//            updateCheckLineStatus();
+//        });
+
+<?php
+    foreach ($this->connoteBarcodeDescriptions as $barcodeDescription) {
+
+?>
+        $barcode.minderBarcodeInput(
+            {
+                'barcodeDescriptors' : [<?php echo $barcodeDescription;?>]
+            }
+        );
+<?php
+    }
+?>
+<?php
+    foreach ($this->productParams as $barcodeDescription) {
+
+?>
+        $barcode.minderBarcodeInput(
+            {
+                'barcodeDescriptors' : [<?php echo $barcodeDescription;?>]
+            }
+        );
+<?php
+    }
+?>
+
+//        $barcode.bind('parse-success', onBarcodeSuccess);
+//        $(document).bind('do-search', doSearch);
+//
+//        $('#SEARCH_RESULTS_FORM_search_btn').click(searchResultsFormSearchBtnOnClick);
+//        confirmDespatchDialogOnAccept(function(){
+//            acceptConnote();
+//        });
+//        confirmDespatchDialogOnClose(function(){
+//            if (hasSearchParams()) {
+//                executeSearch(getSearchParams());
+//            }
+//        });
+//        searchOrderByProductDialogOnSelect(function(event) {
+//            if (event.selectedOrder) {
+//                $('#barcode').minderBarcodeInputEmulateSuccessEvent('SALESORDER', event.selectedOrder);
+//            } else {
+//                showWarnings(['No order selected']);
+//            }
+//        });
+//        prodIdNotFoundDialogOnFindOrder(function(event){
+//            closeProdIdNotFoundDialog();
+//            showSearchOrderByProductDialog(event.prodId);
+//        });
+        Minder.AwaitingChecking.Dlg.ChangeCarrierDialog.init(
+            <?php echo json_encode($this->carriersList);?>,
+            <?php echo json_encode($this->carrierServiceTypes);?>
+        );
+//        Minder.AwaitingChecking.Dlg.ChangeCarrierDialog.addSuccessListener('main-form', function(){
+//            $('#ORDERS_LIST_CONTAINER').html('');
+//            $('#LINES_LIST_CONTAINER').html('');
+//            $('#CONNOTE_SCREEN_CONTAINER').html('');
+//            $('#ORDERS_LIST_CONTAINER').load(
+//                '<?php //echo $this->url(array('action' => 'index', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>//',
+//                {'action': 'RELOAD-ORDERS'},
+//                function() {
+//                    var jsonData = eval('(' + $('#json').html() + ')');
+//                    $('#json').remove();
+//
+//                    if (jsonData.errors && jsonData.errors.length > 0) {
+//                        showErrors(jsonData.errors);
+//                        return;
+//                    }
+//
+//                    if (jsonData.messages && jsonData.messages.length > 0) {
+//                        showMessage(jsonData.messages);
+//                    }
+//                }
+//            );
+//        });
+    });
+
+//    function changeCarrier() {
+//        Minder.AwaitingChecking.Dlg.ChangeCarrierDialog.show();
+//    }
+    
+//    function searchResultsFormSearchBtnOnClick(evt) {
+//        evt.preventDefault();
+//
+//        var searchEvent = $.Event('do-search');
+//        searchEvent.searchParams = {};
+//
+//        $.each($('#SEARCH_RESULTS_FORM').serializeArray(), function(index, item){
+//            searchEvent.searchParams[item.name] = item.value
+//        });
+//
+//        $(document).trigger(searchEvent);
+//    }
+
+//    function doSearch(evt) {
+//        var searchParams = evt.searchParams;
+//        searchParams.action = 'search';
+//        storeSearchParams(searchParams);
+//
+//        if (shouldCheckEachLine && isAllLinesChecked() && getSelectedItemsCount && getSelectedItemsCount() > 0) {
+////            showConfirmDespatchDialog();
+//        } else {
+//            executeSearch(searchParams);
+//        }
+//    }
+
+//    function storeSearchParams(searchParams) {
+//        window.searchParams = searchParams;
+//    }
+
+//    function getSearchParams() {
+//        return window.searchParams;
+//    }
+//
+//    function hasSearchParams() {
+//        return !!window.searchParams;
+//    }
+
+//    function clearSearchParams() {
+//        window.searchParams = undefined;
+//    }
+
+//    function executeSearch(searchParams) {
+//        resetSsccCheckStatistics();
+//        resetCheckStatistics();
+//        lastCheckedProdId = '';
+//        Minder.Despatches.AwaitingChecking.SsccPackDetails.reset();
+//        $('#ORDERS_LIST_CONTAINER').html('');
+//        $('#LINES_LIST_CONTAINER').html('');
+//        $('#CONNOTE_SCREEN_CONTAINER').html('');
+//        $('#ORDERS_LIST_CONTAINER').load(
+//            '<?php //echo $this->url(array('action' => 'index', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>//',
+//            searchParams,
+//            function() {
+//                clearSearchParams();
+//
+//                var jsonData = eval('(' + $('#json').html() + ')');
+//                $('#json').remove();
+//
+//                if (jsonData.errors && jsonData.errors.length > 0) {
+//                    showErrors(jsonData.errors);
+//                    return;
+//                }
+//
+//                if (jsonData.messages && jsonData.messages.length > 0) {
+//                    showMessage(jsonData.messages);
+//                }
+//            }
+//        );
+//    }
+
+//    function onBarcodeSuccess(evt) {
+//        var paramDescription = evt.parseResult.paramDesc;
+//        $('#barcode').val('').focus();
+//
+//        var connoteTest = /^CONNOTE_\w+/,
+//            acceptTest = /^ACCEPT(\d+)/,
+//            acceptTestResult,
+//            sscc;
+//
+//        if (paramDescription.param_type == 'PROD_ID'){
+//            if (Minder.Dlg.RePackSscc.isVisible()) {
+//                Minder.Dlg.RePackSscc.setProduct(paramDescription.param_filtered_value);
+//            }else if (isSearchOrderByProductDialogActive()) {
+//                searchOrderByProductDialogDoSearch(paramDescription.param_filtered_value);
+//            } else {
+//                if (Minder.Despatches.AwaitingChecking.SsccPackDetails.isGoing()) {
+//                    if (lastCheckedSscc) {
+//                        checkSsccProdId(lastCheckedSscc, paramDescription.param_filtered_value);
+//                    } else {
+//                        showErrors(['Scan SSCC label first.']);
+//                    }
+//                } else {
+////                    checkProdId(paramDescription.param_filtered_value);
+//                }
+//            }
+//        } else if (paramDescription.param_type == 'PROD_EAN'){
+//            if (Minder.Despatches.AwaitingChecking.SsccPackDetails.isGoing()) {
+//                if (lastCheckedSscc) {
+//                    checkSsccRetailUnit(lastCheckedSscc, paramDescription.param_filtered_value);
+//                } else {
+//                    showErrors(['Scan SSCC label first.']);
+//                }
+//            }
+//        } else if (paramDescription.param_type == 'SSCC') {
+//            if (Minder.Dlg.RePackSscc.isVisible()) {
+//                Minder.Dlg.RePackSscc.addSsccLabel(paramDescription.param_filtered_value);
+//            } else if (Minder.Despatches.AwaitingChecking.SsccPackDetails.isGoing()) {
+//                sscc = getSsccLabel(paramDescription.param_filtered_value);
+//
+//                if (sscc) {
+//                    if (hasUnaccepted(sscc)) {
+//                        if (Minder.Despatches.AwaitingChecking.SsccPackDetails.isChecking()) {
+//                            if (Minder.Despatches.AwaitingChecking.SsccPackDetails.startDimensions(sscc, getSsccWeight(sscc))) {
+//                                showPrompt(5);
+//                                updateSsccCheckStatistics(sscc);
+//                                lastCheckedSscc = sscc;
+//                            }
+//                        } else {
+//                            if (Minder.Despatches.AwaitingChecking.SsccPackDetails.startCheck(sscc)) {
+//                                showPrompt(4);
+//                                updateSsccCheckStatistics(sscc);
+//                                lastCheckedSscc = sscc;
+//                            }
+//                        }
+//                    } else {
+//                        showWarnings(['Already accepted.']);
+//                    }
+//                } else {
+//                    showErrors(['SSCC Label not found.']);
+//                    showErrors(searchLog);
+//                }
+//            } else if (isEdiOrder) {
+//                showErrors(['All items are checked.']);
+//            }
+//        } else if (paramDescription.param_name == 'SCREEN_BUTTON') {
+//            acceptTestResult = acceptTest.exec(paramDescription.param_filtered_value);
+//            if (acceptTestResult) {
+//                if (typeof selectServiceAndAccept == 'function')
+//                    selectServiceAndAccept(acceptTestResult[1]);
+//            } else {
+//                switch (paramDescription.param_filtered_value) {
+//                    case 'ACCEPT' :
+//                        if (Minder.Dlg.RePackSscc.isVisible()) {
+//                            Minder.Dlg.RePackSscc.accept();
+////                        }else if (Minder.Despatches.AwaitingChecking.SsccPackDetails.isGoing()) {
+////                            Minder.Despatches.AwaitingChecking.SsccPackDetails.accept(false);
+//                        } else {
+////                            if (isConfirmDespatchDialogActive()) {
+////                                confirmDespatchDialogAccept();
+////                            } else {
+////                                if (typeof acceptConnote == 'function')
+////                                    acceptConnote();
+////                            }
+//                        }
+//                        break;
+//                    case 'CANCEL' :
+//                        if (Minder.Dlg.RePackSscc.isVisible()) {
+//                            Minder.Dlg.RePackSscc.close();
+//                        }else if (Minder.AwaitingChecking.Dlg.ExitCarrier.isActive()) {
+//                            Minder.AwaitingChecking.Dlg.ExitCarrier.closeDialog();
+//                        } else {
+//                            if (isConfirmCarrierDialogActive()) {
+//                                closeConfirmCarrierDialog();
+//                            } else {
+//                                if (isConfirmDespatchDialogActive()) {
+//                                    confirmDespatchDialogCancel();
+//                                } else {
+//                                    if (isSearchOrderByProductDialogActive()) {
+//                                        searchOrderByProductDialogCancel();
+//                                    } else {
+//                                        if (typeof cancelConnote == 'function')
+//                                            cancelConnote();
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        break;
+//                    case 'CONNOTE' :
+//                        if (typeof getConnoteScreen == 'function')
+//                            getConnoteScreen();
+//                        break;
+//                    case 'CANCEL_DESPATCH' :
+//                        if (typeof cancelDespatch == 'function')
+//                            cancelDespatch();
+//                        break;
+//                    case 'CONTINUE':
+////                        if (isProductNotFoundDialogActive()) {
+////                            closeProdIdNotFoundDialog();
+////                        }
+//
+////                        if (isConfirmCarrierDialogActive()) {
+////                            confirmCarrierDialogConfirm();
+////                        }
+//                        break;
+//                    case 'RESET_CHECK' :
+//                        resetCheckLineStatuses();
+//                        break;
+//                    case 'ALLCHKD':
+//                        checkAllProdId();
+//                        break;
+//                    case 'FIND_ORDER':
+//                        if (isProductNotFoundDialogFindOrderActive()) {
+//                            prodIdNotFoundDialogFindOrder();
+//                        }
+//                        break;
+//                    case 'SELECT':
+//                        if (isSearchOrderByProductDialogActive()) {
+//                            searchOrderByProductDialogSelectOrder();
+//                        }
+//                        break;
+//                }
+//            }
+//        } else if (paramDescription.param_name == 'CARRIER_ID') {
+//            Minder.AwaitingChecking.Dlg.ExitCarrier.showDialog();
+//            Minder.AwaitingChecking.Dlg.ExitCarrier.setCarrier(paramDescription.param_filtered_value);
+//        } else if (connoteTest.test(paramDescription.param_name)) {
+//            if (Minder.AwaitingChecking.Dlg.ExitCarrier.isActive()) {
+//                Minder.AwaitingChecking.Dlg.ExitCarrier.setPackId(paramDescription.param_filtered_value);
+//            } else {
+//                $('#consignment').val(paramDescription.param_filtered_value);
+//                selectCarrierByConnoteLabelAndAccept(paramDescription.param_name);
+//            }
+//        }
+//    }
+    
+//    function loadOrders() {
+//        $('#ORDERS_LIST_CONTAINER').html('');
+//        $('#LINES_LIST_CONTAINER').html('');
+//        $('#CONNOTE_SCREEN_CONTAINER').html('');
+//        $('#ORDERS_LIST_CONTAINER').load(
+//            '<?php //echo $this->url(array('action' => 'index', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>//',
+//            {'action' : 'GET-ORDERS'},
+//            function() {
+//                var jsonData = eval('(' + $('#json').html() + ')');
+//                $('#json').remove();
+//
+//                if (jsonData.errors && jsonData.errors.length > 0) {
+//                    showErrors(jsonData.errors);
+//                    return;
+//                }
+//
+//                if (jsonData.messages && jsonData.messages.length > 0) {
+//                    showMessage(jsonData.messages);
+//                }
+//            }
+//        );
+//    }
+
+//    function cancelDespatch() {
+//        $('#ORDERS_LIST_CONTAINER').html('');
+//        $('#LINES_LIST_CONTAINER').html('');
+//        $('#CONNOTE_SCREEN_CONTAINER').html('');
+//        $('#ORDERS_LIST_CONTAINER').load(
+//            '<?php //echo $this->url(array('action' => 'index', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>//',
+//            {'action' : 'CANCEL-DESPATCH'},
+//            function() {
+//                var jsonData = eval('(' + $('#json').html() + ')');
+//                $('#json').remove();
+//
+//                if (jsonData.errors && jsonData.errors.length > 0) {
+//                    showErrors(jsonData.errors);
+//                    return;
+//                }
+//
+//                if (jsonData.messages && jsonData.messages.length > 0) {
+//                    showMessage(jsonData.messages);
+//                }
+//            }
+//        );
+//    }
+
+//    function getCheckDetailsByProdId(prodId) {
+//        var
+//            result = [];
+//
+//        $.each(checkLineDetails, function(index, lineDetail){
+//            if (lineDetail.SELECTED && lineDetail.PROD_ID == prodId && parseInt(lineDetail.PICKED_QTY) > parseInt(lineDetail.CHECKED_QTY)) {
+//                result.push(lineDetail);
+//            }
+//        });
+//
+//        return result;
+//    }
+
+//    function getCheckDetailsByAlternateId(alternateId) {
+//        var
+//            result = [];
+//
+//        $.each(checkLineDetails, function(index, lineDetail){
+//            if (lineDetail.SELECTED && lineDetail.ALTERNATE_ID == alternateId  && parseInt(lineDetail.PICKED_QTY) > parseInt(lineDetail.CHECKED_QTY)) {
+//                result.push(lineDetail);
+//            }
+//        });
+//
+//        return result;
+//    }
+
+//    function getCheckDetails(prodId) {
+//        var result = getCheckDetailsByProdId(prodId);
+//        return result.length > 0 ? result : getCheckDetailsByAlternateId(prodId);
+//    }
+//
+//    function checkProdId(prodId) {
+//        var
+//            foundCheckDetails = getCheckDetails(prodId);
+//
+//        if (isProductNotFoundDialogActive()) {
+//            return;
+//        }
+//
+//        if (shouldCheckEachLine && !canBeChecked) {
+//            showErrors(['Not all items have been picked yet.']);
+//            return;
+//        }
+//
+//        lastCheckedProdId = prodId;
+//
+//        if (foundCheckDetails.length > 0) {
+//            foundCheckDetails[0].CHECKED_QTY++;
+//            updateCheckStatistics(foundCheckDetails);
+//        } else {
+//            resetCheckStatistics();
+//            showProdIdNotFoundDialog(prodId, getFoundOrdersAmount() < 1);
+//        }
+//
+//        updateCheckLineStatus();
+//    }
+
+//    function checkAllProdId() {
+//        var
+//            foundCheckDetails = getCheckDetails(lastCheckedProdId);
+//
+//        if (isProductNotFoundDialogActive()) {
+//            return;
+//        }
+//
+//        if (shouldCheckEachLine && !canBeChecked) {
+//            showErrors(['Not all items have been picked yet.']);
+//            return;
+//        }
+//
+//        $.each(foundCheckDetails, function(index, lineDetail){
+//            lineDetail.CHECKED_QTY = lineDetail.PICKED_QTY;
+//        });
+//
+//        if (foundCheckDetails.length > 0) {
+//            updateCheckStatistics(foundCheckDetails);
+//        } else {
+//            resetCheckStatistics();
+//        }
+//        updateCheckLineStatus();
+//    }
+
+//    function forceProdIdCheck(products) {
+//        products.forEach(function(prodId){
+//            var
+//                foundCheckDetails = getCheckDetails(prodId);
+//
+//            if (isProductNotFoundDialogActive()) {
+//                closeProdIdNotFoundDialog();
+//                return;
+//            }
+//            $.each(foundCheckDetails, function(index, lineDetail){
+//                lineDetail.CHECKED_QTY = lineDetail.PICKED_QTY;
+//            });
+//            if (foundCheckDetails.length > 0) {
+//                updateCheckStatistics(foundCheckDetails);
+//            } else {
+//                resetCheckStatistics();
+//            }
+//        });
+//        updateCheckLineStatus();
+//    }
+
+    function getUncheckedAmount() {
+        var
+            uncheckedAmount = 0;
+
+        $.each(checkLineDetails, function(key, lineDetail) {
+            var
+                picked, checked;
+            if (lineDetail.SELECTED) {
+                picked      = parseInt(lineDetail.PICKED_QTY);
+                picked      = isNaN(picked) ? 0 : picked;
+                checked     = parseInt(lineDetail.CHECKED_QTY);
+                checked     = isNaN(checked) ? 0 : checked;
+
+                uncheckedAmount += Math.abs(picked - checked);
+            }
+        });
+
+        return uncheckedAmount;
+    }
+
+//    function resetCheckLineStatus(prodId) {
+//        var
+//            foundCheckDetails = getCheckDetails(prodId);
+//
+//        $.each(foundCheckDetails, function(index, lineDetail){
+//            lineDetail.CHECKED_QTY = 0;
+//        });
+//
+//        if (foundCheckDetails.length > 0) {
+//            updateCheckStatistics(foundCheckDetails);
+//        } else {
+//            resetCheckStatistics();
+//        }
+//
+//        updateCheckLineStatus();
+//
+//        if (isProductNotFoundDialogActive()) {
+//            closeProdIdNotFoundDialog();
+//        }
+//    }
+
+//    function resetCheckLineStatuses() {
+//        $.each(checkLineDetails, function(index, lineDetail){
+//            lineDetail.CHECKED_QTY = 0;
+//        });
+//        updateCheckLineStatus();
+//
+//        if (isProductNotFoundDialogActive()) {
+//            closeProdIdNotFoundDialog();
+//        }
+//
+//        resetSsccCheckStatistics();
+//    }
+//
+    function isAllLinesChecked() {
+        if (!shouldCheckEachLine) {
+            return true;
+        }
+
+        return getUncheckedAmount() < 1;
+    }
+
+    function updateCheckLineSelection(selection) {
+        $.each(checkLineDetails, function(key, lineDetail) {
+            lineDetail.SELECTED = !!selection[key];
+        });
+
+        updateCheckLineStatus();
+    }
+
+    function getCheckDetailBySsccList(ssccList) {
+        var
+            result = [], pickLabelNos = ssccList.map(function(sscc){return sscc.PS_PICK_LABEL_NO});
+
+        $.each(checkLineDetails, function(index, lineDetail){
+            if (lineDetail.SELECTED && pickLabelNos.indexOf(lineDetail.PICK_LABEL_NO) > -1) {
+                result.push(lineDetail);
+            }
+        });
+
+        return result;
+    }
+
+    function hasUnaccepted(ssccList) {
+        return ssccList.filter(function(sscc){return sscc.PS_SSCC_STATUS.toUpperCase() == 'GO'}).length > 0;
+    }
+
+    function getSsccLabel(label) {
+        var ssccList = [],
+            checkDetail = [],
+            ssccCnList = [];
+
+        searchLog = [];
+
+        $.each(packSscc, function(index, sscc){
+            if (sscc.PS_OUT_SSCC === label) {
+                if (sscc.PS_SSCC_STATUS.toUpperCase() == 'CN') {
+                    ssccCnList.push(sscc.PS_SSCC);
+                } else {
+                    ssccList.push(sscc);
+                }
+            }
+        });
+
+        if (ssccList.length > 0) {
+            searchLog.push('Searching for SSCC #' + label + '. Label found.');
+            checkDetail = getCheckDetailBySsccList(ssccList);
+
+            if (checkDetail.length < 1) {
+                searchLog.push('Searching Order Lines for SSCC #' + label + '. None found.');
+            }
+        } else {
+            if (ssccCnList.length > 0) {
+                searchLog.push('Searching for SSCC #' + label + '. None found. But found records with CN status: (' + ssccCnList.join(', ') + ').');
+            } else {
+                searchLog.push('Searching for SSCC #' + label + '. None found.');
+            }
+        }
+
+        return checkDetail.length > 0 ? ssccList : null;
+    }
+
+    function resetSsccCheckStatistics() {
+        $('.sscc-label-no').text('');
+        $('.items-to-scan').text('');
+        $('.prod-id').text('');
+        $('.sscc-info, .product-info').hide();
+    }
+
+    function getTotalUnchecked(checkDetails) {
+        var result = 0;
+        checkDetails.forEach(function(checkDetail){
+           result += checkDetail.PICKED_QTY - checkDetail.CHECKED_QTY;
+        });
+
+        return result;
+    }
+
+    function getLastUncheckedDetail(checkDetails, prodId) {
+        return checkDetails.filter(function(checkDetail){
+                return checkDetail.PICKED_QTY > checkDetail.CHECKED_QTY && (!prodId || checkDetail.PROD_ID === prodId)
+            }).shift();
+    }
+
+    function getTotalUncheckedProdId(checkDetails, prodId) {
+        var result = 0;
+        checkDetails.filter(function(checkDetail){
+            return checkDetail.PICKED_QTY > checkDetail.CHECKED_QTY && (!prodId || checkDetail.PROD_ID === prodId)
+        }).forEach(function(checkDetail){
+            result += checkDetail.PICKED_QTY - checkDetail.CHECKED_QTY;
+        });
+
+        return result;
+    }
+
+    function hasProdId(checkDetails, prodId) {
+        return checkDetails.filter(function(checkDetail){return checkDetail.PROD_ID === prodId || checkDetail.ALTERNATE_ID === prodId}).length > 0;
+    }
+
+    function getLastUncheckedDetailAlt(checkDetails, altProdId) {
+        return checkDetails.filter(function(checkDetail){
+                return checkDetail.PICKED_QTY > checkDetail.CHECKED_QTY && checkDetail.ALTERNATE_ID === altProdId;
+            }).shift();
+    }
+
+    function getSsccWeight(ssccList) {
+        var totalWeight = 0, checkDetails = getCheckDetailBySsccList(ssccList);
+
+        checkDetails.map(function(checkDetail){
+            var prodWeight = parseFloat(checkDetail.PACK_WEIGHT);
+            ssccList
+                .filter(function(sscc){return sscc.PS_PICK_LABEL_NO === checkDetail.PICK_LABEL_NO})
+                .forEach(function(sscc){totalWeight += (parseInt(sscc.CHECKED_QTY) || 0) * prodWeight;});
+        });
+
+        return totalWeight;
+    }
+
+    function updateSsccCheckStatistics(sscc) {
+        var checkDetails = getCheckDetailBySsccList(sscc),
+            unchecked,
+            totalUnchecked = getTotalUnchecked(checkDetails);
+
+        if (checkDetails.length > 0) {
+            unchecked = getLastUncheckedDetail(checkDetails, lastCheckedProdId);
+
+            if (!unchecked) {
+                unchecked = getLastUncheckedDetailAlt(checkDetails, lastCheckedProdId);
+            }
+
+            if (!unchecked) {
+                unchecked = getLastUncheckedDetail(checkDetails);
+            }
+
+            $('.sscc-label-no').text(sscc[0].PS_OUT_SSCC);
+            $('.total-items-to-scan').text(totalUnchecked);
+
+            if (unchecked) {
+                $('.items-to-scan').text(unchecked.PICKED_QTY - unchecked.CHECKED_QTY);
+                $('.prod-id').text(unchecked.PROD_ID);
+            } else {
+                $('.items-to-scan').text('0');
+                $('.prod-id').text(lastCheckedProdId);
+            }
+            $('.sscc-info, .product-info').show();
+
+            if (totalUnchecked < 1) {
+//                showPrompt(5);
+                Minder.Despatches.AwaitingChecking.SsccPackDetails.startDimensions(sscc, getSsccWeight(sscc));
+            }
+        } else {
+            showErrors(['SSCC Label not found.']);
+        }
+    }
+
+    function getUncompletedSscc(ssccList, checkDetail) {
+        return ssccList.filter(function(sscc){return (!sscc.completed) && sscc.PS_PICK_LABEL_NO === checkDetail.PICK_LABEL_NO}).shift();
+    }
+
+    function checkSsccRetailUnit(ssccList, code) {
+        $.get('<?php echo $this->url(array('action' => 'get-retail-unit'));?>', {'code': code}, function(response){
+            var checkDetails, uncheckedProdIdAmount;
+
+            showResponseMessages(response);
+
+            if (response.retailUnit) {
+                checkDetails = getCheckDetailBySsccList(ssccList);
+                uncheckedProdIdAmount = getTotalUncheckedProdId(checkDetails, response.retailUnit.PROD_ID);
+
+                if (uncheckedProdIdAmount > 0) {
+                    if (uncheckedProdIdAmount < response.retailUnit.PROD_ISSUE_QTY) {
+                        showErrors(['Retail Unit issue qty more then unchecked products left.']);
+                    } else {
+                        checkSsccProdId(ssccList, response.retailUnit.PROD_ID, response.retailUnit.PROD_ISSUE_QTY);
+                    }
+                } else {
+                    showErrors(['All items checked.']);
+                }
+            }
+        }, 'json');
+    }
+
+    function checkSsccProdId(ssccList, prodId, qty) {
+        function _doCheck(ssccList, prodId) {
+            var checkDetails = getCheckDetailBySsccList(ssccList),
+                lastUnchecked = getLastUncheckedDetail(checkDetails, prodId),
+                uncompletedSscc;
+
+            if (!lastUnchecked) {
+                lastUnchecked = getLastUncheckedDetailAlt(checkDetails, prodId);
+            }
+
+            if (lastUnchecked) {
+                lastUnchecked.CHECKED_QTY++;
+                lastCheckedProdId = prodId;
+                uncompletedSscc = getUncompletedSscc(ssccList, lastUnchecked);
+                uncompletedSscc.CHECKED_QTY = parseInt(uncompletedSscc.CHECKED_QTY) || 0;
+                uncompletedSscc.CHECKED_QTY++;
+                uncompletedSscc.prodId = prodId;
+
+                if (lastUnchecked.CHECKED_QTY >= lastUnchecked.PICKED_QTY) {
+                    uncompletedSscc.completed = true;
+                }
+
+                return true;
+            } else {
+                if (hasProdId(checkDetails, prodId)) {
+                    showWarnings(['All items checked.']);
+                } else {
+                    var errors = ['Product not found:'],
+                        tmpError;
+
+                    if (ssccList.length < 1) {
+                        errors.push('No SSCC label provided.');
+                    } else {
+                        tmpError = 'Searching Order Lines for SSCC #' + ssccList[0].PS_OUT_SSCC + '. ';
+                        if (checkDetails.length < 0) {
+                            errors.push(tmpError + 'No Order Lines found.');
+                        } else {
+                            errors.push(tmpError + checkDetails.length + ' Order Line(s) found.');
+                            errors.push('Found Order Lines do not contain Product #' + prodId + '.');
+                        }
+                    }
+                    showErrors(errors);
+                }
+                return false;
+            }
+        }
+
+        qty = qty || 1;
+        var success = true;
+
+        while (success && (qty > 0)) {
+            success = _doCheck(ssccList, prodId);
+            qty--;
+        }
+
+        updateSsccCheckStatistics(ssccList);
+        updateCheckLineStatus();
+        validatePackSsccData(isEdiOrder, checkLineDetails, packSscc);
+    }
+
+    function updateCheckStatistics(checkDetails) {
+        var pickedQty = 0, checkedQty = 0, prodId = '';
+
+        checkDetails.forEach(function(checkDetail){
+            pickedQty  += checkDetail.PICKED_QTY;
+            checkedQty += checkDetail.CHECKED_QTY;
+            prodId = checkDetail.PROD_ID;
+        });
+
+
+        $('.items-to-scan').text(pickedQty - checkedQty);
+        $('.prod-id').text(lastCheckedProdId || prodId);
+        $('.product-info').show();
+    }
+
+    function resetCheckStatistics() {
+        $('.items-to-scan').text('');
+        $('.prod-id').text('');
+        $('.product-info').hide();
+    }
+
+    function updateCheckLineStatus() {
+        var
+            $orderLines = $('.order_lines');
+
+        if (!shouldCheckEachLine) {
+            return;
+        }
+
+        $.post(
+            '<?php echo $this->url(array('action' => 'store-check-line-details', 'controller' => 'awaiting-checking', 'module' => 'despatches'), null, true);?>',
+            {'checkLineDetails' : checkLineDetails, 'packSscc': packSscc},
+            null,
+            'json'
+        );
+
+        $('.unchecked_items.<?php echo $this->linesSelectionNamespace;?>').text(getUncheckedAmount());
+
+        $.each(checkLineDetails, function(key, lineDetail) {
+            if (lineDetail.SELECTED && parseInt(lineDetail.CHECKED_QTY) < parseInt(lineDetail.PICKED_QTY)) {
+                $orderLines.find('tr.ROW-ID-'+key).addClass('unchecked');
+            } else {
+                $orderLines.find('tr.ROW-ID-'+key).removeClass('unchecked');
+            }
+        });
+
+        if (Minder.Despatches.AwaitingChecking.SsccPackDetails.isAddingDimensions()) {
+//            showPrompt(5);
+        } else if (isAllLinesChecked()) {
+//            showPrompt(6);
+        }
+    }
+
+//    function selectCarrierByConnoteLabelAndAccept(dataIdentifier) {
+//        var serviceType;
+//
+//        skipLabelPrinting = true;
+//
+//        if (typeof getDefaultCarrierServiceTypesByConnoteLabel == 'function') {
+//            serviceType = getDefaultCarrierServiceTypesByConnoteLabel(dataIdentifier).shift();
+//        }
+//
+//        if (serviceType) {
+//            selectServiceAndAccept(serviceType);
+//        }
+//    }
+
+    function showPrompt(code, data) {
+        console.log('showPrompt');
+        $('.order-check-prompt').minderScreenPrompts('showPrompt', code, data);
+    }
+
+    function hidePrompt() {
+        $('.order-check-prompt').minderScreenPrompts('hidePrompt');
+    }
+
+    function getAcceptedSsccUoms(ssccMap) {
+        var result = {}, processed = [];
+
+        $.each(ssccMap, function(ssccLabel, sscc){
+            var foundSscc;
+            if (processed.indexOf(sscc.PS_OUT_SSCC) > -1) {
+                return;
+            }
+
+            processed.push(sscc.PS_OUT_SSCC);
+            foundSscc = getSsccLabel(sscc.PS_OUT_SSCC);
+            if (foundSscc && foundSscc.length > 0 && !hasUnaccepted(foundSscc)) {
+                result = toSsccUoms(foundSscc);
+            }
+        });
+
+        return result;
+    }
+
+    function toSsccUoms(ssccList) {
+        return {
+            'DT': ssccList[0].PS_SSCC_DIM_UOM,
+            'WT': ssccList[0].PS_SSCC_WEIGHT_UOM
+        };
+    }
+
+    function getAcceptedSsccDimensions(ssccMap) {
+        var result = [], foundSscc, processed = [];
+        $.each(ssccMap, function(ssccLabel, sscc){
+            if (processed.indexOf(sscc.PS_OUT_SSCC) > -1) {
+                return;
+            }
+
+            processed.push(sscc.PS_OUT_SSCC);
+            foundSscc = getSsccLabel(sscc.PS_OUT_SSCC);
+            if (foundSscc && foundSscc.length > 0 && !hasUnaccepted(foundSscc)) {
+                result.push(toSsccDimensionRow(ssccMap[ssccLabel], foundSscc));
+            }
+        });
+
+        return result;
+    }
+
+    function toSsccDimensionRow(sscc, ssccList) {
+        return {
+            'SSCC' : sscc.PS_OUT_SSCC,
+            'TYPE': ssccList[0].PS_PACK_TYPE,
+            'L': parseFloat(ssccList[0].PS_SSCC_DIM_X) || 0,
+            'W': parseFloat(ssccList[0].PS_SSCC_DIM_Y) || 0,
+            'H': parseFloat(ssccList[0].PS_SSCC_DIM_Z) || 0,
+            'WT' : parseFloat(ssccList[0].PS_SSCC_WEIGHT) || 0
+        }
+    }
+
+    function getNextCheckAbleSscc() {
+        var ssccList = [];
+        $.each(packSscc, function(index, sscc){
+            if (sscc.PS_SSCC_STATUS.toUpperCase() == 'CN') {
+                return;
+            }
+
+            if (!sscc.completed) {
+                ssccList.push(sscc);
+            }
+        });
+
+        return getUncompletedSscc(ssccList, getCheckDetailBySsccList(ssccList).shift()) || {'PS_OUT_SSCC': ''};
+    }
+
+    function validatePackSsccData(isEdiOrder, checkLineDetails, packSscc) {
+        function _getSsccList(checkLineDetail, packSscc) {
+            var result = [];
+            $.each(packSscc, function(index, packSscc){
+                if (packSscc.PS_PICK_LABEL_NO == checkLineDetail.PICK_LABEL_NO) {
+                    result.push(packSscc);
+                }
+            });
+
+            return result;
+        }
+
+        function _getSsccStatistics(packSsccList) {
+            var result = {
+                checkedAmount: 0,
+                canceledSscc: [],
+                completedSscc: [],
+                waitingSscc: []
+            };
+
+            packSsccList.forEach(function(packSscc){
+                if (packSscc.PS_SSCC_STATUS.toUpperCase() == 'CN') {
+                    result.canceledSscc.push(packSscc);
+                    return;
+                }
+
+                result.checkedAmount += parseInt(packSscc.CHECKED_QTY) || 0;
+
+                if (packSscc.completed) {
+                    result.completedSscc.push(packSscc);
+                } else {
+                    result.waitingSscc.push(packSscc);
+                }
+            });
+
+            return result;
+        }
+
+        function _validateData(checkLineDetail, ssccStatistics) {
+            var checkedQty = parseInt(checkLineDetail.CHECKED_QTY) || 0,
+                orderedQty = parseInt(checkLineDetail.PICKED_QTY) || 0;
+
+            if (!checkLineDetail.SELECTED) {
+                return;
+            }
+
+            if (orderedQty <= checkedQty) {
+                return;
+            }
+
+            if (ssccStatistics.waitingSscc.length < 1) {
+                if (ssccStatistics.canceledSscc.length > 0) {
+                    var cancelledSscc = ssccStatistics.canceledSscc.map(function(packSscc){return packSscc.PS_SSCC;}).join(', ');
+                    showErrors(['Pick Item #' + checkLineDetail.PICK_LABEL_NO + ': has unchecked products and no uncompleted PACK_SSCC left. But there are cancelled PACK_SSCC records: (' + cancelledSscc + ')']);
+                } else {
+                    showErrors(['Pick Item #' + checkLineDetail.PICK_LABEL_NO + ': has unchecked products and no uncompleted PACK_SSCC left.']);
+                }
+            }
+        }
+
+        if (!isEdiOrder) {
+            return;
+        }
+
+        $.each(checkLineDetails, function(index, checkLineDetail){
+            _validateData(checkLineDetail, _getSsccStatistics(_getSsccList(checkLineDetail, packSscc)));
+        });
+    }
+
+
+    function printNextSscc() {
+        $(document).trigger('print-next-sscc');
+    }
+
+    function cancelSsccCheck() {
+        $(document).trigger('cancel-sscc-check');
+    }
+
+    function printAllSsccLabels() {
+        $(document).trigger('print-all-sscc-labels');
+    }
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

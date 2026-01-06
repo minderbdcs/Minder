@@ -1,0 +1,17 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2>Logout All</h2>
+<?php if ($this->loggedOut): ?>
+<p>All users are now logged out.</p>
+<?php else: ?>
+<p>Only administrators are allowed to logout all users. Please login first.</p>
+<form action="<?php echo $this->url(); ?>" method="post">
+    <?php //echo $this->formSelect('dsn', $this->currentDsn, array(), $this->dsnList); ?>
+    <label>User Id <?php echo $this->formText('userId', $this->userId, array('autocomplete' => 'off')); ?></label>
+    <label>Password <?php echo $this->formPassword('password', '', array('autocomplete' => 'off')); ?></label>
+    <?php echo $this->formSubmit('action', 'Login', array('class' => 'mdr-tool-button')); ?>
+    <?php echo $this->formHidden('key', $this->key); ?>
+</form>
+<?php endif; ?>
+
+<?php echo $this->render('footer.phtml'); ?>

@@ -1,0 +1,27 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2><?php echo $this->minderVariant('TOOL*Minder'); ?>&trade; <?php echo $this->minderVariant()->edition(''); ?></h2><br />
+
+<p>
+Version: <?php echo $this->minder->version; ?> - Loan<br />
+A member of The Minder Series&trade; <br />
+www.barcoding.com.au <br />
+Tel: 1300 369 513 <br />
+(+61 2) 9419 6011 <br />
+Fax: (+61 2) 9413 4261 <br />
+Email:support@barcoding.com.au
+</p>
+<br />
+
+<p>
+Manuals:
+   <ul style="padding-left:70px;"> 
+<?php foreach($this->manuals as $manual){ 
+        echo sprintf('<li><a href="%s" target="_blank">%s</a></li>', '/../' . $this->manualDir . $manual, $manual);   
+      } 
+?>
+    </ul> 
+</p>
+
+
+<?php echo $this->render('footer.phtml'); ?>

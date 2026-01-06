@@ -1,0 +1,97 @@
+<?php if(!$this->showResult) { ?>
+  
+    <ul id="error" style="display: none;">
+        <li></li>
+    </ul>
+    
+    <input type="hidden" name="result" value="<?php echo $this->result; ?>" id="result" />
+    <input type="hidden" name="message" value="<?php echo $this->message; ?>" id="message" />
+    <b>RETURN ALL</b>
+    <table>
+        <tr>
+            <th>Returned to Location:</th>
+            <td><?php echo $this->formSelect('location_list', null, null, $this->locationList); ?></td>
+        </tr>
+        <tr>
+            <th>Reason for Return:</th>
+            <td><?php echo $this->formSelect('return_reason', null, null, $this->reasonList); ?></td>
+        </tr>
+     </table>
+    <br />
+    <div id="" style="width: 340px; text-align: left">
+        <input type="button" name="action" class="order-button" value="ACCEPT" onclick="acceptReturn();"  />
+        &nbsp;&nbsp;
+        <input type="button" name="action" class="order-button" value="CANCEL" onclick="cancelReturn();" />
+    </div>
+    <script type="text/javascript">
+    /* <![CDATA[ */
+        
+        function acceptReturn(){
+         
+            var returnedQty         =   parseInt($('#returned_qty').val());
+            var returnedLocation    =   $('#location_list option:selected').val();
+            var returnReason        =   $('#return_reason option:selected').val();
+            
+                
+            $('#returned_form').load('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'returned'), null, true); ?>', 
+            {
+                action:             'ALL_ACCEPT',
+                returned_qty:       returnedQty,
+                returned_location:  returnedLocation,
+                returned_reason:    returnReason,
+                
+            }, function(){});
+            
+        }
+        
+        function cancelReturn(){
+            $.post('<?php echo $this->url(array('module' => 'default', 'controller' => 'despatch', 'action' => 'returned'), null, true); ?>',{
+                action: 'CANCEL'    
+            }, function(){
+                $('#returned_form').hide();    
+            });    
+        }
+        
+        function hideMessage(){
+            $('#error').hide();    
+        }
+    /* ]]> */
+    </script>
+
+<?php } else { ?> 
+    
+    <script type="text/javascript">
+    /* <![CDATA[ */
+        $(document).ready(function(){
+            setTimeout('hideMessage()', 10000);
+        })
+        
+        function hideMessage(){
+            $('#errors').hide();    
+        } 
+    /* ]]> */
+    </script>
+
+    <?php    
+    echo '<div id="errors">';
+    
+    if(count($this->negativeResults) > 0){
+        echo '<ul class="errors">';
+        foreach($this->negativeResults as $result){
+            echo '<li>' . $result['message'] . '</li>';    
+        }
+        echo '</ul>';    
+    }
+    
+    if(count($this->positiveResults) > 0){
+        echo '<ul class="messages">';
+        foreach($this->positiveResults as $result){
+             echo '<li>' . $result['message'] . '</li>';
+        }
+        echo '</ul>';    
+    }
+    
+    echo '</div>';
+    
+} ?>
+

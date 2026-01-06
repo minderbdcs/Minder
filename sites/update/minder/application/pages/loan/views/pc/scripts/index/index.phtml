@@ -1,0 +1,10 @@
+<script type="text/javascript">
+    var apiUrl = '<?php echo $this->baseUrl() . "/service/api.php";?>';
+    var baseUrl = '<?php echo $this->baseUrl(); ?>';
+    var loginUrl = '<?php echo $this->url(array('controller' => 'user', 'action' => 'login'), 'default', true); ?>';
+    var logoutUrl = '<?php echo $this->url(array('controller' => 'user', 'action' => 'logout'), 'default', true); ?>';
+    var aboutUrl = '<?php echo $this->url(array('controller' => 'index', 'action' => 'about'), 'default', true); ?>';
+    var defaultControllerUrl = '<?php echo $this->url(array(), 'mdrPages');?>';
+    var pageComponentsData = <?php echo json_encode(($this->pageComponents instanceof \MinderNG\JsonSerializableInterface) ? $this->pageComponents->jsonSerialize() : $this->pageComponents);?>;
+    var minderVariance = '<?php echo $this->minderVariant('TOOL*Minder'); ?>';
+</script>

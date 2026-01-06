@@ -1,0 +1,163 @@
+<?php
+include "../login.inc";
+require_once 'DB.php';
+require 'db_access.php';
+include "2buttons.php";
+
+if (!($Link = ibase_pconnect($DBName2, $User, $Password)))
+{
+	echo("Unable to Connect!<BR>\n");
+	exit();
+}
+$dbTran = ibase_trans(IBASE_DEFAULT, $Link);
+
+if (isset($_COOKIE['LoginUser']))
+{
+	list($tran_user, $tran_device) = explode("|", $_COOKIE["LoginUser"]);
+}
+$ssn = '';
+$label_no = '';
+$order = '';
+$prod_no = '';
+$description = '';
+$uom = '';
+$order_qty = 0;
+$picked_qty = 0;
+$required_qty = 0;
+$scannedssn = '';
+if (isset($_COOKIE['BDCSData']))
+{
+	list($label_no, $order, $ssn, $prod_no, $uom, $description, $required_qty, $location, $scannedssn, $dummy2) = explode("|", $_COOKIE["BDCSData"]);
+}
+	
+// want ssn label desc
+{
+	$Query = "select s1.locn_id, s1.current_qty, s1.ssn_id "; 
+	$Query .= "from issn s1 ";
+	$Query .= " where s1.ssn_id = '".$scannedssn."'";
+}
+//echo($Query);
+$rcount = 0;
+
+if (!($Result = ibase_query($Link, $Query)))
+{
+	echo("Unable to Read Picks!<BR>\n");
+	exit();
+}
+
+$got_ssn = 0;
+
+echo("<FONT size=\"2\">\n");
+echo("<FORM action=\"checkfromqty.php\" method=\"post\" name=getqty\n>");
+//echo("Pick<INPUT type=\"text\" readonly name=\"label\" size=\"7\" value=\"$label_no\">");
+//echo("SO<INPUT type=\"text\" readonly name=\"order\" size=\"15\" value=\"$order\"><BR>");
+echo("<TABLE BORDER=\"0\" ALIGN=\"LEFT\">");
+echo("<TR><TD>");
+echo("Pick</TD><TD><INPUT type=\"text\" readonly name=\"label\" size=\"7\" value=\"$label_no\"></TD><TD>");
+echo("SO</TD><TD><INPUT type=\"text\" readonly name=\"order\" size=\"15\" value=\"$order\"></TD></TR></TABLE><BR><BR>");
+echo("<TABLE BORDER=\"0\" ALIGN=\"LEFT\">");
+echo("<TR><TD>");
+if ($ssn <> '')
+{
+	//echo("SSN<INPUT type=\"text\" readonly name=\"ssn\" size=\"8\" value=\"$ssn\">");
+	//echo("<INPUT type=\"text\" readonly name=\"uom\" size=\"8\" value=\"$uom\">");
+	//echo("<INPUT type=\"text\" readonly name=\"desc\" size=\"20\" value=\"$description\">");
+	echo("SSN</TD><TD><INPUT type=\"text\" readonly name=\"ssn\" size=\"8\" value=\"$ssn\"></TD><TD>");
+	echo("<INPUT type=\"text\" readonly name=\"uom\" size=\"8\" value=\"$uom\"></TD></TR></TABLE><BR><BR>");
+	echo ("<TABLE BORDER=\"0\" ALIGN=\"LEFT\">\n");
+	echo("<TR><TD>");
+	echo("<INPUT type=\"text\" readonly name=\"desc\" size=\"20\" value=\"$description\">");
+	echo("</TD></TR></TABLE><BR><BR>");
+}
+else
+{
+	//echo("Part: <INPUT type=\"text\" readonly name=\"prod\" size=\"30\" value=\"$prod_no\" >");
+	//echo("<INPUT type=\"text\" readonly name=\"uom\" size=\"8\" value=\"$uom\" >");
+	//echo("<INPUT type=\"text\" readonly name=\"desc\" size=\"20\" value=\"$description\" >");
+	echo("Part</TD><TD><INPUT type=\"text\" readonly name=\"prod\" size=\"30\" value=\"$prod_no\"></TD><TD>");
+	echo("<INPUT type=\"text\" readonly name=\"uom\" size=\"8\" value=\"$uom\"></TD></TR></TABLE><BR><BR>");
+	echo ("<TABLE BORDER=\"0\" ALIGN=\"LEFT\">\n");
+	echo("<TR><TD>");
+	echo("<INPUT type=\"text\" readonly name=\"desc\" size=\"20\" value=\"$description\" >");
+	echo("</TD></TR></TABLE><BR><BR>");
+}
+// echo headers
+echo ("<TABLE BORDER=\"1\">\n");
+echo ("<TR>\n");
+echo("<TH>Location</TH>\n");
+echo("<TH>Qty Available</TH>\n");
+echo("<TH>SSN</TH>\n");
+echo ("</TR>\n");
+
+$rcount = 0;
+// Fetch the results from the database.
+while ( ($Row = ibase_fetch_row($Result)) ) {
+	if ($got_ssn == 0) {
+		// echo headers
+		$got_ssn = 1;
+	}
+	echo ("<TR>\n");
+	echo("<TD>".$Row[0]."</TD>\n");
+	echo("<TD>".$Row[1]."</TD>\n");
+	echo("<TD>".$Row[2]."</TD>\n");
+	echo ("</TR>\n");
+}
+
+echo ("</TABLE>\n");
+echo("Qty Reqd <INPUT type=\"text\" readonly name=\"required_qty\" size=\"4\" value=\"$required_qty\" >");
+//release memory
+ibase_free_result($Result);
+
+//commit
+ibase_commit($dbTran);
+
+//close
+//ibase_close($Link);
+
+echo("Picked: <INPUT type=\"text\" name=\"qtypicked\" size=\"4\">");
+echo ("<TABLE>\n");
+echo ("<TR>\n");
+echo("<TH>SSN=$scannedssn:Enter Qty</TH>\n");
+echo ("</TR>\n");
+echo ("</TABLE>\n");
+/*
+if ($_SERVER['HTTP_USER_AGENT'] < "Mozilla/4.0")
+{
+	echo("<INPUT type=\"submit\" name=\"accept\" value=\"Accept\">\n");
+}
+else
+{
+	echo("<BUTTON name=\"accept\" value=\"Accept\" type=\"submit\">\n");
+	echo("Accept<IMG SRC=\"/icons/forward.gif\" alt=\"forward\"></BUTTON>\n");
+}
+*/
+//echo total
+//echo("</FORM>\n");
+/*
+if ($_SERVER['HTTP_USER_AGENT'] < "Mozilla/4.0")
+{
+	// html 3.2 browser
+	echo("<FORM action=\"getfromssn.php\" method=\"post\" name=goback>\n");
+	echo("<INPUT type=\"submit\" name=\"back\" value=\"Back\">\n");
+	echo("</FORM>\n");
+}
+else
+*/
+{
+	// html 4.0 browser
+ 	echo("<TABLE BORDER=\"0\" ALIGN=\"LEFT\">");
+	whm2buttons('Accept', 'getfromssn.php');
+/*
+	echo("<BUTTON name=\"back\" type=\"button\" onfocus=\"location.href='getfromssn.php';\">\n");
+	echo("Back<IMG SRC=\"/icons/back.gif\" alt=\"back\"></BUTTON>\n");
+*/
+}
+?>
+<SCRIPT>
+<?php
+{
+	echo("document.getqty.qtypicked.focus();\n");
+}
+?>
+</SCRIPT>
+</HTML>

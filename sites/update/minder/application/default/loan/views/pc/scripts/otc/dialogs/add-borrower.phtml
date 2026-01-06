@@ -1,0 +1,227 @@
+<?php echo $this->render('otc/dialogs/confirm-borrower-prefix.phtml'); ?>
+<?php echo $this->render('otc/dialogs/confirm-borrower-rename.phtml'); ?>
+
+<div id="add_borrower_dialog" class="flora otc-add-borrower-dialog" title="Add Borrower" style="display: none;"
+     xmlns="http://www.w3.org/1999/html">
+<form id="" name="prompt" method="post" action="" enctype="multipart/form-data">
+<table class="summary" style="width:99%">
+        <tr>
+            <td>
+                BORROWER ID (Max 8):
+            </td>
+            <td>
+                <?php echo $this->formText('borrower_id', '', array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                BORROWER NAME (Max 50):
+            </td>
+            <td>
+                <?php echo $this->formText('borrower_name', '', array()); ?>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                COMPANY ID (Max 10):
+            </td>
+            <td>
+                <?php echo $this->companySelect('company_id_borrower', '');?>
+            </td>
+        </tr>
+</table>
+</form>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var
+            $addBorrowerDlg = $('#add_borrower_dialog');
+
+        // dialog add borrower
+        $addBorrowerDlg.dialog({
+             buttons: {SAVE: saveBorrower, HTML:true, CANCEL: closeBorrowerDialog},
+             width: "750px",
+             height: "350px",
+             autoOpen: false,
+             position: [0, 65],
+             buttonStyle: 'otc-dialog-button',
+             insertHtml:  '<label for="print_label">Print Label</label>&nbsp;<input type="checkbox" id="print_label_borrower" name="print_label_borrower" value=""><br /><label>Label Qty:&nbsp;<select id="borrower_label_qty" name="borrower_label_qty" style="width: 5em"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option></select></label>'
+        }).bind('dialogclose', function(event, ui) {
+            $('#barcode').focus();
+            $addBorrowerDlg.removeAttr('active');
+        }).bind('dialogopen', function(event, ui) {
+            var
+                $borrowerLabelQty = $('#borrower_label_qty'),
+                $printLabelFlag = $('#print_label_borrower'),
+                defaultLabelQty = parseInt('<?php echo $this->defaultBorrowerLabelQty; ?>') || 0;
+
+            $borrowerLabelQty.unbind('change').change(function(){
+                var
+                    labelQty = parseInt($(this).val()) || 0;
+                if (labelQty < 1) {
+                    $printLabelFlag.removeAttr('checked');
+                } else {
+                    $printLabelFlag.attr('checked', true);
+                }
+            });
+
+            $printLabelFlag.unbind('change').change(function(){
+                if ($(this).attr('checked')) {
+                    $borrowerLabelQty.val(defaultLabelQty || 1);
+                } else {
+                    $borrowerLabelQty.val(0);
+                }
+            });
+
+            $borrowerLabelQty.val(defaultLabelQty).change();
+            $addBorrowerDlg.attr('active', true);
+
+            $(this).show();
+        });
+
+    });
+
+    // add Borrower
+    function openBorrowerDialog(){
+        $("#add_borrower_dialog").dialog("open");
+        $('#barcode').focus();
+
+        return false;
+    }
+
+    function closeBorrowerDialog(){
+        $('#add_borrower_dialog').dialog("close");
+
+        return false;
+    }
+
+    function isAddBorrowerDialogActive() {
+        return !!$("#add_borrower_dialog").attr('active');
+    }
+
+    function _getAddBorrowerDialogData() {
+        return {
+            borrower_id: $("#borrower_id").val(),
+            borrower_name: $("#borrower_name").val(),
+            company_id: $("#company_id_borrower :selected").val(),
+            print_label: $("#print_label_borrower")[0].checked,
+            label_qty: $('#borrower_label_qty').val()
+        };
+    }
+
+    function _addBorrowerDialogValidateBorrowerId(data) {
+        if (data.borrower_id.length < 1) {
+            showErrors(['Borrower Id is empty.']);
+            return false;
+        }
+
+        if (data.borrower_id.length > 8) {
+            showErrors(['Borrower Id is too big.']);
+            return false;
+        }
+
+        return true ;
+    }
+
+    function _addBorrowerDialogValidateBorrowerName(data) {
+        if (data.borrower_name.length < 1) {
+            showErrors(['Borrower Name is empty.']);
+            return false;
+        }
+
+        if (data.borrower_name.length > 50) {
+            showErrors(['Borrower Name is too big.']);
+            return false;
+        }
+
+        return true;
+    }
+
+    function _addBorrowerDialogConfirmBorrowerPrefix(data) {
+        var result = $.Deferred();
+
+        if ((data.borrower_id.length > 8) && (data.borrower_id.slice(0, 2).toUpperCase() == 'XB')) {
+            $.when(confirmBorrowerPrefixDialogConfirm(data)).then(function(confirmed){
+                var $borrowerId = $("#borrower_id");
+
+                if (confirmed) {
+                    $borrowerId.val('');
+                    $borrowerId.focus();
+                    result.reject();
+                } else {
+                    data.borrower_id = data.borrower_id.slice(2);
+                    $borrowerId.val(data.borrower_id);
+                    result.resolve(data);
+                }
+            }).fail(function(){
+                result.reject();
+            });
+        } else {
+            result.resolve(data);
+        }
+
+
+        return result.promise();
+    }
+
+    function _addBorrowerDialogValidateData(data) {
+        var result = $.Deferred();
+        $.when(
+            _addBorrowerDialogValidateBorrowerId(data),
+            _addBorrowerDialogValidateBorrowerName(data)
+        ).then(
+            function(borrowerIdIsValid, borrowerNameIsValid) {
+                if (borrowerIdIsValid && borrowerNameIsValid) {
+                    result.resolve(data);
+                } else {
+                    result.reject();
+                }
+            }
+        );
+
+        return result.promise();
+    }
+
+    function _addBorrowerDialogConfirmRename(newBorrower, existedBorrower) {
+        $.when(confirmBorrowerRenameDialogConfirm(newBorrower, existedBorrower)).then(function(confirmed) {
+            if (confirmed) {
+                newBorrower.confirmRename = true;
+                _addBorrowerDialogDoSave(newBorrower);
+            }
+        });
+    }
+
+    function _addBorrowerDialogDoSave(data) {
+        $.post(
+            "/minder/otc/add-borrower-ajax",
+            data,
+            function (response)
+            {
+                if(response.messages && response.messages.length > 0)
+                    showMessage(response.messages);
+
+                if(response.warnings && response.warnings.length > 0)
+                    showWarnings(response.warnings);
+
+                if(response.errors && response.errors.length > 0)
+                    showErrors(response.errors);
+
+                if (!!response.confirmRename) {
+                    _addBorrowerDialogConfirmRename(data, response.borrower);
+                }
+            },
+            'json'
+        );
+        closeBorrowerDialog();
+    }
+
+    function _addBorrowerDialogValidateAndSave(data) {
+        $.when(_addBorrowerDialogValidateData(data)).then(_addBorrowerDialogDoSave);
+    }
+
+    function saveBorrower(){
+        $.when(_addBorrowerDialogConfirmBorrowerPrefix(_getAddBorrowerDialogData()))
+            .then(_addBorrowerDialogValidateAndSave);
+    }
+</script>

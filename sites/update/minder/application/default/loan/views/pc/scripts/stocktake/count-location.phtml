@@ -1,0 +1,135 @@
+<h2>COUNT LOCATION</h2>
+<ul class="toolbar">
+    <li>
+        <?php echo $this->formLabel('cl_st_wh_id', 'Warehouse: '); ?>
+        <?php echo $this->formSelect('cl_st_wh_id', selectFilterValue('cl_st_wh_id', $this->conditions), array('onchange' => 'fillLocationList();'), $this->warehouseList); ?>
+    </li>
+    <li>
+        <?php echo $this->formLabel('cl_st_locn_id', 'Location ID: '); ?>
+        <?php
+        //echo $this->formSelect('cl_st_locn_id', selectFilterValue('cl_st_locn_id', $this->conditions), array(), array());
+            echo $this->formText('cl_st_locn_id', selectFilterValue('cl_st_locn_id', $this->conditions), array());
+        ?>
+    </li>
+</ul>
+<ul class="toolbar">
+    <li>
+        <?php echo $this->formButton('action', 'FREEZE LOCATION', array('onclick' => 'freezeLocation();')); ?>
+    </li>
+    <li>
+        <?php echo $this->formButton('action', 'RELEASE LOCATION', array('onclick' => 'releaseLocation();')); ?>
+    </li>
+</ul>
+<script type="text/javascript">
+var cacheValue = 50;
+var warehouse = '';
+$(document).ready(function() {
+
+initAutocomplete();
+});
+
+function formatItemWithoutDesc(ele)
+{
+    return ele[1];
+}
+function formatItemWithDesc(ele)
+{
+    return '<b>'+ele[0]+'</b><br/><i>'+ele[1]+'</i>';
+}
+
+function initAutocomplete()
+{
+
+<?php
+$url = $this->url(array('module'     => 'default',
+                        'controller' => 'stocktake',
+                        'action'     => 'lookup'));
+$key = 'cl_st_locn_id';
+
+echo <<<JSCRIPT
+        $('#$key').autocomplete('$url/',
+                   {matchSubset: 1,
+                    matchContains: 1,
+                    cacheLength: cacheValue,
+                    formatItem: formatItemWithDesc,
+                    selectFirst: 1,
+                    extraParams: {field: '$key', wh_id: warehouse}});
+\n
+JSCRIPT;
+?>
+}
+
+function fillLocationList()
+{
+
+    var flag = true;
+    var wh_id = $('#cl_st_wh_id')[0].value;
+    var msg = '';
+
+    if (wh_id == '') {
+        msg = msg + 'Empty Warehouse\n';
+        flag = false;
+    }
+    warehouse = wh_id;
+    initAutocomplete();
+    if (flag) {
+        /*
+        $('#cl_st_locn_id').empty();
+        $.getJSON('<?php echo $this->url(array('action' => 'fill-location-list'));?>',
+            {'wh_id': wh_id},
+            function (ob) {
+                if (ob.status) {
+                    for (option in ob.data) {
+                        $('#cl_st_locn_id').append('<option value="' + option + '">' + ob.data[option] + '</option>');
+                    }
+                } else {
+                    alert(ob.message);
+                }
+            });
+        */
+    } else {
+        alert(msg);
+    }
+    return false;
+}
+
+function freezeLocation()
+{
+
+    var flag = true;
+    var locn = $('#cl_st_locn_id')[0].value;
+    var wh = $('#cl_st_wh_id')[0].value;
+    var msg = '';
+
+    if (locn == '') {
+        msg = msg + 'Empty Location\n';
+        flag = false;
+    }
+
+    if (wh == '') {
+        msg = msg + 'Empty Warehouse\n';
+        flag = false;
+    }
+
+    if (flag) {
+        $.getJSON('<?php echo $this->url(array('action' => 'freeze-location'));?>',
+                {'locn_id': locn,
+                 'wh_id' : wh
+                },
+                function(ob) {
+                    if (ob.status) {
+                        $('#count-issn-container').load('<?php echo $this->url(array('action' => 'load-count-issn'))?>',
+                        {'in_location': ob.data,
+                         'locn_id': locn,
+                         'wh_id' : wh,
+                         'init' : true},
+                        function () {
+                        });
+                    }
+                    alert(ob.message);
+                });
+    } else {
+        alert('Can\'t freeze!\n' + msg);
+    }
+}
+</script>

@@ -1,0 +1,10 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<form action="<?php echo $this->url(); ?>" method="post">
+    <h1>Sales Order: <?php echo $this->escape($this->pickOrder->pickOrder); ?></h1>
+
+    <p>Your line has been deleted.</p>
+
+</form>
+
+<?php echo $this->render('footer.phtml'); ?>

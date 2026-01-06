@@ -1,0 +1,446 @@
+<?php echo $this->render('header.phtml'); ?>
+
+<h2 title="<?php echo $this->searchFormSsName;?>"><?php echo $this->escape($this->pageTitle)?></h2>
+
+<?php
+echo $this->messenger()->all();
+if ($this->hasErrors)
+    return;
+?>
+
+<div id="search_form_container">
+    <?php echo $this->sysScreenSearchForm2($this->searchFormSsName, array('search_fields' => $this->searchFields));?>
+</div>
+
+<div id="product_container">
+</div>
+
+<div style="clear: both;">&nbsp;</div>
+
+<div id="issn_container">
+</div>
+
+<div style="clear: both;">&nbsp;</div>
+
+<div id="po_container">
+</div>
+
+<?php 
+    echo $this->StandardSRTemplate(array('SRTabContainer', 'SRTabs'));
+?>
+
+<script type="text/x-jquery-tmpl" id="tab-container-tmpl">
+    <div id="${tabContainerId}" class="ui-tabs-container">
+        <div class='ui-tabs-panel-header'>
+            <div class="sys-screen-title" title="${sysScreenName}">${sysScreenCaption}</div>
+            {{if canSelect}}
+                <div class="paginator-container">
+                    <label disablefor="1">Select All Rows on all pages</label>
+                    <input name="select_complete" {{if $item.data.paginator.totalRows == $item.data.paginator.selectedRows}} checked="checked" {{/if}} {{if $item.data.paginator.selectionMode == 'one'}} disabled="disabled" {{/if}} id="select_complete" row_id="select_complete" class="select_complete ${namespace}" selection_namespace="${namespace}" type="checkbox">
+                </div>
+            {{/if}}
+            {{if usePagination}}
+                {{tmpl(paginator) '#paginator-tpl'}}
+            {{/if}}
+            
+            {{if hasHeader}}
+                
+                {{if $item.data.namespace == '<?php echo $this->productNamespace?>'}}
+                    {{tmpl($item.data) '#product-header-tmpl'}}
+                {{else}}
+                    {{tmpl($item.data) '#header-tmpl'}}
+                {{/if}}
+            {{/if}}
+        </div>
+        
+        {{tmpl(tabs) '#tabs-tmpl'}}
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="product-header-tmpl">
+    <ul style="clear: both;" class="black-top-border">
+        <li style="display: inline;"><b>Selected: <span class="selected-container {{= $item.data.namespace}}">{{= $item.data.paginator.selectedRows}}</span></b></li>
+        <li style="display: inline; margin-left: 100px;"><b>Total selected qty:</b></li>
+        <li style="display: inline;"><input type="text" name="total_qty" style="width: 8ex;" readonly="readonly" value="{{= $item.data.paginator.selectedAvailableQty}}"/></li>
+        <li style="display: inline; margin-left: 100px;"><b>Required qty for order:</b></li>
+        <li style="display: inline;"><input type="text" name="required_qty" style="width: 8ex;" value="{{= $item.data.paginator.requiredForOrder}}"/></li>
+    </ul>    
+</script>
+
+<script type="text/x-jquery-tmpl" id="tabs-tmpl">
+    <div class="ui-tabs-panel ui-tabs-panel-content" id="TAB-{{= SS_NAME + '-' + SST_TAB_NAME}}">
+        <!-- tab content starts -->
+            {{tmpl($item.data) '#tab-content-tmpl'}}
+        
+            {{if $item.parent.data.hasFooter}}
+                {{if $item.parent.data.namespace == '<?php echo $this->productNamespace?>'}}
+                    {{tmpl($item.parent.data) '#product-footer-tmpl'}}
+                {{else}}
+                    {{tmpl($item.parent.data) '#footer-tmpl'}}
+                {{/if}}
+            {{/if}}
+        
+            {{if $item.parent.data.hasButtons}}
+                {{if $item.parent.data.namespace == '<?php echo $this->productNamespace?>'}}
+                    {{tmpl($item.parent.data) '#product-buttons-tmpl'}}
+                {{else}}
+                    {{tmpl($item.parent.data) '#buttons-tmpl'}}
+                {{/if}}
+            {{/if}}
+        <!-- tab content ends -->
+    </div>    
+</script>
+
+<script type="text/x-jquery-tmpl" id="product-footer-tmpl">
+    <table width="100%" class="withborder">
+        <tbody><tr>
+            <td><b>Total <span class="total-container {{= $item.data.namespace}}">{{= $item.data.paginator.totalRows}}</span> records. Show from {{= $item.data.paginator.shownFrom}} to {{= $item.data.paginator.shownTill}}</b></td>
+            <td><b>Total On Hand Qty = <span class="total-on-hand-container {{= $item.data.namespace}}">{{= $item.data.paginator.onHandQty}}</span></b></td>
+            <td><b>Total Available Qty = <span class="total-available-container {{= $item.data.namespace}}">{{= $item.data.paginator.availableQty}}</span></b></td>
+        </tr>
+    </tbody></table>
+</script>
+
+<script type="text/x-jquery-tmpl" id="product-buttons-tmpl">
+    {{= $.minderSearchResultDump($item)}}
+
+
+    <div style="clear: both; padding-left: 10px;">
+        <ul class="toolbar">
+            <li><input type="submit" class="mdr-tool-button add_btn" name="add_btn" disabled="disabled" value="ADD"></li>
+            <li><input type="submit" class="mdr-tool-button add_and_continue_btn" disabled="disabled" name="add_and_continue_btn" value="ADD & CONTINUE"></li>
+            <li><input type="submit" class="mdr-tool-button cancel_add_btn" name="cancel_add_btn" value="CANCEL ADD"></li>
+        </ul>
+    </div>
+</script>
+
+<form id="add-form" action="<?php echo $this->url(array('action' => 'add'));?>">
+    <input type="hidden" name='required-qty' value="0"/>
+</form>
+
+<form id="add-and-continue-form" action="<?php echo $this->url(array('action' => 'add-and-continue'));?>">
+    <input type="hidden" name='required-qty' value="0"/>
+</form>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+    function onDataReady(response) {
+        if (response.errors && response.errors.length > 0)
+            showErrors(response.errors);
+        
+        if (response.warnings && response.warnings.length > 0)
+            showWarnings(response.warnings);
+        
+        if (response.messages && response.messages.length > 0)
+            showMessage(response.messages);
+        
+        if (response.sysScreens['<?php echo $this->productNamespace;?>']) {
+            $('#product_container').minderSearchResult(response.sysScreens['<?php echo $this->productNamespace;?>']);
+            $('#product_container .data-table-<?php echo $this->productSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        }
+        
+        if (response.sysScreens['<?php echo $this->issnNamespace;?>']) {
+            $('#issn_container').minderSearchResult(response.sysScreens['<?php echo $this->issnNamespace;?>']);
+            $('#issn_container .data-table-<?php echo $this->issnSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        }
+
+        if (response.sysScreens['<?php echo $this->poNamespace;?>']) {
+            $('#po_container').minderSearchResult(response.sysScreens['<?php echo $this->poNamespace;?>']);
+            $('#po_container .data-table-<?php echo $this->poSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+        }
+
+        initButtons();
+        checkQtyConditions();
+
+        $(document).dequeue();
+    }
+    
+    function tabContainerOnSelectRow(evt) {
+    }
+
+    function loadData(datasetsToLoad) {
+        var dataToSend = {
+            'sysScreens' : {},
+            'requestedDatasets' : datasetsToLoad
+        };
+        
+        if (datasetsToLoad['<?php echo $this->productNamespace;?>']) {
+            dataToSend.sysScreens['<?php echo $this->productNamespace;?>'] = {
+                'paginator' : $('#product_container').minderSearchGetPaginatorState()
+            };
+            dataToSend.sysScreens['<?php echo $this->productNamespace;?>'].paginator.requiredForOrder = $('#product_container input[name=required_qty]').val();
+        }
+        
+        if (datasetsToLoad['<?php echo $this->issnNamespace;?>']) {
+            dataToSend.sysScreens['<?php echo $this->issnNamespace;?>'] = {
+                'paginator' : $('#issn_container').minderSearchGetPaginatorState()
+            };
+        }
+        
+        if (datasetsToLoad['<?php echo $this->poNamespace;?>']) {
+            dataToSend.sysScreens['<?php echo $this->poNamespace;?>'] = {
+                'paginator' : $('#po_container').minderSearchGetPaginatorState()
+            };
+        }
+        
+        $(document).queue(function() {
+            if (datasetsToLoad['<?php echo $this->productNamespace;?>']) $('#product_container > div').block($('<?php echo $this->SysScreenWaitPrompt();?>'));
+            if (datasetsToLoad['<?php echo $this->issnNamespace;?>']) $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            if (datasetsToLoad['<?php echo $this->poNamespace;?>']) $('#po_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'get-dataset'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            if (datasetsToLoad['<?php echo $this->productNamespace;?>']) $('#product_container > div').unblock();
+            if (datasetsToLoad['<?php echo $this->issnNamespace;?>']) $('#issn_container > div').unblock();
+            if (datasetsToLoad['<?php echo $this->poNamespace;?>']) $('#po_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function productContainerOnPageChanged(evt) {
+        loadData({'<?php echo $this->productNamespace;?>': '<?php echo $this->productSsName;?>'});
+    }
+    
+    function productContainerOnShowByChanged(evt) {
+        loadData({'<?php echo $this->productNamespace;?>': '<?php echo $this->productSsName;?>'});
+    }
+    
+    function productContainerOnSelectRow(evt) {
+        var paginator = {};
+        paginator                  = $('#product_container').minderSearchGetPaginatorState();
+        paginator.requiredForOrder = $('#product_container input[name=required_qty]').val();
+        
+        var dataToSend = {
+            'sysScreens' : {},
+            'requestedDatasets' : {}
+        };
+        
+        dataToSend.sysScreens['<?php echo $this->productNamespace;?>']  = {
+                    'paginator' : paginator,
+                    'rowId'     : evt.rowId,
+                    'state'     : evt.rowState
+        };
+
+        <?php if ($this->isIssnScreenDefined) {?> 
+            dataToSend.requestedDatasets['<?php echo $this->issnNamespace;?>'] = '<?php echo $this->issnSsName;?>';
+        <?php }?> 
+        
+        <?php if ($this->isPoScreenDefined) {?> 
+            dataToSend.requestedDatasets['<?php echo $this->poNamespace;?>'] = '<?php echo $this->poSsName;?>';
+        <?php }?> 
+
+        $(document).queue(function() {
+            $('#product_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $('#po_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'select-row'));?>',
+                dataToSend,
+                productContainerOnSelectRowCallback,
+                'json'
+            );
+        }).queue(function() {
+            $('#product_container > div, #issn_container > div, #po_container > div').unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function productContainerOnSelectRowCallback(response) {
+        var selectedOnPage = parseInt(response.paginator.selectedOnPage);
+        selectedOnPage = isNaN(selectedOnPage) ? 0 : selectedOnPage;
+        
+        var selectedRows = parseInt(response.paginator.selectedRows);
+        selectedRows = isNaN(selectedRows) ? 0 : selectedRows;
+        
+        var totalRows = parseInt(response.paginator.totalRows);
+        totalRows = isNaN(response.paginator.totalRows) ? 0 : totalRows;
+        
+        $('.selected-container.<?php echo $this->productNamespace;?>').html(response.paginator.selectedRows);
+        $('#product_container input[name=total_qty]').val(response.paginator.selectedOnHandQty);
+        $('#product_container input[name=required_qty]').val(response.paginator.requiredForOrder);
+        
+        
+        if (selectedRows > 0 && selectedRows >= totalRows) {
+            $('.select_complete.<?php echo $this->productNamespace;?>').attr('checked', true);
+        } else {
+            $('.select_complete.<?php echo $this->productNamespace;?>').removeAttr('checked');
+        }
+        
+        var unselectedRows = 0;
+        
+        $('.row_selector.<?php echo $this->productNamespace;?>').each(function(){
+            var $_this = $(this);
+            
+            if (response.selectedRows[$_this.attr('row_id')]) {
+                $_this.attr('checked', true);
+            } else {
+                $_this.removeAttr('checked');
+                unselectedRows++;
+            }
+        });
+        
+        if (unselectedRows < 1) {
+            $('.select_all_rows.<?php echo $this->productNamespace;?>').attr('checked', true);
+        } else {
+            $('.select_all_rows.<?php echo $this->productNamespace;?>').removeAttr('checked');
+        }
+        
+        onDataReady(response);
+    }
+    
+    function issnContainerOnPageChanged(evt) {
+        loadData({'<?php echo $this->issnNamespace;?>': '<?php echo $this->issnSsName;?>'});
+    }
+    
+    function issnContainerOnShowByChanged(evt) {
+        loadData({'<?php echo $this->issnNamespace;?>': '<?php echo $this->issnSsName;?>'});
+    }
+    
+    function poContainerOnPageChanged(evt) {
+        loadData({'<?php echo $this->poNamespace;?>': '<?php echo $this->poSsName;?>'});
+    }
+    
+    function poContainerOnShowByChanged(evt) {
+        loadData({'<?php echo $this->poNamespace;?>': '<?php echo $this->poSsName;?>'});
+    }
+    
+    function addBtnOnClick(evt) {
+        evt.preventDefault();
+        var addForm = $('#add-form');
+        addForm.find('input[name="required-qty"]').val($('#product_container input[name=required_qty]').val());
+        addForm.submit();
+    }
+    
+    function addAndContinueBtnOnClick(evt) {
+        evt.preventDefault();
+        var addForm = $('#add-and-continue-form');
+        addForm.find('input[name="required-qty"]').val($('#product_container input[name=required_qty]').val());
+        addForm.submit();
+    }
+    
+    function cancelAddBtnOnClick(evt) {
+        evt.preventDefault();
+        location.href = '<?php echo $this->cancelAddUrl;?>';
+    }
+    
+    function documentOnDoSearch(evt) {
+        var dataToSend = evt.searchParams;
+        dataToSend.push({'name' : 'requiredForOrder', 'value' : $('#product_container input[name=required_qty]').val()});
+        dataToSend.push({'name' : 'requestedDatasets[<?php echo $this->productNamespace;?>]', 'value' : '<?php echo $this->productSsName;?>'});
+        
+        <?php if ($this->isIssnScreenDefined) {?> 
+            dataToSend.push({'name' : 'requestedDatasets[<?php echo $this->issnNamespace;?>]', 'value' : '<?php echo $this->issnSsName;?>'});
+        <?php }?> 
+        
+        <?php if ($this->isPoScreenDefined) {?> 
+            dataToSend.push({'name' : 'requestedDatasets[<?php echo $this->poNamespace;?>]', 'value' : '<?php echo $this->poSsName;?>'});
+        <?php }?> 
+
+        $('#barcode').val('').parent().block();
+        $('#search_form_container').block();
+        $(document).queue(function() {
+            $('#product_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Applying filter...');?>'));
+            $('#issn_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $('#po_container > div').block($('<?php echo $this->SysScreenWaitPrompt('Selecting row. Please wait...');?>'));
+            $.post(
+                '<?php echo $this->url(array('action' => 'search'));?>',
+                dataToSend,
+                onDataReady,
+                'json'
+            );
+        }).queue(function() {
+            $('#product_container > div, #issn_container > div, #po_container > div, #search_form_container').unblock();
+            $('#barcode').parent().unblock();
+            $(this).dequeue();
+        });
+    }
+    
+    function searchBtnOnClick(evt) {
+        evt.preventDefault();
+        var searchEvent = $.Event('do-search');
+        searchEvent.searchParams = $('#SEARCH_RESULTS_FORM').serializeArray();
+        $('#SEARCH_RESULTS_FORM').trigger(searchEvent);
+    }
+    
+    function requiredQtyOnKeyup(evt) {
+        checkQtyConditions();
+    }
+    
+    function initButtons() {
+        $('#product_container .add_btn').unbind('click.product-search').bind('click.product-search', addBtnOnClick);
+        $('#product_container .add_and_continue_btn').unbind('click.product-search').bind('click.product-search', addAndContinueBtnOnClick);
+        $('#product_container .cancel_add_btn').unbind('click.product-search').bind('click.product-search', cancelAddBtnOnClick);
+        
+        $('#product_container input[name=required_qty]').unbind('keyup.product-search').bind('keyup.product-search', requiredQtyOnKeyup);
+    }
+    
+    function checkQtyConditions() {
+        var selectedRows   = parseInt($('.selected-container.<?php echo $this->productNamespace;?>').html());;
+        selectedRows       = isNaN(selectedRows) ? 0 : selectedRows;
+        
+        var $_totalQty     = $('#product_container input[name=total_qty]');
+        var totalQty       = parseInt($_totalQty.val());
+        totalQty           = isNaN(totalQty) ? 0 : totalQty;
+        
+        var $_required_qty = $('#product_container input[name=required_qty]');
+        var requiredQty    = parseInt($_required_qty.val());
+        requiredQty        = isNaN(requiredQty) ? 0 : requiredQty;
+        
+        if (selectedRows  < 1) {
+            $_totalQty.css('background-color', '#FF0000');
+            $('#product_container .add_btn').attr('disabled', 'disabled');
+            $('#product_container .add_and_continue_btn').attr('disabled', 'disabled');
+        } else if (totalQty >= requiredQty) {
+            $_totalQty.css('background-color', '#00FF00');
+            $('#product_container .add_btn').removeAttr('disabled');
+            $('#product_container .add_and_continue_btn').removeAttr('disabled');
+        } else {
+            <?php if ($this->minder->defaultControlValues['CONFIRM_WITH_NO_PROD'] == 'T') {?>
+                $_totalQty.css('background-color', '#FFFF00');
+                $('#product_container .add_btn').removeAttr('disabled');
+                $('#product_container .add_and_continue_btn').removeAttr('disabled');
+            <?php } else {?>
+                $_totalQty.css('background-color', '#FF0000');
+                $('#product_container .add_btn').attr('disabled', 'disabled');
+                $('#product_container .add_and_continue_btn').attr('disabled', 'disabled');
+            <?php }?>
+        }
+    }
+    
+//--------------------- DOM ready -------------------------//
+    $(document).ready(function(){ 
+        $('#product_container').minderSearchResult(<?php echo json_encode($this->productJsDescription);?>);
+        $('#product_container').minderSearchResult(<?php echo json_encode($this->productJsDataset);?>);
+        $('#product_container .data-table-<?php echo $this->productSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+
+        $('#product_container').bind('select-row', productContainerOnSelectRow).bind('page-changed', productContainerOnPageChanged).bind('show-by-changed', productContainerOnShowByChanged);
+        
+        <?php if ($this->isIssnScreenDefined) {?> 
+            $('#issn_container').minderSearchResult(<?php echo json_encode($this->issnJsDescription);?>);
+            $('#issn_container').minderSearchResult(<?php echo json_encode($this->issnJsDataset);?>);
+            $('#issn_container .data-table-<?php echo $this->issnSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+            $('#issn_container').bind('page-changed', issnContainerOnPageChanged).bind('show-by-changed', issnContainerOnShowByChanged);
+        <?php }?>
+        
+        <?php if ($this->isPoScreenDefined) {?> 
+            $('#po_container').minderSearchResult(<?php echo json_encode($this->poJsDescription);?>);
+            $('#po_container').minderSearchResult(<?php echo json_encode($this->poJsDataset);?>);
+            $('#po_container .data-table-<?php echo $this->poSsName;?>').tablesorter({headers:{0:{sorter:false}}, widgets: ['zebra']});
+            $('#po_container').bind('page-changed', poContainerOnPageChanged).bind('show-by-changed', poContainerOnShowByChanged);
+        <?php }?>
+        
+        initButtons();
+        checkQtyConditions();
+
+        $(document).bind('do-search', documentOnDoSearch);
+        $('.SEARCH_RESULTS_FORM_search_btn').bind('click', searchBtnOnClick);
+    });
+
+/* ]]> */
+</script>
+
+<?php echo $this->render('footer.phtml'); ?>

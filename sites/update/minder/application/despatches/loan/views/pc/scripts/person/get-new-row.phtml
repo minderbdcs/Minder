@@ -1,0 +1,6 @@
+<div style="display: none;" class="json"><?php echo json_encode($this->jsonResponse)?></div>
+
+<?php
+    Zend_Registry::get('logger')->debug(array('file' => __FILE__, 'line' => __LINE__, $this->rowDefaults));
+    echo $this->sysScreenNewRow(array(), $this->tabs, null, $this->fields, $this->actions, $this->rowDefaults);
+?>
